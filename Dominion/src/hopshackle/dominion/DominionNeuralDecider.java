@@ -1,0 +1,440 @@
+package hopshackle.dominion;
+
+import hopshackle.simulation.*;
+
+import java.io.*;
+import java.util.*;
+
+import org.encog.neural.data.basic.*;
+import org.encog.neural.networks.*;
+import org.encog.neural.networks.structure.NeuralStructure;
+import org.encog.neural.networks.training.propagation.Propagation;
+import org.encog.neural.networks.training.propagation.back.Backpropagation;
+import org.encog.neural.networks.training.propagation.quick.QuickPropagation;
+import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
+
+public class DominionNeuralDecider extends QDecider implements DominionPositionDecider {
+
+	protected BasicNetwork stateEvaluationBrain;
+	protected static double momentum = SimProperties.getPropertyAsDouble("DominionLearningMomentum", "0.0");
+	protected static int learningIterations = Integer.valueOf(SimProperties.getProperty("DominionLearningIterations", "1"));
+	private static boolean applyTemperatureToLearning = SimProperties.getProperty("DominionAnnealLearning", "false").equals("true");
+	private static boolean learnWithValidation = SimProperties.getProperty("DominionLearnUntilValidationError", "false").equals("true");
+	private static int maxLearningIterations = Integer.valueOf(SimProperties.getProperty("DominionMaxLearningIterations", "1"));
+	private static boolean logTrainingErrors = SimProperties.getProperty("DominionLogTrainingErrors", "false").equals("true");
+	private static String propagationType = SimProperties.getProperty("DominionPropagationType", "back");
+	private boolean ableToLearn = true;
+	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
+
+	public DominionNeuralDecider(List<? extends ActionEnum> actions, List<GeneticVariable> variables) {
+		super(actions, variables);
+		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
+		localDebug = false;
+	}
+
+	public DominionNeuralDecider(DominionNeuralDecider parent, int mutations) {
+		super(parent.actionSet, HopshackleUtilities.cloneList(parent.variableSet));
+		GameSetup gs = new GameSetup();
+		for (int i = 0; i < mutations; i++) {
+			int numberOfInputs = variableSet.size();
+			if (Math.random() > (numberOfInputs - 5) * 0.1) {
+				// then add a new one
+				List<GeneticVariable> allVar = gs.getDeckVariables();
+				boolean variableFound = false;
+				do {
+					int roll = Dice.roll(1, allVar.size()) -1;
+					GeneticVariable choice = allVar.get(roll);
+					if (!variableSet.contains(choice)) {
+						variableFound = true;
+						variableSet.add(choice);
+					}
+				} while (!variableFound);
+			} else {
+				int roll = Dice.roll(1, numberOfInputs) -1;
+				variableSet.remove(roll);
+			}
+		}		
+		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
+	}
+
+	public List<GeneticVariable> combineAndMutateInputs(List<? extends GeneticVariable> list, int mutations) {
+		Set<GeneticVariable> retValue1 = new HashSet<GeneticVariable>();
+		for (GeneticVariable gv : variableSet) {
+			if (Math.random() > 0.50)
+				retValue1.add(gv);
+		}
+		for (GeneticVariable gv : list) {
+			if (Math.random() > 0.50)
+				retValue1.add(gv);
+		}
+		List<GeneticVariable> retValue = new ArrayList<GeneticVariable>();
+		for (GeneticVariable gv : retValue1) 
+			retValue.add(gv);
+		GameSetup gs = new GameSetup();
+		for (int i = 0; i < mutations; i++) {
+			int numberOfInputs = retValue.size();
+			if (Math.random() > (numberOfInputs - 5) * 0.1) {
+				// then add a new one
+				List<GeneticVariable> allVar = gs.getDeckVariables();
+				boolean variableFound = false;
+				do {
+					int roll = Dice.roll(1, allVar.size()) -1;
+					GeneticVariable choice = allVar.get(roll);
+					if (!retValue.contains(choice)) {
+						variableFound = true;
+						retValue.add(choice);
+					}
+				} while (!variableFound);
+			} else {
+				int roll = Dice.roll(1, numberOfInputs) -1;
+				retValue.remove(roll);
+			}
+		}
+		return retValue;
+	}
+
+	public void mutateWeights(int mutations) {
+		NeuralStructure structure = stateEvaluationBrain.getStructure();
+		if (stateEvaluationBrain.getLayerCount() != 3) 
+			throw new AssertionError("Hard-coded assumption that NN has just one hidden layer.");
+		int totalWeights = structure.calculateSize();
+		int inputNeurons = stateEvaluationBrain.getLayerNeuronCount(1);
+		int hiddenNeurons = stateEvaluationBrain.getLayerTotalNeuronCount(2);
+		int outputNeurons = stateEvaluationBrain.getLayerTotalNeuronCount(3);
+		totalWeights = inputNeurons * (hiddenNeurons - 1) + hiddenNeurons * outputNeurons;
+		// -1 in the above is for the bias neuron in the hidden layer, which has no connections from input layer
+
+		for (int i = 0; i < mutations; i++) {
+			int weightToChange = Dice.roll(1, totalWeights);
+			int fromLayer = 1;
+			int toNeuronCount = hiddenNeurons - 1;
+			if (weightToChange > inputNeurons * (hiddenNeurons - 1)) {
+				fromLayer = 2;
+				weightToChange -= inputNeurons * (hiddenNeurons - 1);
+				toNeuronCount = outputNeurons;
+			}
+			int fromNeuron = weightToChange / toNeuronCount + 1;
+			int toNeuron = weightToChange % toNeuronCount + 1;
+
+			stateEvaluationBrain.addWeight(fromLayer, fromNeuron, toNeuron, Math.random() / 10.0);
+		}
+	}
+
+	@Override
+	public void setVariables(List<GeneticVariable> variables) {
+		super.setVariables(variables);
+		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
+	}
+
+	@Override
+	public double valueOption(ActionEnum option, Agent decidingAgent, Agent contextAgent) {
+		if (!(option instanceof CardTypeList)) {
+			logger.info("Not a CardTypeList in valueOption");
+			return 0.0;
+		}
+
+		Player p = (Player) decidingAgent;
+		PositionSummary ps = p.getPositionSummaryCopy();
+		ps.drawCard(option);
+
+		double retValue = valuePosition(ps);
+
+		if (localDebug)
+			decidingAgent.log("Option " + option.toString() + " has base Value of " + retValue);
+
+		return retValue;
+	}
+
+	@Override
+	public double valueOption(ActionEnum option, double[] state) {
+		BasicNeuralData inputData = new BasicNeuralData(state);
+		double value = stateEvaluationBrain.compute(inputData).getData()[0];
+		return value;
+	}
+
+	@Override
+	public double valuePosition(PositionSummary ps) {
+		double[] rawData = lookahead.convertPositionSummaryToAttributes(ps, variableSet);
+		double value = valueOption(null, rawData);
+		return value;
+	}
+
+	public List<ActionEnum> getChooseableOptions(Agent decidingAgent, Agent contextAgent) {
+		Player player = (Player) decidingAgent;
+		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
+		List<ActionEnum> retValue = dpd.getPossiblePurchasesAsActionEnum();
+		return retValue;
+	}
+
+	protected double teach(BasicNeuralDataSet trainingData) {
+		double trainingError = 0.0;
+		double temperature = SimProperties.getPropertyAsDouble("Temperature", "1.0");
+		double updatedLearningCoefficient = alpha;
+		if (applyTemperatureToLearning)
+			updatedLearningCoefficient *= temperature;
+		Propagation trainer = null;
+		switch (propagationType) {
+		case "back":
+			trainer = new Backpropagation(stateEvaluationBrain, trainingData, updatedLearningCoefficient, momentum);
+			break;
+		case "quick":
+			trainer = new QuickPropagation(stateEvaluationBrain, trainingData, updatedLearningCoefficient);
+			break;
+		case "resilient":
+			trainer = new ResilientPropagation(stateEvaluationBrain, trainingData);
+			break;
+		default:
+			throw new AssertionError(propagationType + " is not a known type. Must be back/quick/resilient.");
+		}
+
+		trainer.iteration(learningIterations);
+		trainer.finishTraining();
+		if (lambda > 0.00)
+			applyLambda();
+		return trainingError;
+	}
+
+	private void applyLambda() {
+		double temperature = SimProperties.getPropertyAsDouble("Temperature", "1.0");
+		double updatedLambda = lambda;
+		if (applyTemperatureToLearning)
+			updatedLambda *= temperature;
+		for (int layerNumber = 1; layerNumber < stateEvaluationBrain.getLayerCount(); layerNumber++) {	
+			for (int fromNeuron = 1; fromNeuron <= stateEvaluationBrain.getLayerTotalNeuronCount(layerNumber); fromNeuron++) {
+				for (int toNeuron = 1; toNeuron <= stateEvaluationBrain.getLayerTotalNeuronCount(layerNumber)+1; toNeuron++) {
+					double currentWeight = stateEvaluationBrain.getWeight(layerNumber, fromNeuron, toNeuron);
+					stateEvaluationBrain.setWeight(layerNumber, fromNeuron, toNeuron, currentWeight * (1.0 - updatedLambda));
+				}
+			}
+		}
+	}
+
+	@Override
+	public Decider crossWith(Decider otherDecider) {
+		if (otherDecider == null) {
+			DominionNeuralDecider retValue = new DominionNeuralDecider(this, 0);
+			retValue.stateEvaluationBrain = (BasicNetwork) stateEvaluationBrain.clone();
+			return retValue;
+		}
+		if (!(otherDecider instanceof DominionNeuralDecider))
+			return super.crossWith(otherDecider);
+		if (this.actionSet.size() != otherDecider.getActions().size())
+			return super.crossWith(otherDecider);
+
+		List<GeneticVariable> newInputs = combineAndMutateInputs(otherDecider.getVariables(), 4);
+		DominionNeuralDecider retValue = new DominionNeuralDecider(actionSet, newInputs);
+		retValue.setName(this.toString());
+		return retValue;
+	}
+
+	@Override
+	protected ExperienceRecord getExperienceRecord(Agent decidingAgent, Agent contextAgent, ActionEnum option) {
+		Player player = (Player) decidingAgent;
+		DominionExperienceRecord output = new DominionExperienceRecord(player.getPositionSummaryCopy(), option, getChooseableOptions(decidingAgent, contextAgent));
+		return output;
+	}
+
+	public void saveToFile(String descriptor) {
+		String directory = SimProperties.getProperty("BaseDirectory", "C:");
+		directory = directory + "\\DominionBrains\\";
+		File saveFile = new File(directory + descriptor + "_" + name.substring(0, 4) + ".brain");
+
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(saveFile));
+
+			oos.writeObject(actionSet);
+			oos.writeObject(variableSet);
+			oos.writeObject(stateEvaluationBrain);
+
+			oos.close();
+
+		} catch (IOException e) {
+			logger.severe("Error saving brain: " + e.toString());
+			for ( StackTraceElement s : e.getStackTrace()) {
+				logger.info(s.toString());
+			}
+		} 
+	}
+
+	@SuppressWarnings("unchecked")
+	public static DominionNeuralDecider createDPSDecider(File saveFile) {
+		DominionNeuralDecider retValue = null;
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile));
+
+			ArrayList<ActionEnum> actionSet = (ArrayList<ActionEnum>) ois.readObject();
+			ArrayList<GeneticVariable> variableSet = (ArrayList<GeneticVariable>) ois.readObject();
+			retValue = new DominionNeuralDecider(actionSet, variableSet);
+
+			BasicNetwork stateBrain = (BasicNetwork) ois.readObject();
+
+			ois.close();
+			retValue.stateEvaluationBrain = stateBrain;
+			String name = saveFile.getName();
+			String end = ".brain";
+			name = name.substring(0, name.indexOf(end));
+			retValue.setName(name);
+
+		} catch (Exception e) {
+			logger.severe("Error reading brain: " + e.toString());
+			for ( StackTraceElement s : e.getStackTrace()) {
+				logger.info(s.toString());
+			}
+		}
+
+		return retValue;
+	}
+
+	@Override
+	public void learnFromBatch(ExperienceRecord[] expArray, double maxResult) {
+		if (alpha < 0.000001 || !ableToLearn)
+			return;	// no learning to take place
+		int inputLength = stateEvaluationBrain.getInputCount();
+		double[][] batchOutputData = new double[expArray.length][1];
+		double[][] batchInputData = new double[expArray.length][inputLength];
+
+		int count = 0;
+		for (ExperienceRecord exp : expArray) {
+			double[] expData = preprocessExperienceRecord(exp, maxResult);
+			batchOutputData[count][0] = expData[0];
+			for (int n = 0; n < inputLength; n++)
+				batchInputData[count][n] = expData[n+1];
+
+			count++;
+		}
+
+		if (learnWithValidation) {
+			double[][] validationOutputData = new double[expArray.length / 5][1];
+			double[][] validationInputData = new double[expArray.length / 5][inputLength];
+
+			double[][] batchOutputData2 = new double[expArray.length - expArray.length / 5][1];
+			double[][] batchInputData2 = new double[expArray.length - expArray.length / 5][inputLength];
+
+			int valCount = 0;
+			for (int i = 0; i < expArray.length; i++) {
+				if (i % 5 == 4) {
+					validationInputData[valCount] = batchInputData[i];
+					validationOutputData[valCount] = batchOutputData[i];
+					valCount++;
+				} else {
+					batchInputData2[i - valCount] = batchInputData[i];
+					batchOutputData2[i - valCount] = batchOutputData[i];
+				}
+			}
+
+			BasicNeuralDataSet trainingData = new BasicNeuralDataSet(batchInputData2, batchOutputData2);
+			BasicNeuralDataSet validationData = new BasicNeuralDataSet(validationInputData, validationOutputData);
+			BasicNetwork brainCopy = (BasicNetwork) stateEvaluationBrain.clone();
+			double startingError = stateEvaluationBrain.calculateError(validationData);
+			double valError = 1.00;
+			int iteration = 1;
+			boolean terminateLearning = false;
+			double lastTrainingError = 0.0;
+			double trainingError = 0.0;
+			do {
+				lastTrainingError = trainingError;
+				trainingError = teach(trainingData);
+				double newValError = stateEvaluationBrain.calculateError(validationData);
+				//			System.out.println(String.format("Iteration %d on %s has validation error of %.5f and training error of %.5f (starting validation error %.5f)", iteration, this.toString(), newValError, trainingError, startingError));
+				if (newValError >= valError || iteration > maxLearningIterations) {
+					terminateLearning = true;
+					stateEvaluationBrain = brainCopy;
+					if (logTrainingErrors)
+						System.out.println(String.format("%d iterations on %s has validation error of %.5f and training error of %.5f (starting validation error %.5f)", iteration-1, this.toString(), valError, lastTrainingError, startingError));
+				} else {
+					brainCopy = (BasicNetwork) stateEvaluationBrain.clone();
+					valError = newValError;
+				}
+				iteration++;
+			} while (!terminateLearning);			
+
+		} else {
+			BasicNeuralDataSet trainingData = new BasicNeuralDataSet(batchInputData, batchOutputData);
+			double error = teach(trainingData);
+			if (logTrainingErrors)
+				System.out.println(String.format("%s has training error of %.4f", this.toString(), error));
+		}
+	}
+
+	private double[] preprocessExperienceRecord(ExperienceRecord exp, double maxResult) {
+		// returns an array, with first element being the output value (result), and then all subsequent elements being the input values
+		double result = exp.getReward();
+		if (result > maxResult) {
+			result = maxResult;
+		}
+		if (result < 0.0) result = 0.0;
+
+		DominionExperienceRecord domExp = (DominionExperienceRecord) exp;
+		double endValue = Double.NEGATIVE_INFINITY;
+		if (exp.isInFinalState()) 
+			endValue = 0.0;
+		else {
+			PositionSummary ps = domExp.getEndPS();
+			for (ActionEnum ae : exp.getPossibleActionsFromEndState()) {
+				ps.drawCard(ae);
+				double value = valuePosition(ps);
+				if (value > endValue) 
+					endValue = value;
+				ps.undrawCard(ae);
+			}
+		}
+
+		double updatedStartValue = result/maxResult + gamma * endValue;
+		double[] retValue = new double[stateEvaluationBrain.getInputCount() + 1];
+
+		retValue[0] = updatedStartValue;	
+		double[] subLoop = exp.getValues(variableSet)[0];	// startState values
+		for (int n=0; n<subLoop.length; n++) {
+			retValue[n+1] = subLoop[n];
+		}
+
+		if (localDebug) {
+			log(String.format("Learning:\t%-20sReward: %.2f, End State Value: %.2f, Inferred Start Value: %.2f", 
+					exp.getActionTaken(), exp.getReward(), endValue, updatedStartValue));
+			StringBuffer logMessage = new StringBuffer("Start state: ");
+			double[] state = exp.getStartState();
+			for (int i = 0; i < state.length; i++) 
+				logMessage.append(String.format(" [%.2f] ", state[i]));
+			log(logMessage.toString());
+			logMessage = new StringBuffer("End state:   ");
+			state = exp.getEndState();
+			for (int i = 0; i < state.length; i++) 
+				logMessage.append(String.format(" [%.2f] ", state[i]));
+			log(logMessage.toString());
+		}
+
+		return retValue;
+	}
+
+	@Override
+	public void learnFrom(ExperienceRecord exp, double maxResult) {
+		if (alpha < 0.000001 || !ableToLearn)
+			return;	// no learning to take place
+
+		double[] expData = preprocessExperienceRecord(exp, maxResult);
+		double [][] outputValues = new double[1][1];
+		double[][] inputValues = new double[1][expData.length-1];
+
+		outputValues[0][0] = expData[0];
+		for (int n = 0; n < expData.length-1; n++)
+			inputValues[0][n] = expData[n+1];
+
+		BasicNeuralDataSet trainingData = new BasicNeuralDataSet(inputValues, outputValues);
+		teach(trainingData);
+	}
+
+	@Override
+	public List<CardType> buyingDecision(Player player, int budget, int buys) {
+		List<CardType> retValue = (new DominionBuyingDecision(player, budget, buys)).getBestPurchase();
+		for (CardType purchase : retValue)
+			learnFromDecision(player, player, purchase);	// not ideal, but much simpler. Just record each decision as if it was distinct (in increasing order of cost)
+		return retValue;
+	}
+
+	public void setLearning(boolean b) {
+		ableToLearn = b;
+	}
+	public boolean getLearning() {
+		return ableToLearn;
+	}
+}
