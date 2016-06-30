@@ -20,7 +20,7 @@ public class Militia extends AttackCard {
 		victim.log("Victim of MILITIA:");
 		CardType[] possibleCombination = new CardType[3];
 		CardType[] bestCombination = new CardType[3];
-		DominionPositionDecider discardDecider = victim.getDiscardDecider();
+		DominionPositionDecider discardDecider = victim.getPurchaseDecider();
 		double bestValue = -1.0;
 		for (int loop=0; loop<cardsInHand.length; loop++) {
 			possibleCombination[0] = cardsInHand[loop];

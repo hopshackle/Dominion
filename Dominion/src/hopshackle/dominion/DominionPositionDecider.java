@@ -4,7 +4,7 @@ import java.util.List;
 
 import hopshackle.simulation.*;
 
-public interface DominionPositionDecider extends Decider {
+public interface DominionPositionDecider extends Decider<Player> {
 	
 	public double valuePosition(PositionSummary ps);
 

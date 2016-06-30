@@ -1,8 +1,8 @@
 package hopshackle.dominion;
 
-import hopshackle.simulation.AgentDAO;
+import hopshackle.simulation.DAO;
 
-public class GameDAO implements AgentDAO<Game> {
+public class GameDAO implements DAO<Game> {
 
 	@Override
 	public String getTableCreationSQL(String tableSuffix) {
@@ -46,7 +46,6 @@ public class GameDAO implements AgentDAO<Game> {
 		" avgTreasure		FLOAT		NOT NULL,"		+
 		" avgVictory		FLOAT		NOT NULL,"		+
 		" winningPStrategy   VARCHAR(30) NOT NULL,"		+
-		" winningDStrategy   VARCHAR(30) NOT NULL,"		+
 		" winningAStrategy   VARCHAR(30) NOT NULL"		+
 		");";
 	}
@@ -63,11 +62,11 @@ public class GameDAO implements AgentDAO<Game> {
 			"adventurers, bureaucrats, cellars, chapels, chancellors, council_rooms, feasts, festivals, gardens, laboratories, " +
 			"libraries, markets, militia, mines, moats, moneylenders, remodels, " +
 			"smithies, spies, thieves, throne_rooms, villages, witches, woodcutters, workshops, " + 
-			"avgDeckSize, avgTreasure, avgVictory, winningPStrategy, winningDStrategy, winningAStrategy) VALUES";
+			"avgDeckSize, avgTreasure, avgVictory, winningPStrategy, winningAStrategy) VALUES";
 	}
 
 	@Override
-	public String getValuesForAgent(Game game) {
+	public String getValues(Game game) {
 
 		Player[] players = game.getPlayers();
 		double winningScore = -100, lowestScore, avgScore = 0, avgTreasure = 0, avgDeckSize = 0.0;
@@ -95,7 +94,7 @@ public class GameDAO implements AgentDAO<Game> {
 			// on the basis that we want to pick the winning player with least first player advantage
 		}
 
-		return String.format(" (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %.2f, %.2f, %.2f, '%s', '%s', '%s')",
+		return String.format(" (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %.2f, %.2f, %.2f, '%s', '%s')",
 				game.getUniqueId(),
 				game.turnNumber(),
 				(int) winningScore,
@@ -134,7 +133,6 @@ public class GameDAO implements AgentDAO<Game> {
 				avgDeckSize,
 				avgScore,
 				(gameHasWinner)?players[winningPlayerNumber-1].getPurchaseDecider().toString():"NONE",
-				(gameHasWinner)?players[winningPlayerNumber-1].getDiscardDecider().toString():"NONE",
 				(gameHasWinner)?players[winningPlayerNumber-1].getActionDecider().toString():"NONE"
 		);
 

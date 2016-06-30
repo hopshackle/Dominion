@@ -111,9 +111,9 @@ public class DominionBuyingDecision {
 		return retValue;
 	}
 
-	public List<ActionEnum> getPossiblePurchasesAsActionEnum() {
+	public List<ActionEnum<Player>> getPossiblePurchasesAsActionEnum() {
 		List<List<CardType>> temp = getPossibleBuys(totalBuys, 20, totalBudget);
-		List<ActionEnum> retValue = new ArrayList<ActionEnum>();
+		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (final List<CardType> purc : temp) {
 			retValue.add(new CardTypeList(purc));
 		}

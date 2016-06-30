@@ -4,18 +4,18 @@ import java.util.*;
 
 import hopshackle.simulation.*;
 
-public class DominionAction extends Action {
+public class DominionBuyAction extends Action<Player> {
 	
 	private List<CardType> cardType;
 
-	public DominionAction(Agent a, CardType cardType) {
-		super(a, false);
+	public DominionBuyAction(Player a, CardType cardType) {
+		super(cardType, a, false);
 		this.cardType = new ArrayList<CardType>();
 		this.cardType.add(cardType);
 	}
 
-	public DominionAction(Player player, List<CardType> purc) {
-		super(player, false);
+	public DominionBuyAction(Player player, List<CardType> purc) {
+		super(purc.get(0), player, false);
 		this.cardType = purc;
 	}
 
@@ -26,4 +26,6 @@ public class DominionAction extends Action {
 		}
 		return retValue.toString();
 	}
+	
+	
 }

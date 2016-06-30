@@ -4,7 +4,7 @@ import java.util.*;
 
 import hopshackle.simulation.*;
 
-public class DominionBatchTeacher implements Teacher<Player> {
+public class DominionBatchTeacher {
 
 	private String teachingStrategy = SimProperties.getProperty("DominionTeachingStrategy", "AllPlayers");
 	private boolean allParticipantsLearnFromWinner = teachingStrategy.equals("SelfAndWinner");
@@ -13,24 +13,23 @@ public class DominionBatchTeacher implements Teacher<Player> {
 	private boolean singleBrain = SimProperties.getProperty("DominionSingleBrain", "false").equals("true");
 	private boolean gameOverVariableInUse = SimProperties.getProperty("DominionGameOverTracking", "false").equals("true");
 	private Game game;
-	private Map<Integer, List<ExperienceRecord>> experienceRecords;
+	private Map<Integer, List<ExperienceRecord<Player>>> experienceRecords;
 	private Map<Integer, List<double[]>> gameDurationRecords;
 
 	public DominionBatchTeacher(Game game) {
-		experienceRecords = new HashMap<Integer, List<ExperienceRecord>>();
+		experienceRecords = new HashMap<Integer, List<ExperienceRecord<Player>>>();
 		gameDurationRecords = new HashMap<Integer, List<double[]>>();
 		this.game = game;
 		for (int i = 1; i < 5; i++) {
-			experienceRecords.put(i, new ArrayList<ExperienceRecord>());
+			experienceRecords.put(i, new ArrayList<ExperienceRecord<Player>>());
 			gameDurationRecords.put(i, new ArrayList<double[]>());
 		}
-		for (Player p : game.getPlayers()) {
-			p.getPurchaseDecider().setTeacher(this);
-		}
+//		for (Player p : game.getPlayers()) {
+//			p.getPurchaseDecider().setTeacher(this);
+//		}
 	}
 
-	@Override
-	public boolean registerDecision(Player decider, ExperienceRecord decision) {
+	public boolean registerDecision(Player decider, ExperienceRecord<Player> decision) {
 		int playerNumber = game.getPlayerNumber(decider);
 		if (playerNumber > 0) {
 			experienceRecords.get(playerNumber).add(decision);
@@ -46,8 +45,7 @@ public class DominionBatchTeacher implements Teacher<Player> {
 		return true;
 	}
 
-	@Override
-	public List<ExperienceRecord> getExperienceRecords(Player decider) {
+	public List<ExperienceRecord<Player>> getExperienceRecords(Player decider) {
 		int playerNumber = game.getPlayerNumber(decider);
 		if (playerNumber > 0)
 			return experienceRecords.get(playerNumber);
@@ -118,18 +116,21 @@ public class DominionBatchTeacher implements Teacher<Player> {
 		for (int n = 0; n < 4; n++) {
 			Player currentPlayer = players[n];
 			double finalResult = currentPlayer.getScore();
-			List<ExperienceRecord> data = experienceRecords.get(n+1);
+			List<ExperienceRecord<Player>> data = experienceRecords.get(n+1);
 			Collections.reverse(data);
-			boolean lastRecord = true;
-			List<ActionEnum> actions = new ArrayList<ActionEnum>();
 			PositionSummary nextState = currentPlayer.getPositionSummaryCopy();
-			for (ExperienceRecord er : data) {
+			ExperienceRecord<Player> lastER = null;
+			for (ExperienceRecord<Player> er : data) {
 				DominionExperienceRecord der = (DominionExperienceRecord) er;
-				der.updateWithResults(finalResult, nextState, actions, lastRecord);
-				lastRecord = false;
+				der.updateWithResults(finalResult, nextState);
+				if (lastER != null) {
+					der.updateNextActions(lastER);
+				} else {
+					der.setIsFinal();
+				}
+				lastER = der;
 				finalResult = 0;
 				nextState = der.getStartPS();
-				actions = der.getPossibleActionsFromStartState();
 			}
 			// i.e. we chain backwards through Experience Records
 			// with the reward of the final score being ascribed *only* to the final record (which is also marked as the end of run)
@@ -137,20 +138,19 @@ public class DominionBatchTeacher implements Teacher<Player> {
 	}
 
 	private void useExperienceToTeach(Player playerToTeach, int playerNumberOfData) {
-		List<ExperienceRecord> data = new ArrayList<ExperienceRecord>();
+		List<ExperienceRecord<Player>> data = new ArrayList<ExperienceRecord<Player>>();
 		if (playerNumberOfData == 0) {
 			for (int i = 1; i < 5; i++)
 				data.addAll(experienceRecords.get(i));
 		} else 
 			data = experienceRecords.get(playerNumberOfData);
 		DominionPositionDecider decider = playerToTeach.getPurchaseDecider();
-		ExperienceRecord[] expArray = data.toArray(new ExperienceRecord[1]);
-		decider.learnFromBatch(expArray, 100.0);
+		decider.learnFromBatch(data, 100.0);
 	}
 
-	public List<ExperienceRecord> getAllExperienceRecords() {
-		List<ExperienceRecord> allER = new ArrayList<ExperienceRecord>();
-		for (List<ExperienceRecord> erList : experienceRecords.values()) {
+	public List<ExperienceRecord<Player>> getAllExperienceRecords() {
+		List<ExperienceRecord<Player>> allER = new ArrayList<ExperienceRecord<Player>>();
+		for (List<ExperienceRecord<Player>> erList : experienceRecords.values()) {
 			allER.addAll(erList);
 		}
 		return allER;

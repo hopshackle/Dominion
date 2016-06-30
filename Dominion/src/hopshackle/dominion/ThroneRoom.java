@@ -10,7 +10,7 @@ public class ThroneRoom extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
-		enthronedCard = (CardType)player.getActionDecider().decide(player, player);
+		enthronedCard = (CardType)player.getActionDecider().decide(player, player).getType();
 		player.log("Uses Throne Room to play " + enthronedCard);
 		Card card = player.playFromHandToRevealedCards(enthronedCard);
 		card.takeAction(player);

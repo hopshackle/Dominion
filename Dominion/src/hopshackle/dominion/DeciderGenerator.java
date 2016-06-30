@@ -12,7 +12,7 @@ public class DeciderGenerator {
 	private BigMoneyDecider bigMoney = new BigMoneyDecider();
 	private ChrisPethersDecider chrisPethers = new ChrisPethersDecider();
 	private GameSetup gamesetup;
-	private List<Decider> actionDeciders;
+	private List<Decider<Player>> actionDeciders;
 	private List<Integer> purchaseVictories, discardVictories, actionVictories, lastPVictories, lastDVictories, lastAVictories;
 	private Map<String, Double> purchaseScores;
 	private int currentLoop;
@@ -40,7 +40,7 @@ public class DeciderGenerator {
 		toAdd = decidersToAddPerRound;
 		toRemove = decidersToRemovePerRound;
 		purchaseDeciders = new ArrayList<DominionPositionDecider>();
-		actionDeciders = new ArrayList<Decider>();
+		actionDeciders = new ArrayList<Decider<Player>>();
 		discardDeciders = new ArrayList<DominionPositionDecider>();
 		purchaseVictories = new ArrayList<Integer>();
 		purchaseScores = new HashMap<String, Double>();
@@ -160,7 +160,7 @@ public class DeciderGenerator {
 	public DominionPositionDecider getDiscardDecider() {
 		return (DominionPositionDecider) discardDeciders.get((int)(Math.random()*discardDeciders.size()));
 	}
-	public Decider getActionDecider() {
+	public Decider<Player> getActionDecider() {
 		return actionDeciders.get((int)(Math.random()*actionDeciders.size()));
 	}
 	public NeuralComputer getGameEndComputer() {

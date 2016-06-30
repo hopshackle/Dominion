@@ -2,7 +2,7 @@ package hopshackle.dominion;
 
 import hopshackle.simulation.*;
 
-public enum CardType implements ActionEnum {
+public enum CardType implements ActionEnum<Player> {
 
 	NONE		(0, 0, 0, 0, 0, 0, 0, 0),
 	COPPER 		(0, 1, 0, 0, 0, 0, 0, 0),
@@ -94,6 +94,7 @@ public enum CardType implements ActionEnum {
 		switch (this) {
 		case GARDENS:
 			return true;
+		default:
 		}
 		return (victoryPoints != 0);
 	}
@@ -102,10 +103,7 @@ public enum CardType implements ActionEnum {
 	}
 
 	@Override
-	public boolean isChooseable(Agent a) {
-		if (!(a instanceof Player))
-			return false;
-		Player p = (Player) a;
+	public boolean isChooseable(Player p) {
 		if (p.isTakingActions()) {
 			// hack to distinguish between chooseability at purchase and use
 			if (this == CardType.NONE) return true;
@@ -121,11 +119,17 @@ public enum CardType implements ActionEnum {
 	}
 
 	@Override
-	public Action getAction(Agent a) {
-		return new DominionAction(a, this);
+	public DominionPlayAction getAction(Player a) {
+		return new DominionPlayAction(a, this);
 	}
+	
+	public DominionBuyAction getBuyAction(Player a) {
+		return new DominionBuyAction(a, this);
+	}
+	
+	
 	@Override
-	public Action getAction(Agent a1, Agent a2) {return null;}
+	public Action<Player> getAction(Player a1, Agent a2) {return null;}
 	@Override
 	public String getChromosomeDesc() {return "DOM1";}
 

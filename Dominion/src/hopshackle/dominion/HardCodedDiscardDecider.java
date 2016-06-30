@@ -4,9 +4,9 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class HardCodedDiscardDecider extends BaseDecider implements DominionPositionDecider {
+public class HardCodedDiscardDecider extends BaseDecider<Player> implements DominionPositionDecider {
 	
-	public HardCodedDiscardDecider(List<? extends ActionEnum> actions, List<GeneticVariable> variables) {
+	public HardCodedDiscardDecider(List<? extends ActionEnum<Player>> actions, List<GeneticVariable> variables) {
 		super(actions, variables);
 	}
 
@@ -26,7 +26,7 @@ public class HardCodedDiscardDecider extends BaseDecider implements DominionPosi
 	}
 
 	@Override
-	public double valueOption(ActionEnum option, Agent decidingAgent, Agent contextAgent) {
+	public double valueOption(ActionEnum<Player> option, Player decidingAgent, Agent contextAgent) {
 		return 0;
 	}
 

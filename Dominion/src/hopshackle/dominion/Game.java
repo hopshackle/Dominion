@@ -17,7 +17,7 @@ public class Game implements Persistent {
 	private int[] winningPlayerNumbers = new int[0];
 	private double highestScore, lowestScore;
 	private double score[] = new double[4];
-	private static AgentWriter<Game> gameWriter = new AgentWriter<Game>(new GameDAO());
+	private static DatabaseWriter<Game> gameWriter = new DatabaseWriter<Game>(new GameDAO());
 	private DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
 
@@ -34,7 +34,6 @@ public class Game implements Persistent {
 			players[n].setDebugLocal(debug);
 			if (deciderGenerator != null) {
 				players[n].setPurchaseDecider(deciderGenerator.getPurchaseDecider());
-				players[n].setDiscardDecider(deciderGenerator.getDiscardDecider());
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
 				players[n].setGameEndComputer(deciderGenerator.getGameEndComputer());
 			}

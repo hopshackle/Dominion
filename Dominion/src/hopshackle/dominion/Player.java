@@ -15,9 +15,9 @@ public class Player extends Agent {
 	private PositionSummary summary;
 	private int playerNumber;
 	private int spentSoFar, actionsLeft;
-	private Decider actionDecider;
+	private Decider<Player> actionDecider;
 	private NeuralComputer gameEndEstimator;
-	private DominionPositionDecider discardDecider, purchaseDecider;
+	private DominionPositionDecider purchaseDecider;
 	private boolean makingPurchaseDecision = true;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
 
@@ -94,17 +94,15 @@ public class Player extends Agent {
 		actionsLeft = 1;
 		setStateToAction();
 		do {
-			ActionEnum ae = actionDecider.decide(this);
-			CardType actionChosen = null;
-			if (ae instanceof CardType) 
-				actionChosen = (CardType) ae;
-			else 
-				actionChosen = ((CardTypeList)ae).cards.get(0);
-			if (actionChosen == null || actionChosen == CardType.NONE) {
+			Action<Player> action = actionDecider.decide(this);
+			if (action.getType() == CardType.NONE) {
 				log("Chooses not to play an Action card.");
 				break;
 			}
-			Card cardToPlay = playFromHandToRevealedCards(actionChosen);
+			action.start();
+			action.run();
+			// This following code then goes into DominionPlayAction
+			Card cardToPlay = playFromHandToRevealedCards((CardType) action.getType());
 			if (cardToPlay != null && cardToPlay.getType() != CardType.NONE) {
 				log("Plays " + cardToPlay.toString());
 				cardToPlay.takeAction(this);
@@ -117,12 +115,15 @@ public class Player extends Agent {
 
 	public void buyCards() {
 		setStateToPurchase();
-		ActionEnum decision = getPurchaseDecider().decide(this);
+		DominionBuyAction decision = (DominionBuyAction) getPurchaseDecider().decide(this);
+		decision.start();
+		decision.run();
+		// code below then goes into DominionBuyAction
 		List<CardType> cardsBought = new ArrayList<CardType>();
-		if (decision instanceof CardType)
-			cardsBought.add((CardType)decision);
+		if (decision.getType() instanceof CardType)
+			cardsBought.add((CardType)decision.getType());
 		else
-			cardsBought = ((CardTypeList)decision).cards;
+			cardsBought = ((CardTypeList)decision.getType()).cards;
 		for (CardType cardBought : cardsBought) {
 			takeCardFromSupplyIntoDiscard(cardBought);
 			log("Has " + getBudget() + " money and buys " + cardBought); 
@@ -237,26 +238,19 @@ public class Player extends Agent {
 		return purchaseDecider;
 	}
 	@Override
-	public Decider getDecider() {
+	public Decider<Player> getDecider() {
 		return purchaseDecider;
 	}
-	public Decider getActionDecider() {
+	public Decider<Player> getActionDecider() {
 		return actionDecider;
-	}
-	public DominionPositionDecider getDiscardDecider() {
-		return discardDecider;
 	}
 	public void setPurchaseDecider(DominionPositionDecider newDecider) {
 		purchaseDecider = newDecider;
 		log("Using purchase strategy " + purchaseDecider.toString());
 	}
-	public void setActionDecider(Decider newDecider) {
+	public void setActionDecider(Decider<Player> newDecider) {
 		actionDecider = newDecider;
 		log("Using action strategy " + actionDecider.toString());
-	}
-	public void setDiscardDecider(DominionPositionDecider newDecider) {
-		discardDecider = newDecider;
-		log("Using discard strategy " + discardDecider.toString());
 	}
 	public PositionSummary getPositionSummaryCopy() {
 		return summary.clone();

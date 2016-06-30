@@ -4,17 +4,17 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class BigMoneyDecider extends BaseDecider implements DominionPositionDecider {
+public class BigMoneyDecider extends BaseDecider<Player> implements DominionPositionDecider {
 
 	private static ArrayList<GeneticVariable>variablesToUse = new ArrayList<GeneticVariable>(EnumSet.allOf(CardValuationVariables.class));
-	private static ArrayList<ActionEnum> actionsToUse= new ArrayList<ActionEnum>(EnumSet.allOf(CardType.class));
+	private static ArrayList<ActionEnum<Player>> actionsToUse= new ArrayList<ActionEnum<Player>>(EnumSet.allOf(CardType.class));
 	
 	public BigMoneyDecider() {
 		super(actionsToUse, variablesToUse);
 	}
 	
 	@Override
-	public double valueOption(ActionEnum option, Agent decidingAgent, Agent contextAgent) {
+	public double valueOption(ActionEnum<Player> option, Player decidingAgent, Agent contextAgent) {
 		Player p = (Player) decidingAgent;
 		PositionSummary ps = p.getPositionSummaryCopy();
 		ps.drawCard(option); 
@@ -49,15 +49,15 @@ public class BigMoneyDecider extends BaseDecider implements DominionPositionDeci
 		return retValue;
 	}
 	
-	public List<ActionEnum> getChooseableOptions(Agent decidingAgent, Agent contextAgent) {
+	public List<ActionEnum<Player>> getChooseableOptions(Player decidingAgent, Agent contextAgent) {
 		Player player = (Player) decidingAgent;
 		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
-		List<ActionEnum> retValue = dpd.getPossiblePurchasesAsActionEnum();
+		List<ActionEnum<Player>> retValue = dpd.getPossiblePurchasesAsActionEnum();
 		return retValue;
 	}
 	
 	@Override
-	protected ExperienceRecord getExperienceRecord(Agent decidingAgent, Agent contextAgent, ActionEnum option) {
+	protected ExperienceRecord<Player> getExperienceRecord(Player decidingAgent, Agent contextAgent, ActionEnum<Player> option) {
 		Player player = (Player) decidingAgent;
 		DominionExperienceRecord output = new DominionExperienceRecord(player.getPositionSummaryCopy(), option, getChooseableOptions(decidingAgent, contextAgent));
 		return output;

@@ -91,16 +91,15 @@ public enum CardValuationVariables implements GeneticVariable {
 	DUCHY_PERCENT;
 	
 
-	@Override
-	public double getValue(Object o, double var) {
-		PositionSummary ps = null;
-		if (o instanceof Player) {
-			ps = ((Player)o).getPositionSummaryCopy();
-		} else if (o instanceof PositionSummary) {
-			ps = (PositionSummary) o;
+	public double getValue(Agent a) {
+		if (a instanceof Player) {
+			return getValue(((Player) a).getPositionSummaryCopy());
 		} else {
 			return 0.0;
 		}
+	}
+	
+	public double getValue(PositionSummary ps) {
 		switch (this) {
 		case DECK_SIZE:
 			double totalCards = ps.totalNumberOfCards();
@@ -285,7 +284,11 @@ public enum CardValuationVariables implements GeneticVariable {
 	}
 
 	@Override
-	public double getValue(Object a1, Object a2) {return getValue(a1, 0.0);}
+	public double getValue(Agent a1, Agent a2) {return getValue(a1);}
+	@Override
+	public double getValue(Agent a1, Artefact a2) {return getValue(a1);}
+	@Override
+	public double getValue(Agent a1, Action a2) {return getValue(a1);}
 	@Override
 	public String getDescriptor() { return "DOM1";}
 	
