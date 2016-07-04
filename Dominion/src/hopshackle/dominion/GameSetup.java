@@ -7,8 +7,8 @@ import java.util.*;
 public class GameSetup {
 
 	private ArrayList<CardType> cardTypes = new ArrayList<CardType>();
-	private ArrayList<GeneticVariable> deckVariables = new ArrayList<GeneticVariable>();
-	private ArrayList<GeneticVariable> handVariables = new ArrayList<GeneticVariable>();
+	private ArrayList<CardValuationVariables> deckVariables = new ArrayList<CardValuationVariables>();
+	private ArrayList<CardValuationVariables> handVariables = new ArrayList<CardValuationVariables>();
 	private String coreVariables = SimProperties.getProperty("DominionCoreVariables", "");
 	private String[] cardChanges = SimProperties.getProperty("DominionCardChanges", "").split(",");
 
@@ -133,11 +133,11 @@ public class GameSetup {
 	}
 
 
-	public List<GeneticVariable> getDeckVariables() {
+	public List<CardValuationVariables> getDeckVariables() {
 		return deckVariables;
 	}
 
-	public List<GeneticVariable> getHandVariables() {
+	public List<CardValuationVariables> getHandVariables() {
 		return handVariables;
 	}
 

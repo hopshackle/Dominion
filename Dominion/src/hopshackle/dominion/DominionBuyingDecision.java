@@ -58,7 +58,7 @@ public class DominionBuyingDecision {
 		for (List<CardType> purchase : allOptions) {
 			for (CardType card : purchase) 
 				ps.drawCard(card);
-			double value = player.getPurchaseDecider().valuePosition(ps);
+			double value = player.getPurchaseDecider().value(ps);
 			if (value > bestValue) {
 				bestValue = value;
 				bestPurchase = purchase;

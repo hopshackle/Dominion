@@ -8,12 +8,11 @@ import java.util.logging.Logger;
 
 public class DeciderGenerator {
 
-	private List<DominionPositionDecider> discardDeciders, purchaseDeciders, unusedPurchaseDeciders;
+	private List<LookaheadDecider<Player, PositionSummary>> discardDeciders, purchaseDeciders, unusedPurchaseDeciders, actionDeciders;
 	private BigMoneyDecider bigMoney = new BigMoneyDecider();
 	private ChrisPethersDecider chrisPethers = new ChrisPethersDecider();
 	private GameSetup gamesetup;
-	private List<Decider<Player>> actionDeciders;
-	private List<Integer> purchaseVictories, discardVictories, actionVictories, lastPVictories, lastDVictories, lastAVictories;
+	private List<Integer> purchaseVictories, discardVictories, actionVictories, lastPVictories;
 	private Map<String, Double> purchaseScores;
 	private int currentLoop;
 	private int removalThreshold;
@@ -39,16 +38,16 @@ public class DeciderGenerator {
 		currentLoop = 0;
 		toAdd = decidersToAddPerRound;
 		toRemove = decidersToRemovePerRound;
-		purchaseDeciders = new ArrayList<DominionPositionDecider>();
-		actionDeciders = new ArrayList<Decider<Player>>();
-		discardDeciders = new ArrayList<DominionPositionDecider>();
+		purchaseDeciders = new ArrayList<LookaheadDecider<Player, PositionSummary>>();
+		actionDeciders = new ArrayList<LookaheadDecider<Player, PositionSummary>>();
+		discardDeciders = new ArrayList<LookaheadDecider<Player, PositionSummary>>();
 		purchaseVictories = new ArrayList<Integer>();
 		purchaseScores = new HashMap<String, Double>();
 		discardVictories = new ArrayList<Integer>();
 		actionVictories = new ArrayList<Integer>();
 
-		List<GeneticVariable> variablesToUseForPurchase = gamesetup.getDeckVariables();
-		List<GeneticVariable> variablesToUseForActions = gamesetup.getHandVariables();
+		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
+		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
 
 		if (variablesToUseForPurchase.contains(CardValuationVariables.GAME_OVER)) {
 			SimProperties.setProperty("DominionGameOverTracking", "true");
@@ -68,15 +67,15 @@ public class DeciderGenerator {
 				new DominionNeuralDecider(actionsToUse, variablesToUseForPurchase), 0, "P");
 
 		for (int n = 0; n<numberToMaintain; n++) {
-			DominionPositionDecider pd = null;
+			LookaheadDecider<Player, PositionSummary> pd = null;
 			if (purchaseDeciders.size() <= n){
 				if (startingInputs < 99) {
-					List<GeneticVariable> varsToUse = new ArrayList<GeneticVariable>();
+					List<CardValuationVariables> varsToUse = new ArrayList<CardValuationVariables>();
 					for (int i = 0; i < startingInputs; i++) {
 						boolean choiceMade = false;
 						do {
 							int roll = Dice.roll(1, variablesToUseForPurchase.size()) - 1;
-							GeneticVariable choice = variablesToUseForPurchase.get(roll);
+							CardValuationVariables choice = variablesToUseForPurchase.get(roll);
 							if (!varsToUse.contains(choice)) {
 								choiceMade = true;
 								varsToUse.add(choice);
@@ -96,7 +95,7 @@ public class DeciderGenerator {
 				purchaseDeciders.add(pd);
 			}
 
-			DominionPositionDecider dd = new HardCodedDiscardDecider(actionsToUse, variablesToUseForActions);
+			LookaheadDecider<Player, PositionSummary> dd = new HardCodedDiscardDecider(actionsToUse, variablesToUseForActions);
 			//			dd.setTeacher(new AgentTeacher());
 			discardDeciders.add(dd);
 
@@ -119,7 +118,8 @@ public class DeciderGenerator {
 		unusedPurchaseDeciders = HopshackleUtilities.cloneList(purchaseDeciders);
 	}
 
-	private void loadDecidersFromFile(List<DominionPositionDecider> deciders, File directory, FilenameFilter filter, Decider sampleDecider, int startCounter, String prefix) {
+	private void loadDecidersFromFile(List<LookaheadDecider<Player, PositionSummary>> deciders, File directory, 
+			FilenameFilter filter, LookaheadDecider<Player, PositionSummary> sampleDecider, int startCounter, String prefix) {
 		if (directory == null || !directory.isDirectory()) {
 			logger.severe("Error in loading brains, specified Directory isn't: " + directory);
 		}
@@ -141,13 +141,13 @@ public class DeciderGenerator {
 			logger.info("Loaded " + startCounter + " DominionNeuralDeciders from " + directory.toString());
 	}
 
-	public DominionPositionDecider getPurchaseDecider() {
+	public LookaheadDecider<Player, PositionSummary> getPurchaseDecider() {
 		double randomNumber = Math.random();
 		if (randomNumber < bigMoneyPacesetter) 
 			return bigMoney;
 		if (randomNumber < bigMoneyPacesetter + chrisPethersPacesetter)
 			return chrisPethers;
-		DominionPositionDecider choice = purchaseDeciders.get((int)(Math.random()*purchaseDeciders.size()));
+		LookaheadDecider<Player, PositionSummary> choice = purchaseDeciders.get((int)(Math.random()*purchaseDeciders.size()));
 		if (evenUseOfDeciders) {
 			int index = (int)(Math.random()*unusedPurchaseDeciders.size());
 			choice = unusedPurchaseDeciders.get(index);
@@ -157,10 +157,10 @@ public class DeciderGenerator {
 		}
 		return choice;
 	}
-	public DominionPositionDecider getDiscardDecider() {
-		return (DominionPositionDecider) discardDeciders.get((int)(Math.random()*discardDeciders.size()));
+	public LookaheadDecider<Player, PositionSummary> getDiscardDecider() {
+		return discardDeciders.get((int)(Math.random()*discardDeciders.size()));
 	}
-	public Decider<Player> getActionDecider() {
+	public LookaheadDecider<Player, PositionSummary> getActionDecider() {
 		return actionDeciders.get((int)(Math.random()*actionDeciders.size()));
 	}
 	public NeuralComputer getGameEndComputer() {
@@ -170,17 +170,17 @@ public class DeciderGenerator {
 	public void reportVictory(Player winner) {
 		totalWinners++;
 		if (winner != null) {
-			DominionPositionDecider purchaseWinner = winner.getPurchaseDecider();
+			LookaheadDecider<Player, PositionSummary> purchaseWinner = winner.getPurchaseDecider();
 			for (int loop = 0; loop < purchaseDeciders.size(); loop++) {
 				if (purchaseWinner.equals(purchaseDeciders.get(loop))) 
 					purchaseVictories.set(loop, purchaseVictories.get(loop) + 1);
 			}
-			DominionPositionDecider discardWinner = winner.getDiscardDecider();
+			LookaheadDecider<Player, PositionSummary> discardWinner = winner.getDiscardDecider();
 			for (int loop = 0; loop < discardDeciders.size(); loop++) {
 				if (discardWinner.equals(discardDeciders.get(loop))) 
 					discardVictories.set(loop, discardVictories.get(loop) + 1);
 			}
-			Decider actionWinner = winner.getActionDecider();
+			Decider<Player> actionWinner = winner.getActionDecider();
 			for (int loop = 0; loop < actionDeciders.size(); loop++) {
 				if (actionWinner.equals(actionDeciders.get(loop))) 
 					actionVictories.set(loop, actionVictories.get(loop) + 1);
@@ -191,7 +191,7 @@ public class DeciderGenerator {
 			initiateTurnOver();
 		}
 	}
-	private void removeDeciders(List<? extends Decider> deciders, List<Integer> victories, int numberToRemove) {
+	private void removeDeciders(List<? extends Decider<Player>> deciders, List<Integer> victories, int numberToRemove) {
 		List<Integer> copy = HopshackleUtilities.cloneList(victories);
 		Collections.sort(copy);
 		for (int mainLoop = 0; mainLoop < numberToRemove; mainLoop++) {
@@ -230,8 +230,6 @@ public class DeciderGenerator {
 
 	public void resetVariables() {
 		lastPVictories = purchaseVictories;
-		lastDVictories = discardVictories;
-		lastAVictories = actionVictories;
 		purchaseVictories = new ArrayList<Integer>();
 		discardVictories = new ArrayList<Integer>();
 		actionVictories = new ArrayList<Integer>();
@@ -246,7 +244,7 @@ public class DeciderGenerator {
 		totalWinners = 0;
 	}
 
-	private <T extends Decider> List<T> addNewCrossedDeciders(List<T> deciders, List<Integer> victories, String namePrefix, boolean addTeacher, int number) {
+	private <T extends LookaheadDecider<Player, PositionSummary>> List<T> addNewCrossedDeciders(List<T> deciders, List<Integer> victories, String namePrefix, int number) {
 		int numberAdded = 0;
 		List<Integer> masterCopy = HopshackleUtilities.cloneList(victories);
 		List<Integer> otherCopy = HopshackleUtilities.cloneList(victories);
@@ -259,10 +257,10 @@ public class DeciderGenerator {
 			masterCopy.set(indexToClone, 0);	// so that it is not picked again
 
 			T deciderToCopy = deciders.get(indexToClone);
-			Decider[] crossDecider = getSampleTwoBestDeciders(deciders, otherCopy);
-			Decider otherDecider = crossDecider[0];
+			List<T> crossDecider = getSampleTwoBestDeciders(deciders, otherCopy);
+			Decider<Player> otherDecider = crossDecider.get(0);
 			if (otherDecider == deciderToCopy)
-				otherDecider = crossDecider[1];
+				otherDecider = crossDecider.get(1);
 			@SuppressWarnings("unchecked")
 			T newDecider = (T) deciderToCopy.crossWith(otherDecider);
 			retValue.add(newDecider);
@@ -272,7 +270,6 @@ public class DeciderGenerator {
 			if (newName.length() > 20)
 				newName = newName.substring(0, 20);
 			newDecider.setName(newName);
-			if (addTeacher) newDecider.setTeacher(new AgentTeacher());
 
 			if (addPaceSetters) {
 				boolean createPacesetter = true;
@@ -303,25 +300,24 @@ public class DeciderGenerator {
 		return retValue;
 	}
 
-	private <T extends Decider> List<T> addNewCrossedDecider(List<T> deciders, List<Integer> victories, String namePrefix, boolean addTeacher) {
+	private <T extends LookaheadDecider<Player, PositionSummary>> List<T> addNewCrossedDecider(List<T> deciders, List<Integer> victories, String namePrefix) {
 		List<T> retValue = HopshackleUtilities.cloneList(deciders);
-		Decider[] bestDeciders = getSampleTwoBestDeciders(deciders, victories);
-		if (bestDeciders[1] == null) bestDeciders[1] = bestDeciders[0];
+		List<T> bestDeciders = getSampleTwoBestDeciders(deciders, victories);
+		if (bestDeciders.get(1) == null) bestDeciders.set(1, bestDeciders.get(0));
 		@SuppressWarnings("unchecked")
-		T newDecider = (T) bestDeciders[0].crossWith(bestDeciders[1]);
+		T newDecider = (T) bestDeciders.get(0).crossWith(bestDeciders.get(1));
 		retValue.add(newDecider);
 		victories.add(0);
 		//	String newName = dpDecider1.toString().substring(1, 4) + "-" + dpDecider2.toString().substring(1, 4);
-		String newName = bestDeciders[0].toString().substring(1, 4);
+		String newName = bestDeciders.get(0).toString().substring(1, 4);
 		newName = namePrefix + String.format("%03d", decideNameCount) + " : " + newName;
 		if (newName.length() > 20)
 			newName = newName.substring(0, 20);
 		newDecider.setName(newName);
-		if (addTeacher) newDecider.setTeacher(new AgentTeacher());
 		return retValue;
 	}
 
-	public DominionPositionDecider getSingleBestBrain() {
+	public LookaheadDecider<Player, PositionSummary> getSingleBestBrain() {
 		List<Integer> copy = HopshackleUtilities.cloneList(purchaseVictories);
 		Collections.sort(copy);
 		int bestScore = copy.get(purchaseVictories.size() - 1);
@@ -329,9 +325,9 @@ public class DeciderGenerator {
 		return purchaseDeciders.get(index);
 	}
 	
-	public List<DominionPositionDecider> getTopPercentageOfBrains(double percentile) {
+	public List<LookaheadDecider<Player, PositionSummary>> getTopPercentageOfBrains(double percentile) {
 		int criticalScore = this.getScore(percentile);
-		List<DominionPositionDecider> retValue = new ArrayList<DominionPositionDecider>();
+		List<LookaheadDecider<Player, PositionSummary>> retValue = new ArrayList<LookaheadDecider<Player, PositionSummary>>();
 		for (int n = 0; n < purchaseDeciders.size(); n++) {
 			if (purchaseVictories.get(n) >= criticalScore)
 				retValue.add(purchaseDeciders.get(n));
@@ -344,7 +340,7 @@ public class DeciderGenerator {
 		if (lastPVictories == null)
 			victories = HopshackleUtilities.cloneList(purchaseVictories);
 		for (int n = 0; n < sampleSize; n++) {
-			DominionPositionDecider sample = (DominionPositionDecider) getSampleTwoBestDeciders(purchaseDeciders, victories)[0];
+			LookaheadDecider<Player, PositionSummary> sample = getSampleTwoBestDeciders(purchaseDeciders, victories).get(0);
 			if(sample != null) {
 				if (sample instanceof DominionNeuralDecider) {
 					DominionNeuralDecider dec = (DominionNeuralDecider) sample;
@@ -358,14 +354,14 @@ public class DeciderGenerator {
 		}
 	}
 
-	private Decider[] getSampleTwoBestDeciders(List<? extends Decider> deciders, List<Integer> victories) {
+	private <D extends Decider<Player>> List<D> getSampleTwoBestDeciders(List<D> deciders, List<Integer> victories) {
 		if (deciders.size() != victories.size()) {
 			logger.severe("Victories and Deciders don't match in DeciderGenerator");
-			return new Decider[2];
+			return null;
 		}
-		Decider[] retValue = new Decider[2];
-		Decider dpDecider1 = null, dpDecider2 = null;
-		if (deciders.size() == 0) return retValue;
+		List<D> retValue = new ArrayList<D>();
+		D dpDecider1 = null, dpDecider2 = null;
+		if (deciders.size() == 0) return null;
 		int highestScore = -1, secondHighest = -1;
 		for (int n = 0; n < (int)sampleSize; n++) {
 			int randomChoice = (int)(Math.random() * deciders.size());
@@ -380,8 +376,8 @@ public class DeciderGenerator {
 				secondHighest = victories.get(randomChoice);
 			}
 		}
-		retValue[0] = dpDecider1;
-		retValue[1] = dpDecider2;
+		retValue.add(dpDecider1);
+		retValue.add(dpDecider2);
 		return retValue;
 	}
 
@@ -389,7 +385,7 @@ public class DeciderGenerator {
 		return gamesetup;
 	}
 
-	public List<DominionPositionDecider> getAllPurchaseDeciders() {
+	public List<LookaheadDecider<Player, PositionSummary>> getAllPurchaseDeciders() {
 		return HopshackleUtilities.cloneList(purchaseDeciders);
 	}
 
@@ -423,13 +419,13 @@ public class DeciderGenerator {
 		//			removeDecider(discardDeciders, discardVictories);
 		//			removeDecider(actionDeciders, actionVictories);
 		if (replaceDecidersDeterministically) {
-			purchaseDeciders = addNewCrossedDeciders(purchaseDeciders, purchaseVictories, "P", false, toAdd);
+			purchaseDeciders = addNewCrossedDeciders(purchaseDeciders, purchaseVictories, "P", toAdd);
 			//			discardDeciders = addNewCrossedDeciders(discardDeciders, discardVictories, "D", false, toAdd);
 			//			actionDeciders = addNewCrossedDeciders(actionDeciders, actionVictories, "A", false, toAdd);
 			decideNameCount += toAdd;
 		} else {
 			for (int n = 0; n < toAdd; n++) {
-				purchaseDeciders = addNewCrossedDecider(purchaseDeciders, purchaseVictories, "P", false);
+				purchaseDeciders = addNewCrossedDecider(purchaseDeciders, purchaseVictories, "P");
 				//				discardDeciders = addNewCrossedDecider(discardDeciders, discardVictories, "D", false);
 				//				actionDeciders = addNewCrossedDecider(actionDeciders, actionVictories, "A", false);
 				decideNameCount++;

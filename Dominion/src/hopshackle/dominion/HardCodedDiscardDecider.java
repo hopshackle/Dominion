@@ -4,10 +4,10 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class HardCodedDiscardDecider extends BaseDecider<Player> implements DominionPositionDecider {
+public class HardCodedDiscardDecider extends LookaheadDecider<Player, PositionSummary> {
 	
-	public HardCodedDiscardDecider(List<? extends ActionEnum<Player>> actions, List<GeneticVariable> variables) {
-		super(actions, variables);
+	public HardCodedDiscardDecider(List<CardType> actions, List<CardValuationVariables> variables) {
+		super(null, CardType.toActionEnum(actions), CardValuationVariables.toGenVar(variables));
 	}
 
 	/*
@@ -16,7 +16,8 @@ public class HardCodedDiscardDecider extends BaseDecider<Player> implements Domi
 	 *  Action cards = 1.5 points
 	 *  Hence ensuring that victory cards are discarded first, then copper, then action cards
 	 */
-	public double valuePosition(PositionSummary ps) {
+	@Override
+	public double value(PositionSummary ps) {
 		double retValue = 0.0;
 		for (CardType ct : ps.getHand()) {
 			if (ct.isTreasure()) retValue += ct.getTreasure();
@@ -31,8 +32,5 @@ public class HardCodedDiscardDecider extends BaseDecider<Player> implements Domi
 	}
 
 	@Override
-	public List<CardType> buyingDecision(Player player, int budget, int buys) {
-		// we should never be making a purchase decision (see name)
-		return new ArrayList<CardType>();
-	}
+	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
 }

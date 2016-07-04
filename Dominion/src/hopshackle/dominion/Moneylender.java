@@ -64,7 +64,7 @@ public class Moneylender extends Card {
 		for (CardType cardBought : purchase) {
 			ps.addCard(cardBought);
 		}
-		return player.getPurchaseDecider().valuePosition(ps);
+		return player.getPurchaseDecider().value(ps);
 	}
 	
 }

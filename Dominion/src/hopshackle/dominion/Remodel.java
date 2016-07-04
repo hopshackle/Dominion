@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.simulation.LookaheadDecider;
+
 import java.util.*;
 
 public class Remodel extends Card {
@@ -15,7 +17,7 @@ public class Remodel extends Card {
 		if (cardsInHand[0] == null) return;
 		CardType cardToRemodel = CardType.NONE;
 		CardType cardToPurchase = CardType.NONE;
-		DominionPositionDecider purchaseDecider = player.getPurchaseDecider();
+		LookaheadDecider<Player, PositionSummary> purchaseDecider = player.getPurchaseDecider();
 		int treasureInHand = player.remainingTreasureValueOfHand();		// doesn't take account of unrevealed purchase power...but still better
 		int buys = player.getBuys();
 		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, treasureInHand, buys);
@@ -23,7 +25,7 @@ public class Remodel extends Card {
 		PositionSummary basePS = player.getPositionSummaryCopy();
 		for (CardType ct : purchaseBeforeRemodel)
 			basePS.addCard(ct);
-		double startValue = purchaseDecider.valuePosition(basePS);
+		double startValue = purchaseDecider.value(basePS);
 
 		player.setStateToPurchase();
 		double bestValue = 0.0;
@@ -47,7 +49,7 @@ public class Remodel extends Card {
 			for (CardType ct : purchaseAfterRemodel)
 				withoutCard.addCard(ct);
 
-			double value = purchaseDecider.valuePosition(withoutCard) - startValue;
+			double value = purchaseDecider.value(withoutCard) - startValue;
 			if (value > bestValue) {
 				bestValue = value;
 				cardToRemodel = possibleCardToRemodel;

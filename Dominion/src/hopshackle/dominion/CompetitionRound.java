@@ -10,7 +10,7 @@ public class CompetitionRound {
 	private String descriptor;
 	private int cycleSize, metaCycle;
 	private SequenceOfGames setOfGames;
-	private static AgentWriter<VariableRoundResults> agentWriter = new AgentWriter<VariableRoundResults>(new CompetitionDAO());
+	private static DatabaseWriter<VariableRoundResults> agentWriter = new DatabaseWriter<VariableRoundResults>(new CompetitionDAO());
 	private int noCycles = 1;
 	
 	public CompetitionRound(String competitionName, DeciderGenerator dg, int cycleSize, int metaCycle) {
@@ -69,11 +69,11 @@ public class CompetitionRound {
 	
 
 	private void outputNeuronUsage() {
-		List<DominionPositionDecider> allBrains = dg.getAllPurchaseDeciders();
-		List<DominionPositionDecider> bestBrains = dg.getTopPercentageOfBrains(0.5);
-		Map<GeneticVariable, Integer> gvUsage = new HashMap<GeneticVariable, Integer>();
-		for (DominionPositionDecider brain : allBrains) {
-			for (GeneticVariable gv : brain.getVariables()) {
+		List<LookaheadDecider<Player, PositionSummary>> allBrains = dg.getAllPurchaseDeciders();
+		List<LookaheadDecider<Player, PositionSummary>> bestBrains = dg.getTopPercentageOfBrains(0.5);
+		Map<GeneticVariable<Player>, Integer> gvUsage = new HashMap<GeneticVariable<Player>, Integer>();
+		for (LookaheadDecider<Player, PositionSummary> brain : allBrains) {
+			for (GeneticVariable<Player> gv : brain.getVariables()) {
 				if (gvUsage.containsKey(gv)) {
 					gvUsage.put(gv, gvUsage.get(gv) + 1);
 				} else {
@@ -81,9 +81,9 @@ public class CompetitionRound {
 				}
 			}
 		}
-		Map<GeneticVariable, Integer> bestGvUsage = new HashMap<GeneticVariable, Integer>();
-		for (DominionPositionDecider brain : bestBrains) {
-			for (GeneticVariable gv : brain.getVariables()) {
+		Map<GeneticVariable<Player>, Integer> bestGvUsage = new HashMap<GeneticVariable<Player>, Integer>();
+		for (LookaheadDecider<Player, PositionSummary> brain : bestBrains) {
+			for (GeneticVariable<Player> gv : brain.getVariables()) {
 				if (bestGvUsage.containsKey(gv)) {
 					bestGvUsage.put(gv, bestGvUsage.get(gv) + 1);
 				} else {
@@ -92,7 +92,7 @@ public class CompetitionRound {
 			}
 		}
 		for (int i = allBrains.size(); i >= 1; i--) {
-			for (GeneticVariable gv : gvUsage.keySet()) {
+			for (GeneticVariable<Player> gv : gvUsage.keySet()) {
 				if (gvUsage.get(gv) == i) {
 					double totalPercentage = 100.0 * (double)i/(double)allBrains.size();
 					double bestPercentage = 0.00;

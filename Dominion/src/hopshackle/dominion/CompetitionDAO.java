@@ -1,8 +1,8 @@
 package hopshackle.dominion;
 
-import hopshackle.simulation.AgentDAO;
+import hopshackle.simulation.*;
 
-public class CompetitionDAO implements AgentDAO<VariableRoundResults> {
+public class CompetitionDAO implements DAO<VariableRoundResults> {
 
 	@Override
 	public String getTableCreationSQL(String tableSuffix) {
@@ -27,7 +27,7 @@ public class CompetitionDAO implements AgentDAO<VariableRoundResults> {
 	}
 
 	@Override
-	public String getValuesForAgent(VariableRoundResults competition) {
+	public String getValues(VariableRoundResults competition) {
 
 		return String.format(" (%d, '%s', %.2f, %.2f)", 
 				competition.round,

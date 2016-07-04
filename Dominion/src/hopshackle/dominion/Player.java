@@ -17,7 +17,7 @@ public class Player extends Agent {
 	private int spentSoFar, actionsLeft;
 	private Decider<Player> actionDecider;
 	private NeuralComputer gameEndEstimator;
-	private DominionPositionDecider purchaseDecider;
+	private LookaheadDecider<Player, PositionSummary> purchaseDecider, discardDecider;
 	private boolean makingPurchaseDecision = true;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
 
@@ -234,7 +234,7 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	public DominionPositionDecider getPurchaseDecider() {
+	public LookaheadDecider<Player, PositionSummary> getPurchaseDecider() {
 		return purchaseDecider;
 	}
 	@Override
@@ -244,7 +244,7 @@ public class Player extends Agent {
 	public Decider<Player> getActionDecider() {
 		return actionDecider;
 	}
-	public void setPurchaseDecider(DominionPositionDecider newDecider) {
+	public void setPurchaseDecider(LookaheadDecider<Player, PositionSummary> newDecider) {
 		purchaseDecider = newDecider;
 		log("Using purchase strategy " + purchaseDecider.toString());
 	}
@@ -353,5 +353,12 @@ public class Player extends Agent {
 	
 	public void setGameEndComputer(NeuralComputer brain) {
 		gameEndEstimator = brain;
+	}
+
+	public LookaheadDecider<Player, PositionSummary> getDiscardDecider() {
+		return discardDecider;
+	}
+	public void setDiscardDecider(LookaheadDecider<Player, PositionSummary> dd) {
+		discardDecider = dd;
 	}
 }

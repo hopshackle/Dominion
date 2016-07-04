@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.simulation.LookaheadDecider;
+
 import java.util.*;
 
 public class Militia extends AttackCard {
@@ -20,7 +22,7 @@ public class Militia extends AttackCard {
 		victim.log("Victim of MILITIA:");
 		CardType[] possibleCombination = new CardType[3];
 		CardType[] bestCombination = new CardType[3];
-		DominionPositionDecider discardDecider = victim.getPurchaseDecider();
+		LookaheadDecider<Player, PositionSummary> discardDecider = victim.getPurchaseDecider();
 		double bestValue = -1.0;
 		for (int loop=0; loop<cardsInHand.length; loop++) {
 			possibleCombination[0] = cardsInHand[loop];
@@ -30,7 +32,7 @@ public class Militia extends AttackCard {
 					possibleCombination[2] = cardsInHand[loop3];
 					PositionSummary positionWithReducedHand = victim.getPositionSummaryCopy();
 					positionWithReducedHand.changeHand(possibleCombination);
-					double value = discardDecider.valuePosition(positionWithReducedHand);
+					double value = discardDecider.value(positionWithReducedHand);
 					if (value > bestValue) {
 						bestValue = value;
 						for (int n=0; n<3; n++)

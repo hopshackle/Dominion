@@ -13,7 +13,7 @@ import org.encog.neural.networks.training.propagation.back.Backpropagation;
 import org.encog.neural.networks.training.propagation.quick.QuickPropagation;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
 
-public class DominionNeuralDecider extends QDecider implements DominionPositionDecider {
+public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSummary> {
 
 	protected BasicNetwork stateEvaluationBrain;
 	protected static double momentum = SimProperties.getPropertyAsDouble("DominionLearningMomentum", "0.0");
@@ -26,7 +26,7 @@ public class DominionNeuralDecider extends QDecider implements DominionPositionD
 	private boolean ableToLearn = true;
 	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
 
-	public DominionNeuralDecider(List<? extends ActionEnum> actions, List<GeneticVariable> variables) {
+	public DominionNeuralDecider(List<CardType> actions, List<CardValuationVariables> variables) {
 		super(actions, variables);
 		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
 		localDebug = false;

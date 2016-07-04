@@ -1,5 +1,8 @@
 package hopshackle.dominion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hopshackle.simulation.*;
 
 public enum CardType implements ActionEnum<Player> {
@@ -136,5 +139,13 @@ public enum CardType implements ActionEnum<Player> {
 	@Override
 	public Enum<CardType> getEnum() {
 		return this;
+	}
+
+	public static List<ActionEnum<Player>> toActionEnum(List<CardType> actionsToUse) {
+		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
+		for (CardType ct : actionsToUse) {
+			retValue.add((ActionEnum<Player>) ct);
+		}
+		return retValue;
 	}
 }

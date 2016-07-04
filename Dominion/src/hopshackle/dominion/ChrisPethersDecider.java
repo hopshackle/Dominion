@@ -7,7 +7,7 @@ public class ChrisPethersDecider extends BigMoneyDecider{
 	}
 
 	@Override
-	public double valuePosition(PositionSummary ps) {
+	public double value(PositionSummary ps) {
 		double retValue = 0.0;
 
 		double mines = ps.getNumberOfCardsTotal(CardType.MINE);

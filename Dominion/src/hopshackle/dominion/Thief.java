@@ -15,9 +15,9 @@ public class Thief extends AttackCard {
 			return;
 		target.trashCardFromDiscard(cardToTrash.getType());
 		PositionSummary ps = attacker.getPositionSummaryCopy();
-		double baseValue = attacker.getPurchaseDecider().valuePosition(ps);
+		double baseValue = attacker.getPurchaseDecider().value(ps);
 		ps.addCard(cardToTrash.getType());
-		double newValue = attacker.getPurchaseDecider().valuePosition(ps);
+		double newValue = attacker.getPurchaseDecider().value(ps);
 		if (newValue > baseValue) {
 			attacker.putCardOnDiscard(cardToTrash);
 			attacker.log("Keeps " + cardToTrash);

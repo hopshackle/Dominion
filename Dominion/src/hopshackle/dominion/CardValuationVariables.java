@@ -1,8 +1,11 @@
 package hopshackle.dominion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hopshackle.simulation.*;
 
-public enum CardValuationVariables implements GeneticVariable {
+public enum CardValuationVariables implements GeneticVariable<Player> {
 	DECK_SIZE,
 	PROVINCES_BOUGHT,
 	DUCHIES_BOUGHT,
@@ -97,6 +100,11 @@ public enum CardValuationVariables implements GeneticVariable {
 		} else {
 			return 0.0;
 		}
+	}
+	
+	@Override
+	public double getValue(LookaheadState<Player> ls) {
+		return getValue((PositionSummary) ls);
 	}
 	
 	public double getValue(PositionSummary ps) {
@@ -284,11 +292,11 @@ public enum CardValuationVariables implements GeneticVariable {
 	}
 
 	@Override
-	public double getValue(Agent a1, Agent a2) {return getValue(a1);}
+	public double getValue(Player a1, Agent a2) {return getValue(a1);}
 	@Override
-	public double getValue(Agent a1, Artefact a2) {return getValue(a1);}
+	public double getValue(Player a1, Artefact a2) {return getValue(a1);}
 	@Override
-	public double getValue(Agent a1, Action a2) {return getValue(a1);}
+	public double getValue(Player a1, Action<Player> a2) {return getValue(a1);}
 	@Override
 	public String getDescriptor() { return "DOM1";}
 	
@@ -403,6 +411,8 @@ public enum CardValuationVariables implements GeneticVariable {
 		case WITCHES_BOUGHT:
 		case WITCHES_IN_HAND:
 			return CardType.WITCH;
+		default:
+			break;
 		}
 		return null;
 	}
@@ -445,5 +455,13 @@ public enum CardValuationVariables implements GeneticVariable {
 			return false;
 		
 		}
+	}
+
+	public static List<GeneticVariable<Player>> toGenVar(List<CardValuationVariables> variablesToUseForActions) {
+		List<GeneticVariable<Player>> retValue = new ArrayList<GeneticVariable<Player>>();
+		for (CardValuationVariables cvv : variablesToUseForActions) {
+			retValue.add((GeneticVariable<Player>) cvv);
+		}
+		return retValue;
 	}
 }

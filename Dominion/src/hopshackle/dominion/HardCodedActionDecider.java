@@ -4,14 +4,14 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class HardCodedActionDecider extends BaseDecider {
+public class HardCodedActionDecider extends LookaheadDecider<Player, PositionSummary> {
 
-	public HardCodedActionDecider(List<? extends ActionEnum> actions, List<GeneticVariable> variables) {
-		super(actions, variables);
+	public HardCodedActionDecider(List<CardType> actions, List<CardValuationVariables> variables) {
+		super(null, CardType.toActionEnum(actions), CardValuationVariables.toGenVar(variables));
 	}
 
 	@Override
-	public double valueOption(ActionEnum option, Agent decidingAgent, Agent contextAgent) {
+	public double valueOption(ActionEnum<Player> option, Player decidingAgent, Agent contextAgent) {
 		CardType cardType = (CardType) option;
 		Player p = (Player) decidingAgent;
 		List<CardType> hand = null;
@@ -85,8 +85,16 @@ public class HardCodedActionDecider extends BaseDecider {
 		return 0.0;
 	}
 
-	protected ActionEnum makeDecision(Agent decidingAgent, Agent contextAgent, double explorationChance) {
+	protected ActionEnum<Player> makeDecision(Player decidingAgent, Agent contextAgent, double explorationChance) {
 		return super.makeDecision(decidingAgent, contextAgent, 0.0);
 		// i.e. never explore with a Hardcoded Decider
 	}
+
+	@Override
+	public double value(PositionSummary state) {
+		return 0;
+	}
+
+	@Override
+	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
 }

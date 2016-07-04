@@ -4,22 +4,22 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class BigMoneyDecider extends BaseDecider<Player> implements DominionPositionDecider {
+public class BigMoneyDecider extends LookaheadDecider<Player, PositionSummary> {
 
-	private static ArrayList<GeneticVariable>variablesToUse = new ArrayList<GeneticVariable>(EnumSet.allOf(CardValuationVariables.class));
+	private static ArrayList<GeneticVariable<Player>>variablesToUse = new ArrayList<GeneticVariable<Player>>(EnumSet.allOf(CardValuationVariables.class));
 	private static ArrayList<ActionEnum<Player>> actionsToUse= new ArrayList<ActionEnum<Player>>(EnumSet.allOf(CardType.class));
 	
 	public BigMoneyDecider() {
-		super(actionsToUse, variablesToUse);
+		super(null, actionsToUse, variablesToUse);
 	}
 	
 	@Override
 	public double valueOption(ActionEnum<Player> option, Player decidingAgent, Agent contextAgent) {
 		Player p = (Player) decidingAgent;
 		PositionSummary ps = p.getPositionSummaryCopy();
-		ps.drawCard(option); 
+		ps.apply(option); 
 		
-		double retValue = valuePosition(ps);
+		double retValue = value(ps);
 
 		if (localDebug)
 			decidingAgent.log("Option " + option.toString() + " has base Value of " + retValue);
@@ -28,7 +28,7 @@ public class BigMoneyDecider extends BaseDecider<Player> implements DominionPosi
 	}
 	
 	@Override
-	public double valuePosition(PositionSummary ps) {
+	public double value(PositionSummary ps) {
 		double retValue = 0.0;
 		
 		double provincesLeft = ps.getNumberOfCardsRemaining(CardType.PROVINCE);
@@ -57,22 +57,11 @@ public class BigMoneyDecider extends BaseDecider<Player> implements DominionPosi
 	}
 	
 	@Override
-	protected ExperienceRecord<Player> getExperienceRecord(Player decidingAgent, Agent contextAgent, ActionEnum<Player> option) {
-		Player player = (Player) decidingAgent;
-		DominionExperienceRecord output = new DominionExperienceRecord(player.getPositionSummaryCopy(), option, getChooseableOptions(decidingAgent, contextAgent));
-		return output;
-	}
-	
-	@Override
 	public String toString() {
 		return "BigMoney";
 	}
 
 	@Override
-	public List<CardType> buyingDecision(Player player, int budget, int buys) {
-		List<CardType> retValue = (new DominionBuyingDecision(player, budget, buys)).getBestPurchase();
-		for (CardType purchase : retValue)
-			learnFromDecision(player, player, purchase);	
-		return retValue;
-	}
+	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
+
 }

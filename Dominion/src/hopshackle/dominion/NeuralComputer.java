@@ -9,14 +9,14 @@ import org.encog.neural.networks.training.propagation.back.Backpropagation;
 
 public class NeuralComputer {
 
-	protected List<GeneticVariable> variableSet;
+	protected List<GeneticVariable<Player>> variableSet;
 	protected BasicNetwork gameEndBrain;
 	protected static double momentum = SimProperties.getPropertyAsDouble("DominionLearningMomentum", "0.0");
 	protected static double alpha = SimProperties.getPropertyAsDouble("Alpha", "0.10");
 	private static boolean applyTemperatureToLearning = SimProperties.getProperty("DominionAnnealLearning", "false").equals("true");
 
 	public NeuralComputer() {
-		variableSet = new ArrayList<GeneticVariable>();
+		variableSet = new ArrayList<GeneticVariable<Player>>();
 		variableSet.add(CardValuationVariables.PROVINCES_BOUGHT);
 		variableSet.add(CardValuationVariables.MOST_DEPLETED_PILE);
 		variableSet.add(CardValuationVariables.SECOND_DEPLETED_PILE);
@@ -28,8 +28,8 @@ public class NeuralComputer {
 	public double[] getInputs(PositionSummary positionSummary) {
 		double[] inputs = new double[variableSet.size()];
 		int count = 0;
-		for (GeneticVariable gv : variableSet) {
-			inputs[count] = gv.getValue(positionSummary, null);
+		for (GeneticVariable<Player> gv : variableSet) {
+			inputs[count] = gv.getValue(positionSummary);
 			count++;
 		}
 		return inputs;

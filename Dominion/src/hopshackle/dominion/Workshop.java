@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.simulation.LookaheadDecider;
+
 public class Workshop extends Card {
 
 	public Workshop() {
@@ -8,7 +10,7 @@ public class Workshop extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
-		DominionPositionDecider purchaseDecider = player.getPurchaseDecider();
+		LookaheadDecider<Player, PositionSummary> purchaseDecider = player.getPurchaseDecider();
 		player.setStateToPurchase();
 		CardType cardPurchased = purchaseDecider.buyingDecision(player, 4, 1).get(0);
 		player.setStateToAction();

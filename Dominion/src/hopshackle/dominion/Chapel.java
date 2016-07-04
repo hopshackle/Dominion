@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.simulation.LookaheadDecider;
+
 import java.util.List;
 
 public class Chapel extends Card {
@@ -17,13 +19,13 @@ public class Chapel extends Card {
 	private void trashCard(Player player) {
 		PositionSummary ps = player.getPositionSummaryCopy();
 		List<CardType> hand = player.getCopyOfHand();
-		DominionPositionDecider dpd = player.getPurchaseDecider();
-		double startingValue = dpd.valuePosition(ps);
+		LookaheadDecider<Player, PositionSummary> dpd = player.getPurchaseDecider();
+		double startingValue = dpd.value(ps);
 		double bestGain = 0.0;
 		CardType cardToTrash = CardType.NONE;
 		for (CardType ct : hand) {
 			ps.removeCard(ct);
-			double newValue = dpd.valuePosition(ps);
+			double newValue = dpd.value(ps);
 			ps.addCard(ct);
 
 			if (newValue - startingValue > bestGain) {
