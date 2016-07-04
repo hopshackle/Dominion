@@ -1,10 +1,10 @@
 package hopshackle.dominion;
 
-import hopshackle.simulation.ActionEnum;
+import hopshackle.simulation.*;
 
 import java.util.HashMap;
 
-public class PositionSummary {
+public class PositionSummary implements LookaheadState<Player> {
 
 	private double victoryPoints, treasureValue;
 	private double victoryMargin, wealthDensity, victoryDensity, percentVictory, percentAction;
@@ -51,7 +51,8 @@ public class PositionSummary {
 		}
 	}
 
-	public void drawCard(ActionEnum ae) {
+	@Override
+	public void apply(ActionEnum<Player> ae) {
 		if (ae == null) return;
 		if (ae instanceof CardType){
 			drawCard((CardType) ae);
@@ -73,7 +74,7 @@ public class PositionSummary {
 		}
 	}
 
-	public void undrawCard(ActionEnum ae) {
+	public void undrawCard(ActionEnum<Player> ae) {
 		if (ae == null) return;
 		if (ae instanceof CardType){
 			undrawCard((CardType) ae);

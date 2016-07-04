@@ -5,14 +5,14 @@ import hopshackle.simulation.*;
 import java.io.*;
 import java.util.*;
 
-public class DominionGeneralQDecider extends QDecider implements DominionPositionDecider {
+public class DominionGeneralQDecider extends LookaheadDecider<Player, PositionSummary> {
 
 	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
 	private double[] weights;
 	public static String newline = System.getProperty("line.separator");
 
-	public DominionGeneralQDecider(List<? extends ActionEnum> actions, List<GeneticVariable> variables) {
-		super(actions, variables);
+	public DominionGeneralQDecider(LookaheadFunction<Player, PositionSummary> lookahead, List<ActionEnum<Player>> actions, List<GeneticVariable<Player>> variables) {
+		super(lookahead, actions, variables);
 		weights = new double[variables.size()];
 		for (int i = 0; i < weights.length; i++)
 			weights[i] = 1.0;
@@ -20,19 +20,12 @@ public class DominionGeneralQDecider extends QDecider implements DominionPositio
 	}
 
 	@Override
-	public double valuePosition(PositionSummary ps) {
-		double[] rawData = lookahead.convertPositionSummaryToAttributes(ps, variableSet);
-		return valueOption(null, rawData);
+	public double value(PositionSummary ps) {
+		double[] rawData = getState(ps, variableSet);
+		return value(rawData);
 	}
 
-	@Override
-	public double valueOption(ActionEnum option, Agent decidingAgent, Agent contextAgent) {
-		double[] nextInputs = lookahead.oneStepLookahead(decidingAgent, option, variableSet);		
-		return valueOption(null, nextInputs);
-	}
-
-	@Override
-	public double valueOption(ActionEnum option, double[] inputs) {
+	private double value(double[] inputs) {
 		if (inputs.length != variableSet.size())
 			throw new AssertionError("Inputs in valueState not the correct length: " + inputs.length + " instead of " + variableSet.size());
 
@@ -42,19 +35,19 @@ public class DominionGeneralQDecider extends QDecider implements DominionPositio
 		return retValue;
 	}
 
-	public void updateWeight(GeneticVariable input, ActionEnum option, double delta) {
+	public void updateWeight(GeneticVariable<Player> input, ActionEnum<Player> option, double delta) {
 		int index = variableSet.indexOf(input);
 		weights[index] += delta;
 	}
 
-	public double getWeightOf(GeneticVariable input) {
+	public double getWeightOf(GeneticVariable<Player> input) {
 		return weights[variableSet.indexOf(input)];
 	}
 
 	@Override
-	protected ExperienceRecord getExperienceRecord(Agent decidingAgent, Agent contextAgent, ActionEnum option) {
+	protected ExperienceRecord<Player> getExperienceRecord(Player decidingAgent, Agent contextAgent, ActionEnum<Player> option) {
 		Player player = (Player) decidingAgent;
-		DominionExperienceRecord output = new DominionExperienceRecord(player.getPositionSummaryCopy(), option, getChooseableOptions(decidingAgent, contextAgent));
+		ExperienceRecord<Player> output = new ExperienceRecord<Player>(player.getPositionSummaryCopy(), option, getChooseableOptions(decidingAgent, contextAgent));
 		return output;
 	}
 
@@ -159,5 +152,11 @@ public class DominionGeneralQDecider extends QDecider implements DominionPositio
 		for (CardType purchase : retValue)
 			learnFromDecision(player, player, purchase);	// not ideal, but much simpler. Just record each decision as if it was distinct (in increasing order of cost)
 		return retValue;
+	}
+
+	@Override
+	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {
+		// TODO Auto-generated method stub
+		
 	}
 }
