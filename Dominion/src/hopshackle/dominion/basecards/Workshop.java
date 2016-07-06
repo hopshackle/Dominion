@@ -1,5 +1,9 @@
-package hopshackle.dominion;
+package hopshackle.dominion.basecards;
 
+import hopshackle.dominion.Card;
+import hopshackle.dominion.CardType;
+import hopshackle.dominion.Player;
+import hopshackle.dominion.PositionSummary;
 import hopshackle.simulation.LookaheadDecider;
 
 public class Workshop extends Card {

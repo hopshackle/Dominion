@@ -63,8 +63,9 @@ public class DeciderGenerator {
 		chrisPethers.setActions(actionsToUse);
 
 		FilenameFilter nameFilter = new HopshackleFilter("", "brain");
+		DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
 		loadDecidersFromFile(purchaseDeciders, new File(baseDir + "\\DecidersAtStart"), nameFilter, 
-				new DominionNeuralDecider(actionsToUse, variablesToUseForPurchase), 0, "P");
+				new DominionNeuralDecider(lookahead, actionsToUse, variablesToUseForPurchase), 0, "P");
 
 		for (int n = 0; n<numberToMaintain; n++) {
 			LookaheadDecider<Player, PositionSummary> pd = null;
@@ -86,9 +87,9 @@ public class DeciderGenerator {
 						varsToUse.add(CardValuationVariables.VICTORY_MARGIN);
 						varsToUse.remove(0);
 					}
-					pd = new DominionNeuralDecider(actionsToUse, varsToUse);
+					pd = new DominionNeuralDecider(lookahead, actionsToUse, varsToUse);
 				} else {
-					pd = new DominionNeuralDecider(actionsToUse, variablesToUseForPurchase);
+					pd = new DominionNeuralDecider(lookahead, actionsToUse, variablesToUseForPurchase);
 				}
 				pd.setName("P"+String.format("%03d", decideNameCount));
 				//				pd.setTeacher(new AgentTeacher());

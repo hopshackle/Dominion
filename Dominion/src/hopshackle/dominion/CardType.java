@@ -122,17 +122,18 @@ public enum CardType implements ActionEnum<Player> {
 	}
 
 	@Override
-	public DominionPlayAction getAction(Player a) {
-		return new DominionPlayAction(a, this);
+	public Action<Player> getAction(Player p) {
+		switch (p.getPlayerState()) {
+		case PLAYING:
+			return new DominionPlayAction(p, this);
+		case PURCHASING:
+		case WAITING:
+		}
+		return new DominionBuyAction(p, this);
 	}
-	
-	public DominionBuyAction getBuyAction(Player a) {
-		return new DominionBuyAction(a, this);
-	}
-	
 	
 	@Override
-	public Action<Player> getAction(Player a1, Agent a2) {return null;}
+	public Action<Player> getAction(Player a1, Agent a2) {return getAction(a1);}
 	@Override
 	public String getChromosomeDesc() {return "DOM1";}
 

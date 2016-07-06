@@ -33,7 +33,7 @@ public class RunBrainCompetition {
 			SimProperties.setProperty("StartTemperature", String.valueOf(1.0 * (totalCycles - metaCycles) / totalCycles));
 
 			// record best brain
-			DominionPositionDecider bestBrain = dg.getSingleBestBrain();
+			LookaheadDecider<Player, PositionSummary> bestBrain = dg.getSingleBestBrain();
 			if (bestBrain instanceof DominionNeuralDecider) {
 				DominionNeuralDecider bb = (DominionNeuralDecider) bestBrain;
 				bb.saveToFile(descriptor + "_" + String.valueOf(metaCycles));

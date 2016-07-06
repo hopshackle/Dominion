@@ -12,7 +12,7 @@ public class Game implements Persistent {
 	private static AtomicInteger idFountain = new AtomicInteger(1);
 	private int id = idFountain.getAndIncrement();
 	private int turn;
-	private SequenceOfGames	seqOfGames;
+	private RunGame	seqOfGames;
 	private int losingPlayerNumber;
 	private int[] winningPlayerNumbers = new int[0];
 	private double highestScore, lowestScore;
@@ -21,7 +21,7 @@ public class Game implements Persistent {
 	private DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
 
-	public Game(SequenceOfGames gameHolder) {
+	public Game(RunGame gameHolder) {
 		seqOfGames = gameHolder;
 		deciderGenerator = gameHolder.getDeciderDenerator();
 		players = new Player[4];
@@ -74,9 +74,7 @@ public class Game implements Persistent {
 			currentPlayer = 0;
 
 		if (currentPlayer == 0) turn++;
-		players[currentPlayer].takeActions();
-		players[currentPlayer].buyCards();
-		players[currentPlayer].tidyUp();
+		players[currentPlayer].takeTurn();
 	}
 
 	public boolean gameOver() {

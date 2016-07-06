@@ -1,4 +1,9 @@
-package hopshackle.dominion;
+package hopshackle.dominion.basecards;
+
+import hopshackle.dominion.Card;
+import hopshackle.dominion.CardType;
+import hopshackle.dominion.DominionBuyingDecision;
+import hopshackle.dominion.Player;
 
 import java.util.List;
 

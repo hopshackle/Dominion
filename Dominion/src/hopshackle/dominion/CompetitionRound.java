@@ -9,7 +9,7 @@ public class CompetitionRound {
 	private DeciderGenerator dg;
 	private String descriptor;
 	private int cycleSize, metaCycle;
-	private SequenceOfGames setOfGames;
+	private RunGame setOfGames;
 	private static DatabaseWriter<VariableRoundResults> agentWriter = new DatabaseWriter<VariableRoundResults>(new CompetitionDAO());
 	private int noCycles = 1;
 	
@@ -21,7 +21,7 @@ public class CompetitionRound {
 	}
 
 	public void run(int trainingGames) {
-		setOfGames = new SequenceOfGames(descriptor, trainingGames, dg);
+		setOfGames = new RunGame(descriptor, trainingGames, dg);
 		for (int i = 0; i < trainingGames; i++)
 			setOfGames.runNextGameWithLearning();
 
@@ -35,7 +35,7 @@ public class CompetitionRound {
 			setOfGames.worldDeath();
 			// Now we work out the best brains
 			int deciders = dg.getAllPurchaseDeciders().size();
-			setOfGames = new SequenceOfGames(descriptor, (cycleSize * deciders / 4) + cycleSize, dg);
+			setOfGames = new RunGame(descriptor, (cycleSize * deciders / 4) + cycleSize, dg);
 
 			for (int i = 0; i < cycleSize * deciders / 4; i++)
 				setOfGames.runNextGameWithoutLearning();

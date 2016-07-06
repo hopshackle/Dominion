@@ -26,24 +26,24 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	private boolean ableToLearn = true;
 	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
 
-	public DominionNeuralDecider(List<CardType> actions, List<CardValuationVariables> variables) {
-		super(actions, variables);
+	public DominionNeuralDecider(LookaheadFunction<Player, PositionSummary> lookahead, List<CardType> actions, List<CardValuationVariables> variables) {
+		super(lookahead, HopshackleUtilities.convertList(actions), HopshackleUtilities.convertList(variables));
 		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
 		localDebug = false;
 	}
 
 	public DominionNeuralDecider(DominionNeuralDecider parent, int mutations) {
-		super(parent.actionSet, HopshackleUtilities.cloneList(parent.variableSet));
+		super(parent.lookahead, HopshackleUtilities.convertList(parent.actionSet), HopshackleUtilities.convertList(HopshackleUtilities.cloneList(parent.variableSet)));
 		GameSetup gs = new GameSetup();
 		for (int i = 0; i < mutations; i++) {
 			int numberOfInputs = variableSet.size();
 			if (Math.random() > (numberOfInputs - 5) * 0.1) {
 				// then add a new one
-				List<GeneticVariable> allVar = gs.getDeckVariables();
+				List<CardValuationVariables> allVar = gs.getDeckVariables();
 				boolean variableFound = false;
 				do {
 					int roll = Dice.roll(1, allVar.size()) -1;
-					GeneticVariable choice = allVar.get(roll);
+					GeneticVariable<Player> choice = allVar.get(roll);
 					if (!variableSet.contains(choice)) {
 						variableFound = true;
 						variableSet.add(choice);
@@ -57,29 +57,30 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
 	}
 
-	public List<GeneticVariable> combineAndMutateInputs(List<? extends GeneticVariable> list, int mutations) {
-		Set<GeneticVariable> retValue1 = new HashSet<GeneticVariable>();
-		for (GeneticVariable gv : variableSet) {
+	@SuppressWarnings("unchecked")
+	public <V extends GeneticVariable<Player>> List<V> combineAndMutateInputs(List<V> list, int mutations) {
+		Set<V> retValue1 = new HashSet<V>();
+		for (GeneticVariable<Player> gv : variableSet) {
 			if (Math.random() > 0.50)
-				retValue1.add(gv);
+				retValue1.add((V) gv);
 		}
-		for (GeneticVariable gv : list) {
+		for (GeneticVariable<Player> gv : list) {
 			if (Math.random() > 0.50)
-				retValue1.add(gv);
+				retValue1.add((V) gv);
 		}
-		List<GeneticVariable> retValue = new ArrayList<GeneticVariable>();
-		for (GeneticVariable gv : retValue1) 
-			retValue.add(gv);
+		List<V> retValue = new ArrayList<V>();
+		for (GeneticVariable<Player> gv : retValue1) 
+			retValue.add((V) gv);
 		GameSetup gs = new GameSetup();
 		for (int i = 0; i < mutations; i++) {
 			int numberOfInputs = retValue.size();
 			if (Math.random() > (numberOfInputs - 5) * 0.1) {
 				// then add a new one
-				List<GeneticVariable> allVar = gs.getDeckVariables();
+				List<CardValuationVariables> allVar = gs.getDeckVariables();
 				boolean variableFound = false;
 				do {
 					int roll = Dice.roll(1, allVar.size()) -1;
-					GeneticVariable choice = allVar.get(roll);
+					V choice = (V) allVar.get(roll);
 					if (!retValue.contains(choice)) {
 						variableFound = true;
 						retValue.add(choice);
@@ -121,48 +122,27 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	}
 
 	@Override
-	public void setVariables(List<GeneticVariable> variables) {
+	public <V extends GeneticVariable<Player>> void setVariables(List<V> variables) {
 		super.setVariables(variables);
 		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
 	}
 
-	@Override
-	public double valueOption(ActionEnum option, Agent decidingAgent, Agent contextAgent) {
-		if (!(option instanceof CardTypeList)) {
-			logger.info("Not a CardTypeList in valueOption");
-			return 0.0;
-		}
-
-		Player p = (Player) decidingAgent;
-		PositionSummary ps = p.getPositionSummaryCopy();
-		ps.drawCard(option);
-
-		double retValue = valuePosition(ps);
-
-		if (localDebug)
-			decidingAgent.log("Option " + option.toString() + " has base Value of " + retValue);
-
-		return retValue;
-	}
-
-	@Override
-	public double valueOption(ActionEnum option, double[] state) {
+	private double value(double[] state) {
 		BasicNeuralData inputData = new BasicNeuralData(state);
 		double value = stateEvaluationBrain.compute(inputData).getData()[0];
 		return value;
 	}
 
 	@Override
-	public double valuePosition(PositionSummary ps) {
-		double[] rawData = lookahead.convertPositionSummaryToAttributes(ps, variableSet);
-		double value = valueOption(null, rawData);
-		return value;
+	public double value(PositionSummary ps) {
+		double[] rawData = getState(ps, variableSet);
+		return value(rawData);
 	}
 
-	public List<ActionEnum> getChooseableOptions(Agent decidingAgent, Agent contextAgent) {
-		Player player = (Player) decidingAgent;
+	@Override
+	public List<ActionEnum<Player>> getChooseableOptions(Player player, Agent contextAgent) {
 		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
-		List<ActionEnum> retValue = dpd.getPossiblePurchasesAsActionEnum();
+		List<ActionEnum<Player>> retValue = dpd.getPossiblePurchasesAsActionEnum();
 		return retValue;
 	}
 
@@ -210,7 +190,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	}
 
 	@Override
-	public Decider crossWith(Decider otherDecider) {
+	public Decider<Player> crossWith(Decider<Player> otherDecider) {
 		if (otherDecider == null) {
 			DominionNeuralDecider retValue = new DominionNeuralDecider(this, 0);
 			retValue.stateEvaluationBrain = (BasicNetwork) stateEvaluationBrain.clone();
@@ -221,17 +201,10 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		if (this.actionSet.size() != otherDecider.getActions().size())
 			return super.crossWith(otherDecider);
 
-		List<GeneticVariable> newInputs = combineAndMutateInputs(otherDecider.getVariables(), 4);
-		DominionNeuralDecider retValue = new DominionNeuralDecider(actionSet, newInputs);
+		List<GeneticVariable<Player>> newInputs = combineAndMutateInputs(otherDecider.getVariables(), 4);
+		DominionNeuralDecider retValue = new DominionNeuralDecider(lookahead, HopshackleUtilities.convertList(actionSet), HopshackleUtilities.convertList(newInputs));
 		retValue.setName(this.toString());
 		return retValue;
-	}
-
-	@Override
-	protected ExperienceRecord getExperienceRecord(Agent decidingAgent, Agent contextAgent, ActionEnum option) {
-		Player player = (Player) decidingAgent;
-		DominionExperienceRecord output = new DominionExperienceRecord(player.getPositionSummaryCopy(), option, getChooseableOptions(decidingAgent, contextAgent));
-		return output;
 	}
 
 	public void saveToFile(String descriptor) {
@@ -259,12 +232,13 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	@SuppressWarnings("unchecked")
 	public static DominionNeuralDecider createDPSDecider(File saveFile) {
 		DominionNeuralDecider retValue = null;
+		LookaheadFunction<Player, PositionSummary> lookahead = new DominionLookaheadFunction();
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile));
 
-			ArrayList<ActionEnum> actionSet = (ArrayList<ActionEnum>) ois.readObject();
-			ArrayList<GeneticVariable> variableSet = (ArrayList<GeneticVariable>) ois.readObject();
-			retValue = new DominionNeuralDecider(actionSet, variableSet);
+			ArrayList<CardType> actionSet = (ArrayList<CardType>) ois.readObject();
+			ArrayList<CardValuationVariables> variableSet = (ArrayList<CardValuationVariables>) ois.readObject();
+			retValue = new DominionNeuralDecider(lookahead, actionSet, variableSet);
 
 			BasicNetwork stateBrain = (BasicNetwork) ois.readObject();
 
@@ -286,7 +260,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	}
 
 	@Override
-	public void learnFromBatch(ExperienceRecord[] expArray, double maxResult) {
+	public void learnFromBatch(ExperienceRecord<Player>[] expArray, double maxResult) {
 		if (alpha < 0.000001 || !ableToLearn)
 			return;	// no learning to take place
 		int inputLength = stateEvaluationBrain.getInputCount();
@@ -294,7 +268,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		double[][] batchInputData = new double[expArray.length][inputLength];
 
 		int count = 0;
-		for (ExperienceRecord exp : expArray) {
+		for (ExperienceRecord<Player> exp : expArray) {
 			double[] expData = preprocessExperienceRecord(exp, maxResult);
 			batchOutputData[count][0] = expData[0];
 			for (int n = 0; n < inputLength; n++)
@@ -356,7 +330,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		}
 	}
 
-	private double[] preprocessExperienceRecord(ExperienceRecord exp, double maxResult) {
+	private double[] preprocessExperienceRecord(ExperienceRecord<Player> exp, double maxResult) {
 		// returns an array, with first element being the output value (result), and then all subsequent elements being the input values
 		double result = exp.getReward();
 		if (result > maxResult) {
@@ -364,33 +338,20 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		}
 		if (result < 0.0) result = 0.0;
 
-		DominionExperienceRecord domExp = (DominionExperienceRecord) exp;
-		double endValue = Double.NEGATIVE_INFINITY;
-		if (exp.isInFinalState()) 
-			endValue = 0.0;
-		else {
-			PositionSummary ps = domExp.getEndPS();
-			for (ActionEnum ae : exp.getPossibleActionsFromEndState()) {
-				ps.drawCard(ae);
-				double value = valuePosition(ps);
-				if (value > endValue) 
-					endValue = value;
-				ps.undrawCard(ae);
-			}
-		}
+		double endValue = exp.getEndScore();
 
-		double updatedStartValue = result/maxResult + gamma * endValue;
+		double finalValue = result/maxResult + gamma * endValue;
 		double[] retValue = new double[stateEvaluationBrain.getInputCount() + 1];
 
-		retValue[0] = updatedStartValue;	
-		double[] subLoop = exp.getValues(variableSet)[0];	// startState values
+		retValue[0] = finalValue;	
+		double[] subLoop = exp.getStartState();	
 		for (int n=0; n<subLoop.length; n++) {
 			retValue[n+1] = subLoop[n];
 		}
 
 		if (localDebug) {
 			log(String.format("Learning:\t%-20sReward: %.2f, End State Value: %.2f, Inferred Start Value: %.2f", 
-					exp.getActionTaken(), exp.getReward(), endValue, updatedStartValue));
+					exp.getActionTaken(), exp.getReward(), endValue, finalValue));
 			StringBuffer logMessage = new StringBuffer("Start state: ");
 			double[] state = exp.getStartState();
 			for (int i = 0; i < state.length; i++) 
@@ -407,7 +368,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	}
 
 	@Override
-	public void learnFrom(ExperienceRecord exp, double maxResult) {
+	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {
 		if (alpha < 0.000001 || !ableToLearn)
 			return;	// no learning to take place
 
@@ -421,14 +382,6 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 
 		BasicNeuralDataSet trainingData = new BasicNeuralDataSet(inputValues, outputValues);
 		teach(trainingData);
-	}
-
-	@Override
-	public List<CardType> buyingDecision(Player player, int budget, int buys) {
-		List<CardType> retValue = (new DominionBuyingDecision(player, budget, buys)).getBestPurchase();
-		for (CardType purchase : retValue)
-			learnFromDecision(player, player, purchase);	// not ideal, but much simpler. Just record each decision as if it was distinct (in increasing order of cost)
-		return retValue;
 	}
 
 	public void setLearning(boolean b) {

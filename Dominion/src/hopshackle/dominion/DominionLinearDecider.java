@@ -19,6 +19,13 @@ public class DominionLinearDecider extends LookaheadDecider<Player, PositionSumm
 	}
 
 	@Override
+	public List<ActionEnum<Player>> getChooseableOptions(Player player, Agent contextAgent) {
+		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
+		List<ActionEnum<Player>> retValue = dpd.getPossiblePurchasesAsActionEnum();
+		return retValue;
+	}
+	
+	@Override
 	public double value(PositionSummary ps) {
 		double[] rawData = getState(ps, variableSet);
 		return value(rawData);

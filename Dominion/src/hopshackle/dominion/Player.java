@@ -6,6 +6,11 @@ import java.util.*;
 
 public class Player extends Agent {
 
+	public enum State {
+		PLAYING, PURCHASING, WAITING;
+	}
+	
+	private State playerState;
 	private Deck hand;
 	private Deck deck;
 	private Deck discard;
@@ -14,15 +19,15 @@ public class Player extends Agent {
 	private String name;
 	private PositionSummary summary;
 	private int playerNumber;
-	private int spentSoFar, actionsLeft;
+	private int actionsLeft;
 	private Decider<Player> actionDecider;
 	private NeuralComputer gameEndEstimator;
 	private LookaheadDecider<Player, PositionSummary> purchaseDecider, discardDecider;
-	private boolean makingPurchaseDecision = true;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
-
+	
 	public Player(Game game, int number) {
 		super(game.getWorld());
+		playerState = State.WAITING;
 		playerNumber = number;
 		this.game = game;
 		deck = new Deck();
@@ -92,47 +97,32 @@ public class Player extends Agent {
 	public void takeActions() {
 		if (actionDecider == null) return;
 		actionsLeft = 1;
-		setStateToAction();
 		do {
 			Action<Player> action = actionDecider.decide(this);
 			if (action.getType() == CardType.NONE) {
 				log("Chooses not to play an Action card.");
 				break;
 			}
+			if (!(action instanceof DominionPlayAction)) {
+				throw new AssertionError("Incorrect Action type in Player.takeActions()");
+			}
 			action.start();
 			action.run();
-			// This following code then goes into DominionPlayAction
-			Card cardToPlay = playFromHandToRevealedCards((CardType) action.getType());
-			if (cardToPlay != null && cardToPlay.getType() != CardType.NONE) {
-				log("Plays " + cardToPlay.toString());
-				cardToPlay.takeAction(this);
-				actionsLeft = actionsLeft + cardToPlay.getAdditionalActions();
-			}
 			actionsLeft--;
 		} while (actionsLeft > 0);
 		actionsLeft = 0;
 	}
+	public void incrementActionsLeft() {
+		actionsLeft++;
+	}
 
 	public void buyCards() {
-		setStateToPurchase();
 		DominionBuyAction decision = (DominionBuyAction) getPurchaseDecider().decide(this);
 		decision.start();
 		decision.run();
-		// code below then goes into DominionBuyAction
-		List<CardType> cardsBought = new ArrayList<CardType>();
-		if (decision.getType() instanceof CardType)
-			cardsBought.add((CardType)decision.getType());
-		else
-			cardsBought = ((CardTypeList)decision.getType()).cards;
-		for (CardType cardBought : cardsBought) {
-			takeCardFromSupplyIntoDiscard(cardBought);
-			log("Has " + getBudget() + " money and buys " + cardBought); 
-			spentSoFar += cardBought.getCost();
-		}
 	}
 
 	public void tidyUp() {
-		spentSoFar = 0;
 		revealedCards.reset();
 		discard.addDeck(revealedCards);
 		discard.addDeck(hand);
@@ -203,7 +193,7 @@ public class Player extends Agent {
 	}
 
 	public int remainingTreasureValueOfHand() {
-		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower() - spentSoFar;
+		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower();
 	}
 
 	public int totalTreasureValue() {
@@ -292,14 +282,14 @@ public class Player extends Agent {
 	 * NOT to be confused with isInActionPhase(), which indicates which Phase we are in.
 	 */
 	public boolean isTakingActions() {
-		return !makingPurchaseDecision;
+		return playerState == State.PLAYING;
 	}
 
-	public void setStateToPurchase() {
-		makingPurchaseDecision = true;
+	public void setState(Player.State newState) {
+		playerState = newState;
 	}
-	public void setStateToAction() {
-		makingPurchaseDecision = false;
+	public Player.State getPlayerState() {
+		return playerState;
 	}
 
 	public void putCardFromHandOnTopOfDeck(CardType cardType) {
@@ -360,5 +350,14 @@ public class Player extends Agent {
 	}
 	public void setDiscardDecider(LookaheadDecider<Player, PositionSummary> dd) {
 		discardDecider = dd;
+	}
+
+	public void takeTurn() {
+		setState(State.PLAYING);
+		takeActions();
+		setState(State.PURCHASING);
+		buyCards();
+		tidyUp();
+		setState(State.WAITING);
 	}
 }

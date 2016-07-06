@@ -1,4 +1,9 @@
-package hopshackle.dominion;
+package hopshackle.dominion.basecards;
+
+import hopshackle.dominion.AttackCard;
+import hopshackle.dominion.Card;
+import hopshackle.dominion.CardType;
+import hopshackle.dominion.Player;
 
 public class Spy extends AttackCard {
 

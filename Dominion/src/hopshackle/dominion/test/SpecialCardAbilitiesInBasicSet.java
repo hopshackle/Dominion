@@ -2,6 +2,16 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
+import hopshackle.dominion.basecards.Adventurer;
+import hopshackle.dominion.basecards.Bureaucrat;
+import hopshackle.dominion.basecards.Cellar;
+import hopshackle.dominion.basecards.Chapel;
+import hopshackle.dominion.basecards.Feast;
+import hopshackle.dominion.basecards.Library;
+import hopshackle.dominion.basecards.Moat;
+import hopshackle.dominion.basecards.Moneylender;
+import hopshackle.dominion.basecards.ThroneRoom;
+import hopshackle.dominion.basecards.Witch;
 import hopshackle.simulation.*;
 
 import java.util.*;

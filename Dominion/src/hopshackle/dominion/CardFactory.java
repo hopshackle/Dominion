@@ -1,5 +1,24 @@
 package hopshackle.dominion;
 
+import hopshackle.dominion.basecards.Adventurer;
+import hopshackle.dominion.basecards.Bureaucrat;
+import hopshackle.dominion.basecards.Cellar;
+import hopshackle.dominion.basecards.Chancellor;
+import hopshackle.dominion.basecards.Chapel;
+import hopshackle.dominion.basecards.CouncilRoom;
+import hopshackle.dominion.basecards.Feast;
+import hopshackle.dominion.basecards.Library;
+import hopshackle.dominion.basecards.Militia;
+import hopshackle.dominion.basecards.Mine;
+import hopshackle.dominion.basecards.Moat;
+import hopshackle.dominion.basecards.Moneylender;
+import hopshackle.dominion.basecards.Remodel;
+import hopshackle.dominion.basecards.Spy;
+import hopshackle.dominion.basecards.Thief;
+import hopshackle.dominion.basecards.ThroneRoom;
+import hopshackle.dominion.basecards.Witch;
+import hopshackle.dominion.basecards.Workshop;
+
 public class CardFactory {
 
 	public static Card instantiateCard(CardType cardType) {
