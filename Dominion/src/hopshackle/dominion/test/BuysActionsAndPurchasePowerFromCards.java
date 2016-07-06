@@ -20,7 +20,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		SimProperties.setProperty("Temperature", "0.0");
-		game = new Game(new SequenceOfGames("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, null));
 		p1 = game.getCurrentPlayer();
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates

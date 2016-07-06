@@ -1,11 +1,6 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.DominionBuyingDecision;
-import hopshackle.dominion.Player;
-
-import java.util.List;
+import hopshackle.dominion.*;
 
 public class Feast extends Card {
 
@@ -16,10 +11,10 @@ public class Feast extends Card {
 	@Override
 	public void takeAction(Player player) {
 		player.trashCardFromRevealed(CardType.FEAST);
-		player.setStateToPurchase();
+		player.setState(Player.State.PURCHASING);
 		CardType gainedCard = (new DominionBuyingDecision(player, 5, 1)).getBestMandatoryPurchase().get(0);
 		player.takeCardFromSupplyIntoDiscard(gainedCard);
-		player.setStateToAction();
+		player.setState(Player.State.PLAYING);
 		player.log("Gains " + gainedCard);
 	}
 }

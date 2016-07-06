@@ -14,7 +14,7 @@ public class ScoringTest {
 
 	@Before
 	public void setup() {
-		game = new Game(new SequenceOfGames("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, null));
 		p1 = game.getPlayers()[0];
 		p2 = game.getPlayers()[1];
 		p3 = game.getPlayers()[2];
@@ -39,7 +39,7 @@ public class ScoringTest {
 		values.put(CardType.PROVINCE, 1.0);
 		values.put(CardType.GOLD, 0.75);
 		values.put(CardType.SILVER, 0.50);
-		DominionPositionDecider newDecider = new TestDominionDecider(values);
+		TestDominionDecider newDecider = new TestDominionDecider(values);
 		for (int p=0; p<4; p++) {
 			game.getPlayers()[p].setPurchaseDecider(newDecider);
 		}

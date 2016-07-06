@@ -14,7 +14,7 @@ public class CardValuationVariablesTest {
 	@Before
 	public void setUp() {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new SequenceOfGames("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, null));
 		recalculate();
 	}
 	
@@ -29,63 +29,63 @@ public class CardValuationVariablesTest {
 
 	@Test
 	public void deckSize() {
-		assertEquals(CardValuationVariables.DECK_SIZE.getValue(p1, 0), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.DECK_SIZE.getValue(p1), 0.00, 0.0001);
 		p1.addCard(CardType.COPPER);
-		assertEquals(CardValuationVariables.DECK_SIZE.getValue(p1, 0), 0.05, 0.0001);
+		assertEquals(CardValuationVariables.DECK_SIZE.getValue(p1), 0.05, 0.0001);
 	}
 	
 	@Test
 	public void provincesRemaining() {
-		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1, 0), 0.00, 0.0001);
-		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p2, 0), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p2), 0.00, 0.0001);
 		game.drawCard(CardType.PROVINCE);
-		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1, 0), (1.0/12.0), 0.0001);
-		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p2, 0), (1.0/12.0), 0.0001);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1, 0), 0.00, 0.0001);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2, 0), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), (1.0/12.0), 0.0001);
+		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p2), (1.0/12.0), 0.0001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2), 0.00, 0.0001);
 	}
 	
 	@Test
 	public void duchiesRemaining() {
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1, 0), 0.00, 0.0001);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2, 0), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2), 0.00, 0.0001);
 		game.drawCard(CardType.DUCHY);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1, 0), (1.0/12.0), 0.0001);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2, 0), (1.0/12.0), 0.0001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), (1.0/12.0), 0.0001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2), (1.0/12.0), 0.0001);
 	}
 	
 	@Test
 	public void victoryMargin() {
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1, 0), 0.00, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2, 0), 0.00, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3, 0), 0.00, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4, 0), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.00, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), 0.00, 0.0001);
 
 		p1.addCard(CardType.ESTATE);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1, 0), 0.1, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2, 0), 0.0, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3, 0), 0.0, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4, 0), 0.0, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.0, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.0, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), 0.0, 0.0001);
 		game.getPlayers()[0].takeCardFromSupplyIntoDiscard(CardType.ESTATE);
 		recalculate();
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1, 0), 0.1, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2, 0), -.1, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3, 0), -.1, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4, 0), -.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), -.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), -.1, 0.0001);
 		
 		game.getPlayers()[1].takeCardFromSupplyIntoDiscard(CardType.CURSE);
 		recalculate();
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1, 0), 0.1, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2, 0), -0.20, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3, 0), -.1, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4, 0), -.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -0.20, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), -.1, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), -.1, 0.0001);
 		
 		game.getPlayers()[2].takeCardFromSupplyIntoDiscard(CardType.PROVINCE);
 		recalculate();
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1, 0), -.5, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2, 0), -.7, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3, 0), 0.5, 0.0001);
-		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4, 0), -.6, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), -.5, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -.7, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.5, 0.0001);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), -.6, 0.0001);
 	}
 	
 	@Test
@@ -144,39 +144,39 @@ public class CardValuationVariablesTest {
 	
 	@Test
 	public void percentVictoryActionAndTreasureCards() {
-		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1, p1), 0.60, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1, p1), 1.40, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1, p1), 0.00, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.60, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.40, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
 		p1.addCard(CardType.CURSE);
-		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1, p1), 0.728, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1, p1), 1.272, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1, p1), 0.00, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.728, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.272, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
 		p1.addCard(CardType.ESTATE);
-		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1, p1), 0.834, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1, p1), 1.166, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1, p1), 0.00, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.834, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.166, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
 		p1.addCard(CardType.GOLD);
-		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1, p1), 0.77, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1, p1), 1.230, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1, p1), 0.00, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.77, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.230, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
 		p1.addCard(CardType.CELLAR);
-		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1, p1), 0.714, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1, p1), 1.143, 0.001);
-		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1, p1), (1.0/14.0 *2.0), 0.001);
+		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.714, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.143, 0.001);
+		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), (1.0/14.0 *2.0), 0.001);
 	}
 	
 	@Test
 	public void cardsInHand() {
 		p1.addCard(CardType.SILVER);
-		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1, p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1), 0.0, 0.001);
 		game.getPlayers()[0].insertCardDirectlyIntoHand(new Card(CardType.SILVER));
 		p1 = game.getPlayers()[0].getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1, p1), 0.20, 0.001);
+		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1), 0.20, 0.001);
 		p1.addCard(CardType.VILLAGE);
-		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1, p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.0, 0.001);
 		game.getPlayers()[0].insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
 		p1 = game.getPlayers()[0].getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1, p1), 0.20, 0.001);
+		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.20, 0.001);
 	}
 	
 	@Test
@@ -187,137 +187,137 @@ public class CardValuationVariablesTest {
 		game.addCardType(CardType.MARKET, 12);
 		player.takeCardFromSupplyIntoDiscard(CardType.REMODEL);
 		p1 = player.getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1, p1), (1.0/11.0)*5.0, 0.001);
-		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1, p1), 0.0, 0.001);
-		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1, p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (1.0/11.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MINE));
 		p1 = player.getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1, p1), (1.0/12.0)*5.0, 0.001);
-		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1, p1), (1.0/12.0)*5.0, 0.001);
-		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1, p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (1.0/12.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), (1.0/12.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
 		player.takeCardFromSupplyIntoDiscard(CardType.REMODEL);
 		p1 = player.getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1, p1), (2.0/13.0)*5.0, 0.001);
-		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1, p1), (1.0/13.0)*5.0, 0.001);
-		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1, p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/13.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), (1.0/13.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
 		player.trashCardFromHand(CardType.MINE);
 		p1 = player.getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1, p1), (2.0/12.0)*5.0, 0.001);
-		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1, p1), 0.0, 0.001);
-		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1, p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/12.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
 		player.takeCardFromSupplyIntoDiscard(CardType.MARKET);
 		p1 = player.getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1, p1), (2.0/13.0)*5.0, 0.001);
-		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1, p1), 0.0, 0.001);
-		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1, p1), (1.0/13.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/13.0)*5.0, 0.001);
+		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), 0.0, 0.001);
+		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), (1.0/13.0)*5.0, 0.001);
 	}
 	
 	@Test
 	public void percentageOfPilesDepleted() {
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 1.0, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 1.0, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 1.0, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
 		game.removeCardType(CardType.CELLAR);
 		game.addCardType(CardType.CELLAR, 4);
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 1.0, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 1.0, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.MARKET);
 		game.addCardType(CardType.MARKET, 5);
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 1.0, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.WOODCUTTER);
 		game.addCardType(CardType.WOODCUTTER, 6);
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.6, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.6, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.PROVINCE);
 		game.addCardType(CardType.PROVINCE, 1); // moves third lowest to MARKET
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.1, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.1, 0.001);
 		game.removeCardType(CardType.PROVINCE);
 		game.addCardType(CardType.PROVINCE, 6); // moves third lowest back to WOODCUTTER / PROVINCE
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.6, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.6, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.ESTATE);
 		game.addCardType(CardType.ESTATE, 7); // no change
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.6, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.6, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.ESTATE);
 		game.addCardType(CardType.ESTATE, 2); // moves third lowest to MARKET
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.2, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.2, 0.001);
 	}
 	
 	@Test
 	public void percentagePilesDepletedWorksCorrectlyWithHypotheticalSituations() {
 		percentageOfPilesDepleted();
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.2, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.2, 0.001);
 		p1.drawCard(CardType.MARKET);
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.2, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.2, 0.001);
 		p1.drawCard(CardType.ESTATE);
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.1, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.1, 0.001);
 		p1.undrawCard(CardType.MARKET);
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1, p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1, p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1, p1), 0.1, 0.001);
+		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
+		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
+		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.1, 0.001);
 	}
 	
 	@Test
 	public void gameVariablesInPositionSummaryCorrectlyUpdatedForHypotheticallyDrawnCard() {
 		p1.drawCard(CardType.DUCHY);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1, p1), (1.0/12.0), 0.001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), (1.0/12.0), 0.001);
 		p1.undrawCard(CardType.DUCHY);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1, p1), 0.00, 0.001);
+		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), 0.00, 0.001);
 	}
 	
 	@Test
 	public void variablesInPositionSummaryCorrectlyUpdatedForHypotheticallyTrashedCard() {
-		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1, p1), 0.00, 0.001);
-		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1, p1), 3.0 / 10.0 / 2.0, 0.001);
+		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), 0.00, 0.001);
+		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1), 3.0 / 10.0 / 2.0, 0.001);
 		p1.drawCard(CardType.PROVINCE);
-		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1, p1), (1.0/12.0), 0.001);
-		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1, p1), (3.0 + 6.0) / 11.0 / 2.0, 0.001);
+		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), (1.0/12.0), 0.001);
+		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1), (3.0 + 6.0) / 11.0 / 2.0, 0.001);
 		p1.removeCard(CardType.PROVINCE);
-		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1, p1), (1.0/12.0), 0.001);
-		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1, p1), 3.0 / 10.0 / 2.0, 0.001);
+		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), (1.0/12.0), 0.001);
+		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1), 3.0 / 10.0 / 2.0, 0.001);
 	}
 	
 	@Test
 	public void percentageInDiscardBasic() {
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1, p1), 0.50, 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1), 0.50, 0.0001);
 		p1.addCard(CardType.CELLAR);
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1, p1), (5.0/11.0), 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1), (5.0/11.0), 0.0001);
 	}
 	
 	@Test
 	public void percentageInDiscardAdvanced() {
 		Player player = game.getCurrentPlayer();
 		player.tidyUp();	// So that they now have all ten cards in discard, and reshuffle to draw 5
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy(), player.getPositionSummaryCopy()), 0.0, 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), 0.0, 0.0001);
 		player.takeCardFromSupplyIntoDiscard(CardType.MILITIA);
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy(), player.getPositionSummaryCopy()), (1.0/11.0), 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (1.0/11.0), 0.0001);
 		player.discard(CardType.COPPER);
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy(), player.getPositionSummaryCopy()), (2.0/11.0), 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (2.0/11.0), 0.0001);
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy(), player.getPositionSummaryCopy()), (2.0/12.0), 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (2.0/12.0), 0.0001);
 		player.putCardFromHandOnTopOfDeck(CardType.MARKET);
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy(), player.getPositionSummaryCopy()), (2.0/12.0), 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (2.0/12.0), 0.0001);
 		player.putDeckIntoDiscard();
 		double hand = player.getHandSize();
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy(), player.getPositionSummaryCopy()), (12.0 - hand)/12.0, 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (12.0 - hand)/12.0, 0.0001);
 		player.drawTopCardFromDeckIntoHand();
-		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy(), player.getPositionSummaryCopy()), 0.0, 0.0001);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), 0.0, 0.0001);
 	}
 }

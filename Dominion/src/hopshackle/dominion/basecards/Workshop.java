@@ -1,10 +1,6 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.Player;
-import hopshackle.dominion.PositionSummary;
-import hopshackle.simulation.LookaheadDecider;
+import hopshackle.dominion.*;
 
 public class Workshop extends Card {
 
@@ -14,10 +10,10 @@ public class Workshop extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
-		LookaheadDecider<Player, PositionSummary> purchaseDecider = player.getPurchaseDecider();
-		player.setStateToPurchase();
-		CardType cardPurchased = purchaseDecider.buyingDecision(player, 4, 1).get(0);
-		player.setStateToAction();
+		player.setState(Player.State.PURCHASING);
+		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, 4, 1);
+		CardType cardPurchased = nextBuy.getBestPurchase().get(0);
+		player.setState(Player.State.PLAYING);
 		player.takeCardFromSupplyIntoDiscard(cardPurchased);
 		player.log("Gains " + cardPurchased);
 	}

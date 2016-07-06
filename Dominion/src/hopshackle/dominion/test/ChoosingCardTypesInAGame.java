@@ -14,7 +14,7 @@ public class ChoosingCardTypesInAGame {
 	@Before
 	public void setup() {
 		SimProperties.setProperty("DominionCardSetup", "NONE");
-		game = new Game(new SequenceOfGames("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, null));
 		firstPlayer = game.getCurrentPlayer();
 	}
 

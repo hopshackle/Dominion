@@ -23,16 +23,16 @@ public class SpecialCardAbilitiesInBasicSet {
 	public Game game;
 	public Player p1, p2, p3, p4;
 	private TestDominionDecider remodelDecider, defaultPurchaseDecider, thiefPurchaseDecider;
-	private DominionPositionDecider discardDecider;
-	private ArrayList<GeneticVariable> variablesToUse = new ArrayList<GeneticVariable>(EnumSet.allOf(CardValuationVariables.class));
-	private ArrayList<ActionEnum> actionsToUse = new ArrayList<ActionEnum>(EnumSet.allOf(CardType.class));
+	private HardCodedDiscardDecider discardDecider;
+	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
+	private ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
 	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUse);
 
 	@Before
 	public void setup() {
 		SimProperties.setProperty("Temperature", "0.0");
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new SequenceOfGames("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, null));
 		p1 = game.getPlayers()[0];
 		p2 = game.getPlayers()[1];
 		p3 = game.getPlayers()[2];

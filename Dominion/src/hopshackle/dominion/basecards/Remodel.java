@@ -32,7 +32,7 @@ public class Remodel extends Card {
 			basePS.addCard(ct);
 		double startValue = purchaseDecider.value(basePS);
 
-		player.setStateToPurchase();
+		player.setState(Player.State.PURCHASING);
 		double bestValue = 0.0;
 		Set<CardType> optionsAlreadyExamined = new HashSet<CardType>();
 		for (int loop=0; loop<cardsInHand.length; loop++) {
@@ -68,7 +68,7 @@ public class Remodel extends Card {
 			player.log("Trashes a " + cardToRemodel + " for a " + cardToPurchase);
 		}
 
-		player.setStateToAction();		// and return status back
+		player.setState(Player.State.PLAYING);
 	}
 
 }

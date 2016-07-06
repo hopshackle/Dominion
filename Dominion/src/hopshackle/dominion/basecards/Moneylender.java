@@ -35,7 +35,7 @@ public class Moneylender extends Card {
 		if (!hasCopper) 
 			return;
 		
-		player.setStateToPurchase();
+		player.setState(Player.State.PURCHASING);
 		
 		double valueOfNotTrashing = value(player, treasure, null);
 		PositionSummary ps = player.getPositionSummaryCopy();
@@ -48,7 +48,7 @@ public class Moneylender extends Card {
 			treasureValue += 3;		// to cope with Throne Rooms, which might trash a copper twice (or more)
 		}
 		
-		player.setStateToAction();
+		player.setState(Player.State.PLAYING);
 	}
 	
 	@Override

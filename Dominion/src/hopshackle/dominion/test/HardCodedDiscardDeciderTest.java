@@ -14,14 +14,15 @@ public class HardCodedDiscardDeciderTest {
 	public Game game;
 	public Player p1, p2, p3, p4;
 	TestDominionDecider militiaDecider;
-	DominionPositionDecider discardDecider;
+	LookaheadDecider<Player, PositionSummary> discardDecider;
+	LookaheadFunction<Player, PositionSummary> lookahead = new DominionLookaheadFunction();
 
-	ArrayList<GeneticVariable> variablesToUse = new ArrayList<GeneticVariable>(EnumSet.allOf(CardValuationVariables.class));
-	ArrayList<ActionEnum> actionsToUse = new ArrayList<ActionEnum>(EnumSet.allOf(CardType.class));
+	ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
+	ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
 	
 	@Before
 	public void setup() {
-		game = new Game(new SequenceOfGames("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, null));
 		p1 = game.getCurrentPlayer();
 		p2 = game.getPlayers()[1];
 		p3 = game.getPlayers()[2];
