@@ -96,13 +96,10 @@ public class Player extends Agent {
 
 	public void takeActions() {
 		if (actionDecider == null) return;
+		setState(State.PLAYING);
 		actionsLeft = 1;
 		do {
 			Action<Player> action = actionDecider.decide(this);
-			if (action.getType() == CardType.NONE) {
-				log("Chooses not to play an Action card.");
-				break;
-			}
 			if (!(action instanceof DominionPlayAction)) {
 				throw new AssertionError("Incorrect Action type in Player.takeActions()");
 			}
@@ -117,7 +114,8 @@ public class Player extends Agent {
 	}
 
 	public void buyCards() {
-		DominionBuyAction decision = (DominionBuyAction) getPurchaseDecider().decide(this);
+		setState(State.PURCHASING);
+		DominionBuyAction decision = (DominionBuyAction) getPositionDecider().decide(this);
 		decision.start();
 		decision.run();
 	}
@@ -192,10 +190,6 @@ public class Player extends Agent {
 		summary = new PositionSummary(this);
 	}
 
-	public int remainingTreasureValueOfHand() {
-		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower();
-	}
-
 	public int totalTreasureValue() {
 		return hand.getTreasureValue() + deck.getTreasureValue() + discard.getTreasureValue() + revealedCards.getTreasureValue();
 	}
@@ -224,7 +218,7 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	public LookaheadDecider<Player, PositionSummary> getPurchaseDecider() {
+	public LookaheadDecider<Player, PositionSummary> getPositionDecider() {
 		return purchaseDecider;
 	}
 	@Override
@@ -234,8 +228,9 @@ public class Player extends Agent {
 	public Decider<Player> getActionDecider() {
 		return actionDecider;
 	}
-	public void setPurchaseDecider(LookaheadDecider<Player, PositionSummary> newDecider) {
+	public void setPositionDecider(LookaheadDecider<Player, PositionSummary> newDecider) {
 		purchaseDecider = newDecider;
+		discardDecider = new HardCodedDiscardDecider(HopshackleUtilities.convertList(newDecider.getActions()), new ArrayList<CardValuationVariables>());
 		log("Using purchase strategy " + purchaseDecider.toString());
 	}
 	public void setActionDecider(Decider<Player> newDecider) {
@@ -334,7 +329,7 @@ public class Player extends Agent {
 	}
 
 	public int getBudget() {
-		return remainingTreasureValueOfHand();
+		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower();
 	}
 
 	public NeuralComputer getGameEndBrain() {
@@ -345,17 +340,12 @@ public class Player extends Agent {
 		gameEndEstimator = brain;
 	}
 
-	public LookaheadDecider<Player, PositionSummary> getDiscardDecider() {
+	public LookaheadDecider<Player, PositionSummary> getHandDecider() {
 		return discardDecider;
-	}
-	public void setDiscardDecider(LookaheadDecider<Player, PositionSummary> dd) {
-		discardDecider = dd;
 	}
 
 	public void takeTurn() {
-		setState(State.PLAYING);
 		takeActions();
-		setState(State.PURCHASING);
 		buyCards();
 		tidyUp();
 		setState(State.WAITING);

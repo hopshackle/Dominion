@@ -17,7 +17,7 @@ public class HardCodedActionDecider extends LookaheadDecider<Player, PositionSum
 		List<CardType> hand = null;
 		int actionsLeft = p.getActionsLeft();
 		int buys = p.getBuys();
-		int handTreasure = p.remainingTreasureValueOfHand();
+		int handTreasure = p.getBudget();
 		switch (cardType) {
 		case CELLAR:
 			hand = p.getCopyOfHand();

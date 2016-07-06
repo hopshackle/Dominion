@@ -13,7 +13,7 @@ public class BasicGameMechanics {
 	@Before
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new RunGame("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)));
 	}
 
 	@Test
@@ -125,7 +125,7 @@ public class BasicGameMechanics {
 		assertEquals(p1.getDiscardSize(), 0);
 		assertEquals(p1.getHandSize(), 5);
 	}
-	
+
 	@Test
 	public void phaseFlagIsSetCorrectlyAsPlayProceeds() {
 		Player[] players = game.getPlayers();
@@ -137,5 +137,5 @@ public class BasicGameMechanics {
 		players[0].buyCards();
 		assertFalse(players[0].isTakingActions());
 	}
-
+	
 }

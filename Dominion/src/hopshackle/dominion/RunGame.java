@@ -46,6 +46,7 @@ public class RunGame extends World {
 
 	public RunGame(String descriptor, int games, DeciderGenerator providedDG) {
 		super(null, descriptor, games);
+		dg = providedDG;
 		maximum = games;
 		this.setCalendar(new FastCalendar(0));
 		DatabaseAccessUtility databaseUtility = new DatabaseAccessUtility();

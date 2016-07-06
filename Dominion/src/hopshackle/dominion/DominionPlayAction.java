@@ -20,11 +20,17 @@ public class DominionPlayAction extends Action<Player> {
 	@Override
 	public void doStuff() {
 		Card cardToPlay = player.playFromHandToRevealedCards(cardType);
-		if (cardToPlay != null && cardToPlay.getType() != CardType.NONE) {
-			player.log("Plays " + cardToPlay.toString());
-			cardToPlay.takeAction(player);
-			for (int i = 0; i < cardToPlay.getAdditionalActions(); i++)
-				player.incrementActionsLeft();
+		if (cardToPlay != null) {
+			if (cardToPlay.getType() == CardType.NONE) {
+				player.log("Chooses not to play an Action card.");
+			} else {
+				player.log("Plays " + cardToPlay.toString());
+				cardToPlay.takeAction(player);
+				for (int i = 0; i < cardToPlay.getAdditionalActions(); i++)
+					player.incrementActionsLeft();
+			}
+		} else {
+			logger.severe("No Actual card found in hand for type " + cardType);
 		}
 	}
 	@Override 

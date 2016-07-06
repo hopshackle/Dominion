@@ -33,8 +33,9 @@ public class Game implements Persistent {
 			players[n].setName("Player #" + (n+1));
 			players[n].setDebugLocal(debug);
 			if (deciderGenerator != null) {
-				players[n].setPurchaseDecider(deciderGenerator.getPurchaseDecider());
+				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider());
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
+//				players[n].setHandDecider(deciderGenerator.getDiscardDecider());
 				players[n].setGameEndComputer(deciderGenerator.getGameEndComputer());
 			}
 		}

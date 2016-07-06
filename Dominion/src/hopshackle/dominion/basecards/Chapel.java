@@ -23,7 +23,7 @@ public class Chapel extends Card {
 	private void trashCard(Player player) {
 		PositionSummary ps = player.getPositionSummaryCopy();
 		List<CardType> hand = player.getCopyOfHand();
-		LookaheadDecider<Player, PositionSummary> dpd = player.getPurchaseDecider();
+		LookaheadDecider<Player, PositionSummary> dpd = player.getPositionDecider();
 		double startingValue = dpd.value(ps);
 		double bestGain = 0.0;
 		CardType cardToTrash = CardType.NONE;

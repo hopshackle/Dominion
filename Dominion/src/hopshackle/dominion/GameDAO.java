@@ -132,7 +132,7 @@ public class GameDAO implements DAO<Game> {
 				avgTreasure,
 				avgDeckSize,
 				avgScore,
-				(gameHasWinner)?players[winningPlayerNumber-1].getPurchaseDecider().toString():"NONE",
+				(gameHasWinner)?players[winningPlayerNumber-1].getPositionDecider().toString():"NONE",
 				(gameHasWinner)?players[winningPlayerNumber-1].getActionDecider().toString():"NONE"
 		);
 

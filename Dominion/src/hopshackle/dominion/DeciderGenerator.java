@@ -8,11 +8,11 @@ import java.util.logging.Logger;
 
 public class DeciderGenerator {
 
-	private List<LookaheadDecider<Player, PositionSummary>> discardDeciders, purchaseDeciders, unusedPurchaseDeciders, actionDeciders;
+	private List<LookaheadDecider<Player, PositionSummary>> purchaseDeciders, unusedPurchaseDeciders, actionDeciders;
 	private BigMoneyDecider bigMoney = new BigMoneyDecider();
 	private ChrisPethersDecider chrisPethers = new ChrisPethersDecider();
 	private GameSetup gamesetup;
-	private List<Integer> purchaseVictories, discardVictories, actionVictories, lastPVictories;
+	private List<Integer> purchaseVictories, actionVictories, lastPVictories;
 	private Map<String, Double> purchaseScores;
 	private int currentLoop;
 	private int removalThreshold;
@@ -40,10 +40,8 @@ public class DeciderGenerator {
 		toRemove = decidersToRemovePerRound;
 		purchaseDeciders = new ArrayList<LookaheadDecider<Player, PositionSummary>>();
 		actionDeciders = new ArrayList<LookaheadDecider<Player, PositionSummary>>();
-		discardDeciders = new ArrayList<LookaheadDecider<Player, PositionSummary>>();
 		purchaseVictories = new ArrayList<Integer>();
 		purchaseScores = new HashMap<String, Double>();
-		discardVictories = new ArrayList<Integer>();
 		actionVictories = new ArrayList<Integer>();
 
 		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
@@ -96,10 +94,6 @@ public class DeciderGenerator {
 				purchaseDeciders.add(pd);
 			}
 
-			LookaheadDecider<Player, PositionSummary> dd = new HardCodedDiscardDecider(actionsToUse, variablesToUseForActions);
-			//			dd.setTeacher(new AgentTeacher());
-			discardDeciders.add(dd);
-
 			//			ActorCriticDecider ad = new ActorCriticDecider(actionsToUse, variablesToUseForActions, variablesToUseForPurchase);
 			//			ad.setName("A"+String.format("%03d", decideNameCount));
 			//			ad.setTeacher(new AgentTeacher());
@@ -113,7 +107,6 @@ public class DeciderGenerator {
 			if (pd != null)
 				tempName = pd.toString();
 			purchaseScores.put(tempName, 2.0);	// we start with a score of 2, as the initial ones are thrown out with greater alacrity
-			discardVictories.add(0);
 			actionVictories.add(0);
 		}
 		unusedPurchaseDeciders = HopshackleUtilities.cloneList(purchaseDeciders);
@@ -158,9 +151,6 @@ public class DeciderGenerator {
 		}
 		return choice;
 	}
-	public LookaheadDecider<Player, PositionSummary> getDiscardDecider() {
-		return discardDeciders.get((int)(Math.random()*discardDeciders.size()));
-	}
 	public LookaheadDecider<Player, PositionSummary> getActionDecider() {
 		return actionDeciders.get((int)(Math.random()*actionDeciders.size()));
 	}
@@ -171,15 +161,10 @@ public class DeciderGenerator {
 	public void reportVictory(Player winner) {
 		totalWinners++;
 		if (winner != null) {
-			LookaheadDecider<Player, PositionSummary> purchaseWinner = winner.getPurchaseDecider();
+			LookaheadDecider<Player, PositionSummary> purchaseWinner = winner.getPositionDecider();
 			for (int loop = 0; loop < purchaseDeciders.size(); loop++) {
 				if (purchaseWinner.equals(purchaseDeciders.get(loop))) 
 					purchaseVictories.set(loop, purchaseVictories.get(loop) + 1);
-			}
-			LookaheadDecider<Player, PositionSummary> discardWinner = winner.getDiscardDecider();
-			for (int loop = 0; loop < discardDeciders.size(); loop++) {
-				if (discardWinner.equals(discardDeciders.get(loop))) 
-					discardVictories.set(loop, discardVictories.get(loop) + 1);
 			}
 			Decider<Player> actionWinner = winner.getActionDecider();
 			for (int loop = 0; loop < actionDeciders.size(); loop++) {
@@ -232,14 +217,11 @@ public class DeciderGenerator {
 	public void resetVariables() {
 		lastPVictories = purchaseVictories;
 		purchaseVictories = new ArrayList<Integer>();
-		discardVictories = new ArrayList<Integer>();
 		actionVictories = new ArrayList<Integer>();
 		for (int n = 0; n < purchaseDeciders.size(); n++) 
 			purchaseVictories.add(0);
 		for (int n = 0; n < actionDeciders.size(); n++) 
 			actionVictories.add(0);
-		for (int n = 0; n < discardDeciders.size(); n++) 
-			discardVictories.add(0);
 
 		currentLoop = 0;
 		totalWinners = 0;

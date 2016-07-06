@@ -22,8 +22,8 @@ public class Remodel extends Card {
 		if (cardsInHand[0] == null) return;
 		CardType cardToRemodel = CardType.NONE;
 		CardType cardToPurchase = CardType.NONE;
-		LookaheadDecider<Player, PositionSummary> purchaseDecider = player.getPurchaseDecider();
-		int treasureInHand = player.remainingTreasureValueOfHand();		// doesn't take account of unrevealed purchase power...but still better
+		LookaheadDecider<Player, PositionSummary> purchaseDecider = player.getPositionDecider();
+		int treasureInHand = player.getBudget();		// doesn't take account of unrevealed purchase power...but still better
 		int buys = player.getBuys();
 		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, treasureInHand, buys);
 		List<CardType> purchaseBeforeRemodel = nextBuy.getBestPurchase();

@@ -8,7 +8,6 @@ import java.util.*;
 
 import org.junit.*;
 
-
 public class HardCodedDiscardDeciderTest {
 
 	public Game game;
@@ -22,16 +21,16 @@ public class HardCodedDiscardDeciderTest {
 	
 	@Before
 	public void setup() {
-		game = new Game(new RunGame("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)));
 		p1 = game.getCurrentPlayer();
 		p2 = game.getPlayers()[1];
 		p3 = game.getPlayers()[2];
 		p4 = game.getPlayers()[3];
 		discardDecider = new HardCodedDiscardDecider(actionsToUse, variablesToUse);
-		p1.setDiscardDecider(discardDecider);
-		p2.setDiscardDecider(discardDecider);
-		p3.setDiscardDecider(discardDecider);
-		p4.setDiscardDecider(discardDecider);
+		p1.setPositionDecider(discardDecider);
+		p2.setPositionDecider(discardDecider);
+		p3.setPositionDecider(discardDecider);
+		p4.setPositionDecider(discardDecider);
 		militiaDecider = TestDominionDecider.getExample(CardType.MILITIA);
 	}
 	

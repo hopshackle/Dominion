@@ -32,7 +32,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	public void setup() {
 		SimProperties.setProperty("Temperature", "0.0");
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new RunGame("Test", 1, null));
+		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)));
 		p1 = game.getPlayers()[0];
 		p2 = game.getPlayers()[1];
 		p3 = game.getPlayers()[2];
@@ -41,10 +41,10 @@ public class SpecialCardAbilitiesInBasicSet {
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
 		discardDecider = new HardCodedDiscardDecider(actionsToUse, variablesToUse);
-		p1.setDiscardDecider(discardDecider);
-		p2.setDiscardDecider(discardDecider);
-		p3.setDiscardDecider(discardDecider);
-		p4.setDiscardDecider(discardDecider);
+		p1.setPositionDecider(discardDecider);
+		p2.setPositionDecider(discardDecider);
+		p3.setPositionDecider(discardDecider);
+		p4.setPositionDecider(discardDecider);
 		p1.setActionDecider(hardCodedActionDecider);
 		p2.setActionDecider(hardCodedActionDecider);
 		p3.setActionDecider(hardCodedActionDecider);
@@ -61,10 +61,10 @@ public class SpecialCardAbilitiesInBasicSet {
 		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
 		thiefPurchaseDecider = new TestThiefDominionDecider(purchasePreferences);
 		
-		p1.setPurchaseDecider(defaultPurchaseDecider);
-		p2.setPurchaseDecider(defaultPurchaseDecider);
-		p3.setPurchaseDecider(defaultPurchaseDecider);
-		p4.setPurchaseDecider(defaultPurchaseDecider);
+		p1.setPositionDecider(defaultPurchaseDecider);
+		p2.setPositionDecider(defaultPurchaseDecider);
+		p3.setPositionDecider(defaultPurchaseDecider);
+		p4.setPositionDecider(defaultPurchaseDecider);
 	}
 
 	@Test
@@ -414,7 +414,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 12); // Starts with 10. ThroneRoom and Festival removed for -2; four Moats then played, giving net +4
 		assertEquals(p2.getBuys(), 3);
-		assertEquals(p2.remainingTreasureValueOfHand(), 12);	// so we have all treasure in hand, bar one copper left in deck, +4 from doubled Festival
+		assertEquals(p2.getBudget(), 12);	// so we have all treasure in hand, bar one copper left in deck, +4 from doubled Festival
 
 		assertEquals(throneRoom.getAdditionalBuys(), 1);	// inheriting from Festival
 		assertEquals(throneRoom.getAdditionalPurchasePower(), 2);	// inheriting from Festival
@@ -508,7 +508,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void thiefTakesHighestValueTreasureCardIfNotCopper() {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.THIEF));
-		p2.setPurchaseDecider(thiefPurchaseDecider);
+		p2.setPositionDecider(thiefPurchaseDecider);
 
 		p1.putCardOnTopOfDeck(CardType.SILVER);
 		p1.putCardOnTopOfDeck(CardType.COPPER);
@@ -544,11 +544,11 @@ public class SpecialCardAbilitiesInBasicSet {
 			p.insertCardDirectlyIntoHand(new Adventurer());
 			do {
 				p.discard(CardType.COPPER);
-			} while (p.remainingTreasureValueOfHand() > 0);
+			} while (p.getBudget() > 0);
 			int handSize = p.getHandSize();
 			p.takeActions();
 			assertEquals(p.getHandSize(), handSize + 1);	// minus Adventurer, plus two Copper
-			assertEquals(p.remainingTreasureValueOfHand(), 2);
+			assertEquals(p.getBudget(), 2);
 			assertEquals(p.totalTreasureValue(), 7);	// unchanged
 			assertEquals(p.getDiscardSize(), 10 - p.getDeckSize() - p.getHandSize());
 		}
@@ -561,7 +561,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p1.takeCardFromSupplyIntoDiscard(CardType.SILVER);
 		p1.takeActions();
 		assertEquals(p1.getHandSize(), 11);	// minus Adventurer, plus one Silver
-		assertEquals(p1.remainingTreasureValueOfHand(), 9);	// silver, plius starting copper
+		assertEquals(p1.getBudget(), 9);	// silver, plius starting copper
 		assertEquals(p1.totalTreasureValue(), 9);
 		assertEquals(p1.getDiscardSize(), 1);
 		assertEquals(p1.getDeckSize(), 0);
@@ -621,7 +621,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		purchasePreferences.put(CardType.MOAT, -0.25);
 		purchasePreferences.put(CardType.MINE, 0.40);
 		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
-		p2.setPurchaseDecider(defaultPurchaseDecider);
+		p2.setPositionDecider(defaultPurchaseDecider);
 		p2.insertCardDirectlyIntoHand(new Feast());
 		assertEquals(p2.getNumberOfTypeTotal(CardType.FEAST), 1);
 		
@@ -658,7 +658,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
 		p2.takeActions();
 		assertEquals(moneylender.getAdditionalPurchasePower(), 3);
-		assertEquals(p2.remainingTreasureValueOfHand(), copper + 2);
+		assertEquals(p2.getBudget(), copper + 2);
 		assertEquals(p2.getNumberOfTypeTotal(CardType.COPPER), 6);
 		
 		p2.buyCards();
@@ -679,7 +679,7 @@ public class SpecialCardAbilitiesInBasicSet {
 			p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.COPPER));
 		p2.takeActions();
 		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
-		assertEquals(p2.remainingTreasureValueOfHand(), 3);	// no bonus from Moneylender
+		assertEquals(p2.getBudget(), 3);	// no bonus from Moneylender
 		assertEquals(p2.getNumberOfTypeTotal(CardType.COPPER), 10);	// 3 inserted directly
 	}
 	
