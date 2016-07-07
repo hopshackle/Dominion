@@ -5,9 +5,10 @@ import hopshackle.simulation.*;
 import java.util.*;
 
 public class HardCodedActionDecider extends LookaheadDecider<Player, PositionSummary> {
-
+	
 	public HardCodedActionDecider(List<CardType> actions, List<CardValuationVariables> variables) {
 		super(null, CardType.toActionEnum(actions), CardValuationVariables.toGenVar(variables));
+		generateLearningEvents = false;
 	}
 
 	@Override

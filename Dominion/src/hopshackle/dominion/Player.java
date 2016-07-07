@@ -16,7 +16,6 @@ public class Player extends Agent {
 	private Deck discard;
 	private Deck revealedCards;
 	private Game game;
-	private String name;
 	private PositionSummary summary;
 	private int playerNumber;
 	private int actionsLeft;
@@ -198,11 +197,8 @@ public class Player extends Agent {
 		return hand.getVictoryPoints(summary) + deck.getVictoryPoints(summary) + discard.getVictoryPoints(summary) + revealedCards.getVictoryPoints(summary);
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
 	public String toString() {
-		return name + " (" + getUniqueID() + ")";
+		return "Player " + (playerNumber + 1) + " (" + getUniqueID() + ")";
 	}
 
 	public int totalNumberOfCards() {

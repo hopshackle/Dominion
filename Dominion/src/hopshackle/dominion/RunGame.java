@@ -9,6 +9,8 @@ public class RunGame extends World {
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
 	private long count, maximum;
+	private ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>();
+	private OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
 
 	public static void main(String[] args) {
 
@@ -23,15 +25,11 @@ public class RunGame extends World {
 
 		int sequencesToRun = secondSuffix - firstSuffix + 1;
 		int iteration = 0;
-		double rdmc = 0.00;
 		try {
 			do {
 				String name = nameOfRun;
 				if (sequencesToRun > 1) {
-					rdmc += 0.005;
-					//		numberOfGames += 250;
 					name = name + (firstSuffix + iteration);
-					//		SimProperties.setProperty("Alpha", String.valueOf(rdmc));
 				}
 				System.out.println("Starting Game " + (iteration+firstSuffix));
 				RunGame setOfGames = new RunGame(name, numberOfGames, numberOfDeciders, gamesPerCycle, numberToRemovePerCycle, numberToAddPerCycle);
@@ -48,6 +46,11 @@ public class RunGame extends World {
 		super(null, descriptor, games);
 		dg = providedDG;
 		maximum = games;
+		for (Decider<Player> d : dg.getAllPurchaseDeciders()) {
+			teacher.registerDecider(d);
+		}
+		teacher.registerToERStream(erc);
+
 		this.setCalendar(new FastCalendar(0));
 		DatabaseAccessUtility databaseUtility = new DatabaseAccessUtility();
 		setDatabaseAccessUtility(databaseUtility);
@@ -84,12 +87,9 @@ public class RunGame extends World {
 
 	public void runNextGameWithLearning() {
 		Game game = new Game(this);
-		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>();
-		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
 		for (Player p : game.getPlayers()) {
 			erc.registerAgent(p);
 		}
-		teacher.registerToERStream(erc);
 		runGame(game);
 		teacher.teach();
 	}

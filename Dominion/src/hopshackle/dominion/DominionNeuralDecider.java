@@ -25,11 +25,12 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	private static String propagationType = SimProperties.getProperty("DominionPropagationType", "back");
 	private boolean ableToLearn = true;
 	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
+	public static String newline = System.getProperty("line.separator");
 
 	public DominionNeuralDecider(LookaheadFunction<Player, PositionSummary> lookahead, List<CardType> actions, List<CardValuationVariables> variables) {
 		super(lookahead, HopshackleUtilities.convertList(actions), HopshackleUtilities.convertList(variables));
 		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
-		localDebug = false;
+		localDebug = true;
 	}
 
 	public DominionNeuralDecider(DominionNeuralDecider parent, int mutations) {
@@ -263,6 +264,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	public void learnFromBatch(ExperienceRecord<Player>[] expArray, double maxResult) {
 		if (alpha < 0.000001 || !ableToLearn)
 			return;	// no learning to take place
+		
 		int inputLength = stateEvaluationBrain.getInputCount();
 		double[][] batchOutputData = new double[expArray.length][1];
 		double[][] batchInputData = new double[expArray.length][inputLength];
@@ -332,36 +334,38 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 
 	private double[] preprocessExperienceRecord(ExperienceRecord<Player> exp, double maxResult) {
 		// returns an array, with first element being the output value (result), and then all subsequent elements being the input values
-		double result = exp.getReward();
-		if (result > maxResult) {
-			result = maxResult;
-		}
-		if (result < 0.0) result = 0.0;
-
 		double endValue = exp.getEndScore();
+		double reward = exp.getReward();
+		double finalValue = reward + gamma * endValue;
+		if (finalValue > maxResult) {
+			finalValue = maxResult;
+		}
+		if (finalValue < 0.0) finalValue = 0.0;
 
-		double finalValue = result/maxResult + gamma * endValue;
 		double[] retValue = new double[stateEvaluationBrain.getInputCount() + 1];
 
-		retValue[0] = finalValue;	
-		double[] subLoop = exp.getStartState();	
+		retValue[0] = finalValue/maxResult;	
+		double[] subLoop = exp.getFeatureTrace();	
 		for (int n=0; n<subLoop.length; n++) {
 			retValue[n+1] = subLoop[n];
 		}
 
 		if (localDebug) {
-			log(String.format("Learning:\t%-20sReward: %.2f, End State Value: %.2f, Inferred Start Value: %.2f", 
-					exp.getActionTaken(), exp.getReward(), endValue, finalValue));
-			StringBuffer logMessage = new StringBuffer("Start state: ");
-			double[] state = exp.getStartState();
-			for (int i = 0; i < state.length; i++) 
-				logMessage.append(String.format(" [%.2f] ", state[i]));
-			log(logMessage.toString());
-			logMessage = new StringBuffer("End state:   ");
-			state = exp.getEndState();
-			for (int i = 0; i < state.length; i++) 
-				logMessage.append(String.format(" [%.2f] ", state[i]));
-			log(logMessage.toString());
+			String message = String.format("Learning:\t%-20sReward: %.2f, End State Value: %.2f, Inferred Start Value: %.2f", 
+					exp.getActionTaken(), exp.getReward(), endValue, finalValue);
+			log(message);
+			exp.getAgent().log(message);
+			double[] startState = exp.getStartState();
+			double[] endState = exp.getEndState();
+			double[] featureTrace = exp.getFeatureTrace();
+			StringBuffer logMessage = new StringBuffer("StartState -> EndState (FeatureTrace) :" + newline);
+			for (int i = 0; i < startState.length; i++) {
+				if (startState[i] != 0.0 || endState[i] != 0.0 || Math.abs(featureTrace[i]) >= 0.01)
+					logMessage.append(String.format("\t%.2f -> %.2f (%.2f) %s %s", startState[i], endState[i], featureTrace[i], variableSet.get(i).toString(), newline));
+			}
+			message = logMessage.toString();
+			log(message);
+			exp.getAgent().log(message);
 		}
 
 		return retValue;

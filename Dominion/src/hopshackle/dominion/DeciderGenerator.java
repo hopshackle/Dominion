@@ -90,7 +90,6 @@ public class DeciderGenerator {
 					pd = new DominionNeuralDecider(lookahead, actionsToUse, variablesToUseForPurchase);
 				}
 				pd.setName("P"+String.format("%03d", decideNameCount));
-				//				pd.setTeacher(new AgentTeacher());
 				purchaseDeciders.add(pd);
 			}
 

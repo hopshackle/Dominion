@@ -33,6 +33,10 @@ public class DominionPlayAction extends Action<Player> {
 			logger.severe("No Actual card found in hand for type " + cardType);
 		}
 	}
+	@Override
+	protected void eventDispatch(AgentEvent learningEvent) {
+		// Do nothing, as at this stage we do not want to track any experience records or Play actions.
+	};
 	@Override 
 	protected void doNextDecision() {
 		// Do nothing .. this is all handled in Game/Player

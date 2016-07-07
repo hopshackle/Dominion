@@ -25,13 +25,12 @@ public class Game implements Persistent {
 		seqOfGames = gameHolder;
 		deciderGenerator = gameHolder.getDeciderDenerator();
 		players = new Player[4];
-		boolean debug = false;
+		boolean debugGame = false;
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
-		if (Math.random() < 0.002) debug = true;
+		if (Math.random() < 0.1) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
 			players[n] = new Player(this, n+1);
-			players[n].setName("Player #" + (n+1));
-			players[n].setDebugLocal(debug);
+			players[n].setDebugLocal(debugGame);
 			if (deciderGenerator != null) {
 				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider());
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
