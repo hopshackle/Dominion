@@ -334,9 +334,12 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 
 	private double[] preprocessExperienceRecord(ExperienceRecord<Player> exp, double maxResult) {
 		// returns an array, with first element being the output value (result), and then all subsequent elements being the input values
-		double endValue = exp.getEndScore();
+		double endValue = value(exp.getEndState()) * maxResult; // projection
 		double reward = exp.getReward();
 		double finalValue = reward + gamma * endValue;
+		if (exp.isInFinalState()) {
+			finalValue = exp.getEndScore();
+		}
 		if (finalValue > maxResult) {
 			finalValue = maxResult;
 		}
@@ -351,8 +354,8 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		}
 
 		if (localDebug) {
-			String message = String.format("Learning:\t%-20sReward: %.2f, End State Value: %.2f, Inferred Start Value: %.2f", 
-					exp.getActionTaken(), exp.getReward(), endValue, finalValue);
+			String message = String.format("Learning:\t%-20sReward: %.2f, End State Value: %.2f, Inferred Start Value: %.2f, EndGame: %s", 
+					exp.getActionTaken(), exp.getReward(), endValue, finalValue, exp.isInFinalState());
 			log(message);
 			exp.getAgent().log(message);
 			double[] startState = exp.getStartState();

@@ -198,7 +198,7 @@ public class Player extends Agent {
 	}
 
 	public String toString() {
-		return "Player " + (playerNumber + 1) + " (" + getUniqueID() + ")";
+		return "Player " + playerNumber + " (" + getUniqueID() + ")";
 	}
 
 	public int totalNumberOfCards() {

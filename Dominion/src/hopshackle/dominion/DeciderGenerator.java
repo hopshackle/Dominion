@@ -321,7 +321,7 @@ public class DeciderGenerator {
 		List<Integer> victories = HopshackleUtilities.cloneList(lastPVictories);
 		if (lastPVictories == null)
 			victories = HopshackleUtilities.cloneList(purchaseVictories);
-		for (int n = 0; n < sampleSize; n++) {
+		for (int n = 0; n < 5; n++) {
 			LookaheadDecider<Player, PositionSummary> sample = getSampleTwoBestDeciders(purchaseDeciders, victories).get(0);
 			if(sample != null) {
 				if (sample instanceof DominionNeuralDecider) {
@@ -343,19 +343,20 @@ public class DeciderGenerator {
 		}
 		List<D> retValue = new ArrayList<D>();
 		D dpDecider1 = null, dpDecider2 = null;
-		if (deciders.size() == 0) return null;
-		int highestScore = -1, secondHighest = -1;
-		for (int n = 0; n < (int)sampleSize; n++) {
-			int randomChoice = (int)(Math.random() * deciders.size());
-			if (victories.get(randomChoice) > highestScore) {
-				dpDecider2 = dpDecider1;
-				dpDecider1 = deciders.get(randomChoice);
-				secondHighest = highestScore;
-				highestScore = victories.get(randomChoice);
-			} else if (victories.get(randomChoice) > secondHighest) {
-				if (deciders.get(randomChoice).equals(dpDecider1)) continue;
-				dpDecider2 = deciders.get(randomChoice);
-				secondHighest = victories.get(randomChoice);
+		if (deciders.size() != 0) { 
+			int highestScore = -1, secondHighest = -1;
+			for (int n = 0; n < (int)sampleSize; n++) {
+				int randomChoice = (int)(Math.random() * deciders.size());
+				if (victories.get(randomChoice) > highestScore) {
+					dpDecider2 = dpDecider1;
+					dpDecider1 = deciders.get(randomChoice);
+					secondHighest = highestScore;
+					highestScore = victories.get(randomChoice);
+				} else if (victories.get(randomChoice) > secondHighest) {
+					if (deciders.get(randomChoice).equals(dpDecider1)) continue;
+					dpDecider2 = deciders.get(randomChoice);
+					secondHighest = victories.get(randomChoice);
+				}
 			}
 		}
 		retValue.add(dpDecider1);

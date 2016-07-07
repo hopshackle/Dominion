@@ -27,7 +27,7 @@ public class Game implements Persistent {
 		players = new Player[4];
 		boolean debugGame = false;
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
-		if (Math.random() < 0.1) debugGame = true;
+		if (Math.random() < 0.005) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
 			players[n] = new Player(this, n+1);
 			players[n].setDebugLocal(debugGame);
