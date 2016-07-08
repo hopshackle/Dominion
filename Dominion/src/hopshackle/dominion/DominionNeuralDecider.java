@@ -180,11 +180,16 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		double updatedLambda = lambda;
 		if (applyTemperatureToLearning)
 			updatedLambda *= temperature;
-		for (int layerNumber = 1; layerNumber < stateEvaluationBrain.getLayerCount(); layerNumber++) {	
-			for (int fromNeuron = 1; fromNeuron <= stateEvaluationBrain.getLayerTotalNeuronCount(layerNumber); fromNeuron++) {
-				for (int toNeuron = 1; toNeuron <= stateEvaluationBrain.getLayerTotalNeuronCount(layerNumber)+1; toNeuron++) {
-					double currentWeight = stateEvaluationBrain.getWeight(layerNumber, fromNeuron, toNeuron);
-					stateEvaluationBrain.setWeight(layerNumber, fromNeuron, toNeuron, currentWeight * (1.0 - updatedLambda));
+		for (int layerNumber = 0; layerNumber < stateEvaluationBrain.getLayerCount()-1; layerNumber++) {	
+			for (int fromNeuron = 0; fromNeuron < stateEvaluationBrain.getLayerTotalNeuronCount(layerNumber); fromNeuron++) {
+				for (int toNeuron = 0; toNeuron < stateEvaluationBrain.getLayerNeuronCount(layerNumber+1); toNeuron++) {
+					// The last Neuron in each layer is a bias neuron, which has no incoming connections
+					if (stateEvaluationBrain.isConnected(layerNumber, fromNeuron, toNeuron)) {
+						double currentWeight = stateEvaluationBrain.getWeight(layerNumber, fromNeuron, toNeuron);
+						stateEvaluationBrain.setWeight(layerNumber, fromNeuron, toNeuron, currentWeight * (1.0 - updatedLambda));
+					} else {
+						System.out.println(String.format("No Connection from layer %d, %d -> %d",layerNumber, fromNeuron, toNeuron));
+					}
 				}
 			}
 		}
@@ -339,6 +344,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		double finalValue = reward + gamma * endValue;
 		if (exp.isInFinalState()) {
 			finalValue = exp.getEndScore();
+			endValue = exp.getEndScore();
 		}
 		if (finalValue > maxResult) {
 			finalValue = maxResult;
