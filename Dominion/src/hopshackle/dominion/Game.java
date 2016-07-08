@@ -23,7 +23,8 @@ public class Game implements Persistent {
 
 	public Game(RunGame gameHolder) {
 		seqOfGames = gameHolder;
-		deciderGenerator = gameHolder.getDeciderDenerator();
+		deciderGenerator = seqOfGames.getDeciderDenerator();
+		seqOfGames.setCalendar(new FastCalendar(0l), 0);
 		players = new Player[4];
 		boolean debugGame = false;
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
@@ -74,6 +75,7 @@ public class Game implements Persistent {
 			currentPlayer = 0;
 
 		if (currentPlayer == 0) turn++;
+		seqOfGames.setCurrentTime((long) ((turn-1) * 4 + currentPlayer + 1));
 		players[currentPlayer].takeTurn();
 	}
 

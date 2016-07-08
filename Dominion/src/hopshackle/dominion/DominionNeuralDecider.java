@@ -30,7 +30,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	public DominionNeuralDecider(LookaheadFunction<Player, PositionSummary> lookahead, List<CardType> actions, List<CardValuationVariables> variables) {
 		super(lookahead, HopshackleUtilities.convertList(actions), HopshackleUtilities.convertList(variables));
 		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
-		localDebug = true;
+		localDebug = false;
 	}
 
 	public DominionNeuralDecider(DominionNeuralDecider parent, int mutations) {
@@ -340,8 +340,7 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 	private double[] preprocessExperienceRecord(ExperienceRecord<Player> exp, double maxResult) {
 		// returns an array, with first element being the output value (result), and then all subsequent elements being the input values
 		double endValue = value(exp.getEndState()) * maxResult; // projection
-		double reward = exp.getReward();
-		double finalValue = reward + gamma * endValue;
+		double finalValue = gamma * endValue;
 		if (exp.isInFinalState()) {
 			finalValue = exp.getEndScore();
 			endValue = exp.getEndScore();
@@ -360,8 +359,8 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		}
 
 		if (localDebug) {
-			String message = String.format("Learning:\t%-20sReward: %.2f, End State Value: %.2f, Inferred Start Value: %.2f, EndGame: %s", 
-					exp.getActionTaken(), exp.getReward(), endValue, finalValue, exp.isInFinalState());
+			String message = String.format("Learning:\t%-20sEndScore: %.2f, End State Valuation: %.2f, Inferred Start Value: %.2f, EndGame: %s", 
+					exp.getActionTaken(), exp.getEndScore(), endValue, finalValue, exp.isInFinalState());
 			log(message);
 			exp.getAgent().log(message);
 			double[] startState = exp.getStartState();

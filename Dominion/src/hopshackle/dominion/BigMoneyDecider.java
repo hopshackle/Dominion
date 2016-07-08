@@ -63,5 +63,6 @@ public class BigMoneyDecider extends LookaheadDecider<Player, PositionSummary> {
 
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
-
+	@Override
+	public void learnFromBatch(List<ExperienceRecord<Player>> exp, double maxResult) {	}
 }

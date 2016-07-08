@@ -6,11 +6,12 @@ public class RunGame extends World {
 
 	private static boolean learningOn = SimProperties.getProperty("DominionLearningOn", "true").equals("true");
 	private static boolean extraLastK = SimProperties.getProperty("DominionLastThousandForScoring", "true").equals("true");
+	private static String teachingStrategy = SimProperties.getProperty("DominionTeachingStrategy", "AllPlayers");
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
 	private long count, maximum;
 	private ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>();
-	private OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
+	private OnInstructionTeacher<Player> teacher;
 
 	public static void main(String[] args) {
 
@@ -46,12 +47,21 @@ public class RunGame extends World {
 		super(null, descriptor, games);
 		dg = providedDG;
 		maximum = games;
+		switch(teachingStrategy) {
+		case "AllPlayers":
+			teacher = new OnInstructionTeacher<Player>();
+			break;
+		case "SelfOnly":
+			teacher = new OnInstructionTeacherSelfOnly<Player>();
+			break;
+		default:
+			throw new AssertionError("Unsupported DominionTeachingStrategy " + teachingStrategy);
+		}
 		for (Decider<Player> d : dg.getAllPurchaseDeciders()) {
 			teacher.registerDecider(d);
 		}
 		teacher.registerToERStream(erc);
 
-		this.setCalendar(new FastCalendar(0));
 		DatabaseAccessUtility databaseUtility = new DatabaseAccessUtility();
 		setDatabaseAccessUtility(databaseUtility);
 		Thread t = new Thread(databaseUtility);
