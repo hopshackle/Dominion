@@ -18,8 +18,17 @@ public class Game implements Persistent {
 	private double highestScore, lowestScore;
 	private double score[] = new double[4];
 	private static DatabaseWriter<Game> gameWriter = new DatabaseWriter<Game>(new GameDAO());
+	private static BigMoneyDecider bigMoney = new BigMoneyDecider();
 	private DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
+	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
+	
+	public static Game againstBigMoney(RunGame gameHolder) {
+		Game retValue = new Game(gameHolder);
+		int randomPlayer = Dice.roll(1, 4) - 1;
+		retValue.getPlayers()[randomPlayer].setPositionDecider(bigMoney);
+		return retValue;
+	}
 
 	public Game(RunGame gameHolder) {
 		seqOfGames = gameHolder;
@@ -28,7 +37,7 @@ public class Game implements Persistent {
 		players = new Player[4];
 		boolean debugGame = false;
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
-		if (Math.random() < 0.005) debugGame = true;
+		if (Math.random() < debugGameProportion) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
 			players[n] = new Player(this, n+1);
 			players[n].setDebugLocal(debugGame);
