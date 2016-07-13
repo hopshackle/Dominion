@@ -8,6 +8,7 @@ public class RunGame extends World {
 	private static boolean extraLastK = SimProperties.getProperty("DominionLastThousandForScoring", "true").equals("true");
 	private static String teachingStrategy = SimProperties.getProperty("DominionTeachingStrategy", "AllPlayers");
 	private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
+	private static int pastGamesToIncludeInTraining = SimProperties.getPropertyAsInteger("DominionPastGamesToIncludeInTraining", "0");
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
 	private long count, maximum;
@@ -50,10 +51,10 @@ public class RunGame extends World {
 		maximum = games;
 		switch(teachingStrategy) {
 		case "AllPlayers":
-			teacher = new OnInstructionTeacher<Player>();
+			teacher = new OnInstructionTeacher<Player>(pastGamesToIncludeInTraining);
 			break;
 		case "SelfOnly":
-			teacher = new OnInstructionTeacherSelfOnly<Player>();
+			teacher = new OnInstructionTeacherSelfOnly<Player>(pastGamesToIncludeInTraining);
 			break;
 		default:
 			throw new AssertionError("Unsupported DominionTeachingStrategy " + teachingStrategy);
