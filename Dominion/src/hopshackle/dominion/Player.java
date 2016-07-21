@@ -21,7 +21,8 @@ public class Player extends Agent {
 	private int actionsLeft;
 	private Decider<Player> actionDecider;
 	private NeuralComputer gameEndEstimator;
-	private LookaheadDecider<Player, PositionSummary> purchaseDecider, discardDecider;
+	private LookaheadDecider<Player> purchaseDecider;
+	HardCodedDiscardDecider discardDecider;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
 	
 	public Player(Game game, int number) {
@@ -214,7 +215,7 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	public LookaheadDecider<Player, PositionSummary> getPositionDecider() {
+	public LookaheadDecider<Player> getPositionDecider() {
 		return purchaseDecider;
 	}
 	@Override
@@ -224,7 +225,7 @@ public class Player extends Agent {
 	public Decider<Player> getActionDecider() {
 		return actionDecider;
 	}
-	public void setPositionDecider(LookaheadDecider<Player, PositionSummary> newDecider) {
+	public void setPositionDecider(LookaheadDecider<Player> newDecider) {
 		purchaseDecider = newDecider;
 		discardDecider = new HardCodedDiscardDecider(HopshackleUtilities.convertList(newDecider.getActions()), new ArrayList<CardValuationVariables>());
 		log("Using purchase strategy " + purchaseDecider.toString());
@@ -336,7 +337,7 @@ public class Player extends Agent {
 		gameEndEstimator = brain;
 	}
 
-	public LookaheadDecider<Player, PositionSummary> getHandDecider() {
+	public HardCodedDiscardDecider getHandDecider() {
 		return discardDecider;
 	}
 

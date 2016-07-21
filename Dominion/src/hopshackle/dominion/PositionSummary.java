@@ -2,7 +2,7 @@ package hopshackle.dominion;
 
 import hopshackle.simulation.*;
 
-import java.util.HashMap;
+import java.util.*;
 
 public class PositionSummary implements LookaheadState<Player> {
 
@@ -14,8 +14,14 @@ public class PositionSummary implements LookaheadState<Player> {
 	private CardType[] hand;
 	private Player player;
 	private Game game;
-
+	private List<CardValuationVariables> variables;
+	
 	public PositionSummary(Player basePlayer) {
+		this(basePlayer, null);
+	}
+
+	public PositionSummary(Player basePlayer, List<CardValuationVariables> variableList) {
+		variables = variableList;
 		player = basePlayer;
 		game = player.getGame();
 		initiateVariables();
@@ -52,19 +58,17 @@ public class PositionSummary implements LookaheadState<Player> {
 	}
 
 	@Override
-	public void apply(ActionEnum<Player> ae) {
-		if (ae == null) return;
+	public PositionSummary apply(ActionEnum<Player> ae) {
+		PositionSummary retValue = this.clone();
+		if (ae == null) return retValue;
 		if (ae instanceof CardType){
-			drawCard((CardType) ae);
-			return;
-		}
-		if (ae instanceof CardTypeList) {
+			retValue.drawCard((CardType) ae);
+		} else if (ae instanceof CardTypeList) {
 			CardTypeList ctl = (CardTypeList) ae;
 			for (CardType c : ctl.cards) 
-				drawCard(c);
-			return;
+				retValue.drawCard(c);
 		}
-		return;
+		return retValue;
 	}
 
 	public void undrawCard(CardType drawnCard) {
@@ -283,6 +287,22 @@ public class PositionSummary implements LookaheadState<Player> {
 
 	public double getTurns() {
 		return ((double) (game.turnNumber() - 1));
+	}
+
+	public void setVariables(List<CardValuationVariables> var) {
+		variables = var;
+	}
+	@Override
+	public double[] getAsArray() {
+		if (variables == null) {
+			throw new AssertionError("No Variables in PositionSummary.getAsArray()");
+		}
+		double[] values = new double[variables.size()];
+		for (int i = 0; i < variables.size(); i ++) {
+			CardValuationVariables gv = variables.get(i);
+			values[i] = gv.getValue(this);
+		}
+		return values;
 	}
 
 }

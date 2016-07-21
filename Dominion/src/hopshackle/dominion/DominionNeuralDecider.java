@@ -13,7 +13,7 @@ import org.encog.neural.networks.training.propagation.back.Backpropagation;
 import org.encog.neural.networks.training.propagation.quick.QuickPropagation;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
 
-public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSummary> {
+public class DominionNeuralDecider extends LookaheadDecider<Player> {
 
 	protected BasicNetwork stateEvaluationBrain;
 	protected static double momentum = SimProperties.getPropertyAsDouble("DominionLearningMomentum", "0.0");
@@ -31,95 +31,6 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 		super(lookahead, HopshackleUtilities.convertList(actions), HopshackleUtilities.convertList(variables));
 		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
 		localDebug = false;
-	}
-
-	public DominionNeuralDecider(DominionNeuralDecider parent, int mutations) {
-		super(parent.lookahead, HopshackleUtilities.convertList(parent.actionSet), HopshackleUtilities.convertList(HopshackleUtilities.cloneList(parent.variableSet)));
-		GameSetup gs = new GameSetup();
-		for (int i = 0; i < mutations; i++) {
-			int numberOfInputs = variableSet.size();
-			if (Math.random() > (numberOfInputs - 5) * 0.1) {
-				// then add a new one
-				List<CardValuationVariables> allVar = gs.getDeckVariables();
-				boolean variableFound = false;
-				do {
-					int roll = Dice.roll(1, allVar.size()) -1;
-					GeneticVariable<Player> choice = allVar.get(roll);
-					if (!variableSet.contains(choice)) {
-						variableFound = true;
-						variableSet.add(choice);
-					}
-				} while (!variableFound);
-			} else {
-				int roll = Dice.roll(1, numberOfInputs) -1;
-				variableSet.remove(roll);
-			}
-		}		
-		stateEvaluationBrain = NeuralDecider.initialiseBrain(variableSet);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <V extends GeneticVariable<Player>> List<V> combineAndMutateInputs(List<V> list, int mutations) {
-		Set<V> retValue1 = new HashSet<V>();
-		for (GeneticVariable<Player> gv : variableSet) {
-			if (Math.random() > 0.50)
-				retValue1.add((V) gv);
-		}
-		for (GeneticVariable<Player> gv : list) {
-			if (Math.random() > 0.50)
-				retValue1.add((V) gv);
-		}
-		List<V> retValue = new ArrayList<V>();
-		for (GeneticVariable<Player> gv : retValue1) 
-			retValue.add((V) gv);
-		GameSetup gs = new GameSetup();
-		for (int i = 0; i < mutations; i++) {
-			int numberOfInputs = retValue.size();
-			if (Math.random() > (numberOfInputs - 5) * 0.1) {
-				// then add a new one
-				List<CardValuationVariables> allVar = gs.getDeckVariables();
-				boolean variableFound = false;
-				do {
-					int roll = Dice.roll(1, allVar.size()) -1;
-					V choice = (V) allVar.get(roll);
-					if (!retValue.contains(choice)) {
-						variableFound = true;
-						retValue.add(choice);
-					}
-				} while (!variableFound);
-			} else {
-				int roll = Dice.roll(1, numberOfInputs) -1;
-				retValue.remove(roll);
-			}
-		}
-		return retValue;
-	}
-
-	public void mutateWeights(int mutations) {
-		NeuralStructure structure = stateEvaluationBrain.getStructure();
-		if (stateEvaluationBrain.getLayerCount() != 3) 
-			throw new AssertionError("Hard-coded assumption that NN has just one hidden layer.");
-		int totalWeights = structure.calculateSize();
-		int inputNeurons = stateEvaluationBrain.getLayerNeuronCount(1);
-		int hiddenNeurons = stateEvaluationBrain.getLayerTotalNeuronCount(2);
-		int outputNeurons = stateEvaluationBrain.getLayerTotalNeuronCount(3);
-		totalWeights = inputNeurons * (hiddenNeurons - 1) + hiddenNeurons * outputNeurons;
-		// -1 in the above is for the bias neuron in the hidden layer, which has no connections from input layer
-
-		for (int i = 0; i < mutations; i++) {
-			int weightToChange = Dice.roll(1, totalWeights);
-			int fromLayer = 1;
-			int toNeuronCount = hiddenNeurons - 1;
-			if (weightToChange > inputNeurons * (hiddenNeurons - 1)) {
-				fromLayer = 2;
-				weightToChange -= inputNeurons * (hiddenNeurons - 1);
-				toNeuronCount = outputNeurons;
-			}
-			int fromNeuron = weightToChange / toNeuronCount + 1;
-			int toNeuron = weightToChange % toNeuronCount + 1;
-
-			stateEvaluationBrain.addWeight(fromLayer, fromNeuron, toNeuron, Math.random() / 10.0);
-		}
 	}
 
 	@Override
@@ -193,24 +104,6 @@ public class DominionNeuralDecider extends LookaheadDecider<Player, PositionSumm
 				}
 			}
 		}
-	}
-
-	@Override
-	public Decider<Player> crossWith(Decider<Player> otherDecider) {
-		if (otherDecider == null) {
-			DominionNeuralDecider retValue = new DominionNeuralDecider(this, 0);
-			retValue.stateEvaluationBrain = (BasicNetwork) stateEvaluationBrain.clone();
-			return retValue;
-		}
-		if (!(otherDecider instanceof DominionNeuralDecider))
-			return super.crossWith(otherDecider);
-		if (this.actionSet.size() != otherDecider.getActions().size())
-			return super.crossWith(otherDecider);
-
-		List<GeneticVariable<Player>> newInputs = combineAndMutateInputs(otherDecider.getVariables(), 4);
-		DominionNeuralDecider retValue = new DominionNeuralDecider(lookahead, HopshackleUtilities.convertList(actionSet), HopshackleUtilities.convertList(newInputs));
-		retValue.setName(this.toString());
-		return retValue;
 	}
 
 	public void saveToFile(String descriptor) {
