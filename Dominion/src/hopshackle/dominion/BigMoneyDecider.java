@@ -4,17 +4,14 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class BigMoneyDecider extends LookaheadDecider<Player, PositionSummary> {
-
-	private static ArrayList<GeneticVariable<Player>>variablesToUse = new ArrayList<GeneticVariable<Player>>(EnumSet.allOf(CardValuationVariables.class));
-	private static ArrayList<ActionEnum<Player>> actionsToUse= new ArrayList<ActionEnum<Player>>(EnumSet.allOf(CardType.class));
+public class BigMoneyDecider extends LookaheadDecider<Player> {
 	
-	public BigMoneyDecider() {
-		super(null, actionsToUse, variablesToUse);
+	public BigMoneyDecider(List<ActionEnum<Player>> actionsToUse, List<GeneticVariable<Player>> variables) {
+		super(new DominionStateFactory(variables), new DominionLookaheadFunction(), actionsToUse);
 	}
 	
 	@Override
-	public double valueOption(ActionEnum<Player> option, Player decidingAgent, Agent contextAgent) {
+	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
 		Player p = (Player) decidingAgent;
 		PositionSummary ps = p.getPositionSummaryCopy();
 		ps.apply(option); 
@@ -28,7 +25,8 @@ public class BigMoneyDecider extends LookaheadDecider<Player, PositionSummary> {
 	}
 	
 	@Override
-	public double value(PositionSummary ps) {
+	public double value(LookaheadState<Player> state) {
+		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		
 		double provincesLeft = ps.getNumberOfCardsRemaining(CardType.PROVINCE);

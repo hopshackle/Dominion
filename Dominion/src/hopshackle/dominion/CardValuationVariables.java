@@ -94,17 +94,12 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	DUCHY_PERCENT;
 	
 
-	public double getValue(Agent a) {
+	public double getValue(Player a) {
 		if (a instanceof Player) {
 			return getValue(((Player) a).getPositionSummaryCopy());
 		} else {
 			return 0.0;
 		}
-	}
-	
-	@Override
-	public double getValue(LookaheadState<Player> ls) {
-		return getValue((PositionSummary) ls);
 	}
 	
 	public double getValue(PositionSummary ps) {
@@ -291,13 +286,6 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 		return true;
 	}
 
-	@Override
-	public double getValue(Player a1, Agent a2) {return getValue(a1);}
-	@Override
-	public double getValue(Player a1, Artefact a2) {return getValue(a1);}
-	@Override
-	public double getValue(Player a1, Action<Player> a2) {return getValue(a1);}
-	@Override
 	public String getDescriptor() { return "DOM1";}
 	
 	public CardType relatedCardType() {

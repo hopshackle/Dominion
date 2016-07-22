@@ -4,15 +4,15 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class HardCodedActionDecider extends LookaheadDecider<Player, PositionSummary> {
+public class HardCodedActionDecider extends LookaheadDecider<Player> {
 	
 	public HardCodedActionDecider(List<CardType> actions, List<CardValuationVariables> variables) {
-		super(null, CardType.toActionEnum(actions), CardValuationVariables.toGenVar(variables));
+		super(new LinearStateFactory<Player>(HopshackleUtilities.convertList(variables)), new DominionLookaheadFunction(), CardType.toActionEnum(actions));
 		generateLearningEvents = false;
 	}
 
 	@Override
-	public double valueOption(ActionEnum<Player> option, Player decidingAgent, Agent contextAgent) {
+	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
 		CardType cardType = (CardType) option;
 		Player p = (Player) decidingAgent;
 		List<CardType> hand = null;
@@ -87,12 +87,12 @@ public class HardCodedActionDecider extends LookaheadDecider<Player, PositionSum
 	}
 
 	protected ActionEnum<Player> makeDecision(Player decidingAgent, Agent contextAgent, double explorationChance) {
-		return super.makeDecision(decidingAgent, contextAgent, 0.0);
+		return super.makeDecision(decidingAgent);
 		// i.e. never explore with a Hardcoded Decider
 	}
 
 	@Override
-	public double value(PositionSummary state) {
+	public double value(LookaheadState<Player> state) {
 		return 0;
 	}
 

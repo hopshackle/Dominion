@@ -1,13 +1,20 @@
 package hopshackle.dominion;
 
+import java.util.List;
+
+import hopshackle.simulation.ActionEnum;
+import hopshackle.simulation.GeneticVariable;
+import hopshackle.simulation.LookaheadState;
+
 public class ChrisPethersDecider extends BigMoneyDecider{
 
-	public ChrisPethersDecider() {
-		super();
+	public ChrisPethersDecider(List<ActionEnum<Player>> actionsToUse, List<GeneticVariable<Player>> variables) {
+		super(actionsToUse, variables);
 	}
 
 	@Override
-	public double value(PositionSummary ps) {
+	public double value(LookaheadState<Player> state) {
+		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 
 		double mines = ps.getNumberOfCardsTotal(CardType.MINE);

@@ -4,10 +4,10 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class HardCodedDiscardDecider extends LookaheadDecider<Player, PositionSummary> {
+public class HardCodedDiscardDecider extends LookaheadDecider<Player> {
 	
-	public HardCodedDiscardDecider(List<CardType> actions, List<CardValuationVariables> variables) {
-		super(null, CardType.toActionEnum(actions), CardValuationVariables.toGenVar(variables));
+	public HardCodedDiscardDecider(List<CardType> actions) {
+		super(null, new DominionLookaheadFunction(), CardType.toActionEnum(actions));
 	}
 
 	/*
@@ -17,7 +17,8 @@ public class HardCodedDiscardDecider extends LookaheadDecider<Player, PositionSu
 	 *  Hence ensuring that victory cards are discarded first, then copper, then action cards
 	 */
 	@Override
-	public double value(PositionSummary ps) {
+	public double value(LookaheadState<Player> state) {
+		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		for (CardType ct : ps.getHand()) {
 			if (ct.isTreasure()) retValue += ct.getTreasure();
@@ -27,7 +28,7 @@ public class HardCodedDiscardDecider extends LookaheadDecider<Player, PositionSu
 	}
 
 	@Override
-	public double valueOption(ActionEnum<Player> option, Player decidingAgent, Agent contextAgent) {
+	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
 		return 0;
 	}
 
