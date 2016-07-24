@@ -11,12 +11,14 @@ public class DominionBuyingDecision {
 	private int totalBuys;
 	private Map<CardType, Integer> limitedCards;
 	private PositionSummary overridePS = null;
+	private DominionStateFactory stateFactory;
 
 	public DominionBuyingDecision(Player player, int budget, int buys) {
 		if (buys > 3) buys = 3;		// for performance reasons to avoid combinatorial explosion
 		this.player = player;
 		totalBudget = budget;
 		totalBuys = buys;
+		stateFactory = new DominionStateFactory(player.getPositionDecider().getVariables());
 		Game game = player.getGame();
 		limitedCards = new HashMap<CardType, Integer>();
 		for (CardType card : game.availableCardsToPurchase()) {
@@ -51,7 +53,7 @@ public class DominionBuyingDecision {
 		List<CardType> bestPurchase = null;
 		PositionSummary ps = null;
 		if (overridePS == null) 
-			ps = player.getPositionSummaryCopy();
+			ps = (PositionSummary) stateFactory.getCurrentState(player);
 		else
 			ps = overridePS.clone();
 

@@ -25,6 +25,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	private TestDominionDecider remodelDecider, defaultPurchaseDecider, thiefPurchaseDecider;
 	private HardCodedDiscardDecider discardDecider;
 	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
+	private DominionStateFactory stateFactory = new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse));
 	private ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
 	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUse);
 
@@ -40,7 +41,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
-		discardDecider = new HardCodedDiscardDecider(actionsToUse);
+		discardDecider = new HardCodedDiscardDecider(stateFactory, actionsToUse);
 		p1.setPositionDecider(discardDecider);
 		p2.setPositionDecider(discardDecider);
 		p3.setPositionDecider(discardDecider);

@@ -13,7 +13,8 @@ public class DominionLookaheadFunction implements LookaheadFunction<Player> {
 
 	@Override
 	public PositionSummary getCurrentState(Player agent) {
-		return agent.getPositionSummaryCopy();
+		throw new AssertionError("Should not call getCurrentState from DominionLookaheadFunction. Use StateFactory method instead.");
+//		return agent.getPositionSummaryCopy();
 	}
 
 }

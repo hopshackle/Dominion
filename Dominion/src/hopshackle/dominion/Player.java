@@ -33,7 +33,7 @@ public class Player extends Agent {
 		discard = new Deck();
 		hand = new Deck();
 		revealedCards = new Deck();
-		summary = new PositionSummary(this);
+		summary = new PositionSummary(this, null);
 		dealFreshHand();
 		log("Player #" + number + " in Game " + game.getUniqueId());
 	}
@@ -133,7 +133,7 @@ public class Player extends Agent {
 			}
 			drawTopCardFromDeckIntoHand();
 		}
-		summary = new PositionSummary(this);
+		summary = new PositionSummary(this, null);
 	}
 
 	private void shuffleDiscardToFormNewDeck() {
@@ -186,7 +186,7 @@ public class Player extends Agent {
 
 	public void insertCardDirectlyIntoHand(Card c) {
 		hand.addCard(c);
-		summary = new PositionSummary(this);
+		summary = new PositionSummary(this, null);
 	}
 
 	public int totalTreasureValue() {
@@ -226,7 +226,7 @@ public class Player extends Agent {
 	}
 	public void setPositionDecider(LookaheadDecider<Player> newDecider) {
 		purchaseDecider = newDecider;
-		discardDecider = new HardCodedDiscardDecider(HopshackleUtilities.convertList(newDecider.getActions()));
+		discardDecider = new HardCodedDiscardDecider(new DominionStateFactory(newDecider.getVariables()), HopshackleUtilities.convertList(newDecider.getActions()));
 		log("Using purchase strategy " + purchaseDecider.toString());
 	}
 	public void setActionDecider(Decider<Player> newDecider) {

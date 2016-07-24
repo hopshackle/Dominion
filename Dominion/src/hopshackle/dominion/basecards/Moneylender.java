@@ -3,6 +3,7 @@ package hopshackle.dominion.basecards;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.DominionBuyingDecision;
+import hopshackle.dominion.DominionStateFactory;
 import hopshackle.dominion.Player;
 import hopshackle.dominion.PositionSummary;
 
@@ -11,6 +12,7 @@ import java.util.List;
 public class Moneylender extends Card {
 	
 	private int treasureValue = 0;
+	private DominionStateFactory stateFactory;
 
 	public Moneylender() {
 		super(CardType.MONEYLENDER);
@@ -36,9 +38,10 @@ public class Moneylender extends Card {
 			return;
 		
 		player.setState(Player.State.PURCHASING);
+		stateFactory = new DominionStateFactory(player.getPositionDecider().getVariables());
 		
 		double valueOfNotTrashing = value(player, treasure, null);
-		PositionSummary ps = player.getPositionSummaryCopy();
+		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(player);
 		ps.removeCard(CardType.COPPER);
 		double valueOfTrashing = value(player, treasure+2, ps);	// only +2 as we have to remove the Copper that was just trashed
 		
@@ -63,7 +66,7 @@ public class Moneylender extends Card {
 	
 	private double value(Player player, int treasure, PositionSummary ps) {
 		if (ps == null)
-			ps = player.getPositionSummaryCopy();
+			ps = (PositionSummary) stateFactory.getCurrentState(player);
 		DominionBuyingDecision decision = new DominionBuyingDecision(player, treasure, player.getBuys());
 		decision.setPositionSummaryOverride(ps);
 		List<CardType> purchase = decision.getBestPurchase();

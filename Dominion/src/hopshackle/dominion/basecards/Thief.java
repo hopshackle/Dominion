@@ -21,7 +21,7 @@ public class Thief extends AttackCard {
 		if (cardToTrash.getType() == CardType.NONE)
 			return;
 		target.trashCardFromDiscard(cardToTrash.getType());
-		PositionSummary ps = attacker.getPositionSummaryCopy();
+		PositionSummary ps = (PositionSummary) attacker.getPositionDecider().getCurrentState(attacker);
 		double baseValue = attacker.getPositionDecider().value(ps);
 		ps.addCard(cardToTrash.getType());
 		double newValue = attacker.getPositionDecider().value(ps);

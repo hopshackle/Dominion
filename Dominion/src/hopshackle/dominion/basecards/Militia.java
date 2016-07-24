@@ -16,7 +16,6 @@ public class Militia extends AttackCard {
 
 	@Override
 	public void executeAttackOnPlayer(Player victim, Player attacker) {
-
 		List<CardType> hand = victim.getCopyOfHand();
 		CardType[] cardsInHand = hand.toArray(new CardType[1]);
 		if (cardsInHand.length < 4) {
@@ -26,7 +25,7 @@ public class Militia extends AttackCard {
 		victim.log("Victim of MILITIA:");
 		CardType[] possibleCombination = new CardType[3];
 		CardType[] bestCombination = new CardType[3];
-		LookaheadDecider<Player> discardDecider = victim.getHandDecider();
+		LookaheadDecider<Player> victimDecider = victim.getHandDecider();
 		double bestValue = -1.0;
 		for (int loop=0; loop<cardsInHand.length; loop++) {
 			possibleCombination[0] = cardsInHand[loop];
@@ -34,9 +33,9 @@ public class Militia extends AttackCard {
 				possibleCombination[1] = cardsInHand[loop2];
 				for (int loop3=loop2+1; loop3<cardsInHand.length; loop3++) {
 					possibleCombination[2] = cardsInHand[loop3];
-					PositionSummary positionWithReducedHand = victim.getPositionSummaryCopy();
+					PositionSummary positionWithReducedHand = (PositionSummary) victimDecider.getCurrentState(victim);
 					positionWithReducedHand.changeHand(possibleCombination);
-					double value = discardDecider.value(positionWithReducedHand);
+					double value = victimDecider.value(positionWithReducedHand);
 					if (value > bestValue) {
 						bestValue = value;
 						for (int n=0; n<3; n++)

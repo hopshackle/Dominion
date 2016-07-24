@@ -17,17 +17,18 @@ public class Remodel extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
+		LookaheadDecider<Player> purchaseDecider = player.getPositionDecider();
 		List<CardType> hand = player.getCopyOfHand();
 		CardType[] cardsInHand = hand.toArray(new CardType[1]);
 		if (cardsInHand[0] == null) return;
 		CardType cardToRemodel = CardType.NONE;
 		CardType cardToPurchase = CardType.NONE;
-		LookaheadDecider<Player> purchaseDecider = player.getPositionDecider();
+
 		int treasureInHand = player.getBudget();		// doesn't take account of unrevealed purchase power...but still better
 		int buys = player.getBuys();
 		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, treasureInHand, buys);
 		List<CardType> purchaseBeforeRemodel = nextBuy.getBestPurchase();
-		PositionSummary basePS = player.getPositionSummaryCopy();
+		PositionSummary basePS = (PositionSummary) purchaseDecider.getCurrentState(player);
 		for (CardType ct : purchaseBeforeRemodel)
 			basePS.addCard(ct);
 		double startValue = purchaseDecider.value(basePS);
@@ -39,7 +40,7 @@ public class Remodel extends Card {
 			CardType possibleCardToRemodel = cardsInHand[loop];
 			if (optionsAlreadyExamined.contains(possibleCardToRemodel)) continue;
 			optionsAlreadyExamined.add(possibleCardToRemodel);
-			PositionSummary withoutCard = player.getPositionSummaryCopy();
+			PositionSummary withoutCard = (PositionSummary) purchaseDecider.getCurrentState(player);
 			withoutCard.removeCard(possibleCardToRemodel);
 			int budget = possibleCardToRemodel.getCost() + 2;
 			DominionBuyingDecision dpd = new DominionBuyingDecision(player, budget, 1);

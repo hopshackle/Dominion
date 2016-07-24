@@ -6,8 +6,8 @@ import java.util.*;
 
 public class HardCodedDiscardDecider extends LookaheadDecider<Player> {
 	
-	public HardCodedDiscardDecider(List<CardType> actions) {
-		super(null, new DominionLookaheadFunction(), CardType.toActionEnum(actions));
+	public HardCodedDiscardDecider(StateFactory<Player> stateFactory, List<CardType> actions) {
+		super(stateFactory, new DominionLookaheadFunction(), CardType.toActionEnum(actions));
 	}
 
 	/*

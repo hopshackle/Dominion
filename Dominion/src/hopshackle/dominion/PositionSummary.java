@@ -15,10 +15,6 @@ public class PositionSummary implements LookaheadState<Player> {
 	private Player player;
 	private Game game;
 	private List<CardValuationVariables> variables;
-	
-	public PositionSummary(Player basePlayer) {
-		this(basePlayer, null);
-	}
 
 	public PositionSummary(Player basePlayer, List<CardValuationVariables> variableList) {
 		variables = variableList;
@@ -47,6 +43,7 @@ public class PositionSummary implements LookaheadState<Player> {
 		victoryCards = base.victoryCards;
 		actionCards = base.actionCards;
 		cardsInDiscard = base.cardsInDiscard;
+		variables = base.variables;
 		updateDerivedVariables();
 	}
 
