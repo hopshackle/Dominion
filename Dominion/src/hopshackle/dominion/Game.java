@@ -18,15 +18,14 @@ public class Game implements Persistent {
 	private double highestScore, lowestScore;
 	private double score[] = new double[4];
 	private static DatabaseWriter<Game> gameWriter = new DatabaseWriter<Game>(new GameDAO());
-	private static BigMoneyDecider bigMoney = new BigMoneyDecider();
 	private DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	
-	public static Game againstBigMoney(RunGame gameHolder) {
+	public static Game againstDecider(RunGame gameHolder, LookaheadDecider<Player> deciderToUse) {
 		Game retValue = new Game(gameHolder);
 		int randomPlayer = Dice.roll(1, 4) - 1;
-		retValue.getPlayers()[randomPlayer].setPositionDecider(bigMoney);
+		retValue.getPlayers()[randomPlayer].setPositionDecider(deciderToUse);
 		return retValue;
 	}
 
@@ -45,7 +44,6 @@ public class Game implements Persistent {
 				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider());
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
 //				players[n].setHandDecider(deciderGenerator.getDiscardDecider());
-				players[n].setGameEndComputer(deciderGenerator.getGameEndComputer());
 			}
 		}
 		currentPlayer = -1;

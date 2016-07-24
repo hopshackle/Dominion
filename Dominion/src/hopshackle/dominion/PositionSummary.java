@@ -278,13 +278,6 @@ public class PositionSummary implements LookaheadState<Player> {
 		return cardsInDiscard / totalCards;
 	}
 
-	public double getGameOver() {
-		NeuralComputer gameEndEstimator = player.getGameEndBrain();
-		if (gameEndEstimator == null)
-			return 0.0;
-		return gameEndEstimator.getValue(this);
-	}
-
 	public double getTurns() {
 		return ((double) (game.turnNumber() - 1));
 	}

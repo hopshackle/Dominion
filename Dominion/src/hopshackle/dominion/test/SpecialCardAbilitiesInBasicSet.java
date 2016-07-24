@@ -40,7 +40,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
-		discardDecider = new HardCodedDiscardDecider(actionsToUse, variablesToUse);
+		discardDecider = new HardCodedDiscardDecider(actionsToUse);
 		p1.setPositionDecider(discardDecider);
 		p2.setPositionDecider(discardDecider);
 		p3.setPositionDecider(discardDecider);

@@ -7,6 +7,7 @@ import hopshackle.simulation.*;
 
 public class RunBrainCompetition {
 
+	private String baseDir = SimProperties.getProperty("BaseDirectory", "C:");
 	private DeciderGenerator dg;
 
 	/**
@@ -33,10 +34,10 @@ public class RunBrainCompetition {
 			SimProperties.setProperty("StartTemperature", String.valueOf(1.0 * (totalCycles - metaCycles) / totalCycles));
 
 			// record best brain
-			LookaheadDecider<Player, PositionSummary> bestBrain = dg.getSingleBestBrain();
+			LookaheadDecider<Player> bestBrain = dg.getSingleBestBrain();
 			if (bestBrain instanceof DominionNeuralDecider) {
 				DominionNeuralDecider bb = (DominionNeuralDecider) bestBrain;
-				bb.saveToFile(descriptor + "_" + String.valueOf(metaCycles));
+				bb.saveToFile(descriptor + "_" + String.valueOf(metaCycles), baseDir);
 			}
 			
 			// mutate brains and reset for next cycle

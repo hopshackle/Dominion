@@ -3,6 +3,8 @@ package hopshackle.dominion;
 import hopshackle.simulation.*;
 
 import java.io.*;
+import java.util.ArrayList;
+
 import org.encog.neural.networks.*;
 
 public class ViewBrain {
@@ -11,13 +13,13 @@ public class ViewBrain {
 		String baseDir = SimProperties.getProperty("BaseDirectory", "C:");
 
 		File f = new File(baseDir + "\\DominionBrains\\TestDom5_P000.brain");
-		DominionNeuralDecider decider = DominionNeuralDecider.createDPSDecider(f);
+		NeuralDecider<Player> nd = NeuralDecider.createNeuralDecider(new DominionStateFactory(new ArrayList<GeneticVariable<Player>>()), f);
 
-		BasicNetwork brain = decider.stateEvaluationBrain;
+		BasicNetwork brain = nd.getBrain();
 
 		int count = 0;
 		String[] firstRowNames = new String[brain.getInputCount()+1];
-		for (GeneticVariable<Player> gv : decider.getVariables()) {
+		for (GeneticVariable<Player> gv : nd.getVariables()) {
 			firstRowNames[count] = gv.toString();
 			count++;
 		}

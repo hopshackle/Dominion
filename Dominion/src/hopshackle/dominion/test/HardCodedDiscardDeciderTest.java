@@ -13,8 +13,8 @@ public class HardCodedDiscardDeciderTest {
 	public Game game;
 	public Player p1, p2, p3, p4;
 	TestDominionDecider militiaDecider;
-	LookaheadDecider<Player, PositionSummary> discardDecider;
-	LookaheadFunction<Player, PositionSummary> lookahead = new DominionLookaheadFunction();
+	LookaheadDecider<Player> discardDecider;
+	LookaheadFunction<Player> lookahead = new DominionLookaheadFunction();
 
 	ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
 	ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
@@ -26,7 +26,7 @@ public class HardCodedDiscardDeciderTest {
 		p2 = game.getPlayers()[1];
 		p3 = game.getPlayers()[2];
 		p4 = game.getPlayers()[3];
-		discardDecider = new HardCodedDiscardDecider(actionsToUse, variablesToUse);
+		discardDecider = new HardCodedDiscardDecider(actionsToUse);
 		p1.setPositionDecider(discardDecider);
 		p2.setPositionDecider(discardDecider);
 		p3.setPositionDecider(discardDecider);
@@ -84,7 +84,7 @@ public class HardCodedDiscardDeciderTest {
 	
 	@Test
 	public void crossWithReturnsTheSameDecider() {
-		HardCodedDiscardDecider discardDecider2 = new HardCodedDiscardDecider(actionsToUse, variablesToUse);
+		HardCodedDiscardDecider discardDecider2 = new HardCodedDiscardDecider(actionsToUse);
 		Decider baby = discardDecider.crossWith(discardDecider2);
 		assertTrue(baby instanceof HardCodedDiscardDecider);
 		assertTrue(baby == discardDecider);

@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 public class DeciderGenerator {
 
 	private List<LookaheadDecider<Player>> purchaseDeciders, unusedPurchaseDeciders, actionDeciders;
-	private BigMoneyDecider bigMoney;
-	private ChrisPethersDecider chrisPethers;
+	protected BigMoneyDecider bigMoney;
+	protected ChrisPethersDecider chrisPethers;
 	private GameSetup gamesetup;
 	private List<Integer> purchaseVictories, actionVictories, lastPVictories;
 	private Map<String, Double> purchaseScores;
@@ -25,7 +25,6 @@ public class DeciderGenerator {
 	private double chrisPethersPacesetter = SimProperties.getPropertyAsDouble("DominionChrisPethersPacesetter", "0.00");
 	protected int startingInputs = Integer.valueOf(SimProperties.getProperty("DominionStartingInputs", "99"));
 	protected double selectionThreshold = Double.valueOf(SimProperties.getProperty("DominionSelectionThreshold", "1"));
-	private NeuralComputer endGameComputer;
 	private boolean evenUseOfDeciders = false;
 	private boolean replaceDecidersDeterministically = false;
 	private boolean addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
@@ -48,12 +47,6 @@ public class DeciderGenerator {
 
 		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
 		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
-
-		if (variablesToUseForPurchase.contains(CardValuationVariables.GAME_OVER)) {
-			SimProperties.setProperty("DominionGameOverTracking", "true");
-			endGameComputer = new NeuralComputer();
-			// default is false
-		}
 
 		actionsToUse = gamesetup.getCardTypes();
 
@@ -147,9 +140,6 @@ public class DeciderGenerator {
 	}
 	public LookaheadDecider<Player> getActionDecider() {
 		return actionDeciders.get((int)(Math.random()*actionDeciders.size()));
-	}
-	public NeuralComputer getGameEndComputer() {
-		return endGameComputer;
 	}
 
 	public void reportVictory(Player winner) {

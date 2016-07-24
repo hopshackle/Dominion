@@ -5,12 +5,12 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class TestDominionDecider extends LookaheadDecider<Player, PositionSummary> {
+public class TestDominionDecider extends LookaheadDecider<Player> {
 
 	private HashMap<CardType, Double> values;
 	private static ArrayList<CardType> actionsToUse;
 	private static ArrayList<CardValuationVariables> variablesToUse;
-	private static LookaheadFunction<Player, PositionSummary> lookahead = new DominionLookaheadFunction();
+	private static LookaheadFunction<Player> lookahead = new DominionLookaheadFunction();
 
 	static {
 		variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
@@ -18,14 +18,14 @@ public class TestDominionDecider extends LookaheadDecider<Player, PositionSummar
 	}
 
 	public TestDominionDecider(HashMap<CardType, Double> values) {
-		super(lookahead, HopshackleUtilities.convertList(actionsToUse), HopshackleUtilities.convertList(variablesToUse));
+		super(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse)), lookahead,  HopshackleUtilities.convertList(actionsToUse));
 		this.values = values;
 		if (this.values == null)
 			this.values = new HashMap<CardType, Double>();
 	}
 
 	@Override
-	public double valueOption(ActionEnum<Player> input, Player decidingAgent, Agent contextAgent) {
+	public double valueOption(ActionEnum<Player> input, Player decidingAgent) {
 		double retValue = 0.0;
 		List<CardType> cards = new ArrayList<CardType>();
 		if (input instanceof CardTypeList) {
@@ -51,7 +51,8 @@ public class TestDominionDecider extends LookaheadDecider<Player, PositionSummar
 	}
 
 	@Override
-	public double value(PositionSummary ps) {
+	public double value(LookaheadState<Player> state) {
+		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		//		for (CardType ct : ps.getHand()) {
 		//			if (ct.isTreasure())
@@ -67,11 +68,11 @@ public class TestDominionDecider extends LookaheadDecider<Player, PositionSummar
 	}
 
 	@Override
-	public List<ActionEnum<Player>> getChooseableOptions(Player decidingAgent, Agent contextAgent) {
+	public List<ActionEnum<Player>> getChooseableOptions(Player decidingAgent) {
 		List<ActionEnum<Player>> retValue = null;
 		Player player = (Player) decidingAgent;
 		if (player.isTakingActions()) {
-			return super.getChooseableOptions(decidingAgent, contextAgent);
+			return super.getChooseableOptions(decidingAgent);
 		} else {
 			DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
 			retValue = dpd.getPossiblePurchasesAsActionEnum();
@@ -90,7 +91,8 @@ class TestThiefDominionDecider extends TestDominionDecider {
 	}
 
 	@Override
-	public double value(PositionSummary ps) {
+	public double value(LookaheadState<Player> state) {
+		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		for (CardType ct : ps.getHand()) {
 			if (ct.isTreasure())

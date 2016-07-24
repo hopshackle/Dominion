@@ -87,7 +87,6 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	WORKSHOP_PERCENT,
 	WORKSHOPS_IN_HAND,
 	PERCENTAGE_DISCARD,
-	GAME_OVER,
 	TURNS,
 	CURSE_PERCENT,
 	ESTATE_PERCENT,
@@ -135,8 +134,6 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getPercentageInDiscard();
 		case TURNS:
 			return ps.getTurns() / 40.0;
-		case GAME_OVER:
-			return ps.getGameOver();
 		case MARKET_PERCENT:
 			return ps.getPercent(CardType.MARKET) * 5.0;
 		case MARKETS_IN_HAND:

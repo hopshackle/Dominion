@@ -20,7 +20,6 @@ public class Player extends Agent {
 	private int playerNumber;
 	private int actionsLeft;
 	private Decider<Player> actionDecider;
-	private NeuralComputer gameEndEstimator;
 	private LookaheadDecider<Player> purchaseDecider;
 	HardCodedDiscardDecider discardDecider;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
@@ -227,7 +226,7 @@ public class Player extends Agent {
 	}
 	public void setPositionDecider(LookaheadDecider<Player> newDecider) {
 		purchaseDecider = newDecider;
-		discardDecider = new HardCodedDiscardDecider(HopshackleUtilities.convertList(newDecider.getActions()), new ArrayList<CardValuationVariables>());
+		discardDecider = new HardCodedDiscardDecider(HopshackleUtilities.convertList(newDecider.getActions()));
 		log("Using purchase strategy " + purchaseDecider.toString());
 	}
 	public void setActionDecider(Decider<Player> newDecider) {
@@ -327,14 +326,6 @@ public class Player extends Agent {
 
 	public int getBudget() {
 		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower();
-	}
-
-	public NeuralComputer getGameEndBrain() {
-		return gameEndEstimator;
-	}
-	
-	public void setGameEndComputer(NeuralComputer brain) {
-		gameEndEstimator = brain;
 	}
 
 	public HardCodedDiscardDecider getHandDecider() {

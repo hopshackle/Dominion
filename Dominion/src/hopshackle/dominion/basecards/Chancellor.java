@@ -15,7 +15,7 @@ public class Chancellor extends Card {
 	public void takeAction(Player player) {
 		super.takeAction(player);
 		// rough heuristic that early in game this is worthwhile
-		if (CardValuationVariables.PROVINCES_BOUGHT.getValue(player, player) < 0.50)
+		if (CardValuationVariables.PROVINCES_BOUGHT.getValue(player) < 0.50)
 			player.putDeckIntoDiscard();
 	}
 }

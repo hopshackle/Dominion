@@ -9,6 +9,7 @@ public class RunGame extends World {
 	private static String teachingStrategy = SimProperties.getProperty("DominionTeachingStrategy", "AllPlayers");
 	private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
 	private static int pastGamesToIncludeInTraining = SimProperties.getPropertyAsInteger("DominionPastGamesToIncludeInTraining", "0");
+	private String baseDir = SimProperties.getProperty("BaseDirectory", "C:");
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
 	private long count, maximum;
@@ -94,7 +95,7 @@ public class RunGame extends World {
 				runNextGameWithoutLearning();
 			} while (!finishedRun());
 		}
-		dg.recordBestBrains(toString());
+		dg.recordBestBrains(toString(), baseDir + "\\recordedBrains");
 	}
 
 	public void runNextGameWithLearning() {
@@ -109,7 +110,7 @@ public class RunGame extends World {
 	public void runNextGameWithoutLearning() {
 		Game game = null;
 		if (useBigMoneyInLastK) {
-			game = Game.againstBigMoney(this);
+			game = Game.againstDecider(this, dg.bigMoney);
 		} else {
 			game = new Game(this);
 		}
