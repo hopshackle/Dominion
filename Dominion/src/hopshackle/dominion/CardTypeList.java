@@ -5,7 +5,8 @@ import java.util.List;
 import hopshackle.simulation.*;
 
 public class CardTypeList implements ActionEnum<Player> {
-	
+
+	private static final long serialVersionUID = 1L;
 	public List<CardType> cards;
 
 	public CardTypeList(List<CardType> purc) {
@@ -20,10 +21,7 @@ public class CardTypeList implements ActionEnum<Player> {
 
 	@Override
 	public String getChromosomeDesc() {return "NONE";}
-
-	@Override
-	public Action<Player> getAction(Player a1, Agent a2) {return null;}
-
+	
 	@Override
 	public DominionBuyAction getAction(Player a) {return new DominionBuyAction((Player)a, cards);}
 	

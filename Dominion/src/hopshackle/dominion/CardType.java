@@ -133,8 +133,6 @@ public enum CardType implements ActionEnum<Player> {
 	}
 	
 	@Override
-	public Action<Player> getAction(Player a1, Agent a2) {return getAction(a1);}
-	@Override
 	public String getChromosomeDesc() {return "DOM1";}
 
 	@Override
