@@ -7,10 +7,12 @@ import java.util.*;
 public class PositionSummary implements LookaheadState<Player> {
 
 	private double victoryPoints, treasureValue;
+	private int turnNumber;
 	private double victoryMargin, wealthDensity, victoryDensity, percentVictory, percentAction;
 	private double totalCards, victoryCards, actionCards, cardsInDiscard;
 	private HashMap<CardType, Integer> cardsRemovedFromTable = new HashMap<CardType, Integer>();
 	private HashMap<CardType, Integer> cardsInDeck;
+	private HashMap<CardType, Integer> cardsOnTable = new HashMap<CardType, Integer>();
 	private CardType[] hand;
 	private Player player;
 	private Game game;
@@ -31,6 +33,10 @@ public class PositionSummary implements LookaheadState<Player> {
 		for (CardType ct : base.cardsInDeck.keySet()) {
 			cardsInDeck.put(ct, base.cardsInDeck.get(ct));
 		}
+		cardsOnTable = new HashMap<CardType, Integer>();
+		for (CardType ct : base.cardsOnTable.keySet()) {
+			cardsOnTable.put(ct, base.cardsOnTable.get(ct));
+		}
 		cardsRemovedFromTable = new HashMap<CardType, Integer>();
 		for (CardType ct : base.cardsRemovedFromTable.keySet()) {
 			cardsRemovedFromTable.put(ct, base.cardsRemovedFromTable.get(ct));
@@ -44,6 +50,7 @@ public class PositionSummary implements LookaheadState<Player> {
 		actionCards = base.actionCards;
 		cardsInDiscard = base.cardsInDiscard;
 		variables = base.variables;
+		turnNumber = base.turnNumber;
 		updateDerivedVariables();
 	}
 
@@ -160,6 +167,9 @@ public class PositionSummary implements LookaheadState<Player> {
 		for (CardType card : player.getAllCards()) {
 			addCard(card);
 		}
+		for (CardType ct : game.startingCardTypes()) {
+			cardsOnTable.put(ct, game.getNumberOfCardsRemaining(ct));
+		}
 		cardsInDiscard = player.getDiscardSize();
 		if (players[3] != null) {
 			double highestScore = -100;
@@ -178,7 +188,7 @@ public class PositionSummary implements LookaheadState<Player> {
 			else
 				victoryMargin = victoryPoints - highestScore;
 		}
-
+		turnNumber = game.turnNumber() - 1;
 		updateDerivedVariables();
 	}
 
@@ -207,9 +217,6 @@ public class PositionSummary implements LookaheadState<Player> {
 	}
 	public Player getPlayer() {
 		return player;
-	}
-	public Game getGame() {
-		return game;
 	}
 
 	public double totalNumberOfCards() {
@@ -252,7 +259,32 @@ public class PositionSummary implements LookaheadState<Player> {
 	}
 
 	public double[] getPercentageDepleted() {
-		return game.getPercentageDepleted(cardsRemovedFromTable);
+			int lowest = 10;
+			int nextLowest = 10;
+			int thirdLowest = 10;
+			for (CardType ct : cardsOnTable.keySet()) {
+				if (ct == CardType.NONE) continue;
+				int cardsLeft = cardsOnTable.get(ct);
+				if (cardsRemovedFromTable.containsKey(ct)) {
+					cardsLeft = cardsLeft - cardsRemovedFromTable.get(ct);
+				}
+				if (cardsLeft > 10) cardsLeft = 10;
+				if (cardsLeft < lowest) {
+					thirdLowest = nextLowest;
+					nextLowest = lowest;
+					lowest = cardsLeft;
+				} else if (cardsLeft < nextLowest) {
+					thirdLowest = nextLowest;
+					nextLowest = cardsLeft;
+				} else if (cardsLeft < thirdLowest) {
+					thirdLowest = cardsLeft;
+				}
+			}
+			double[] retValue = new double[3];
+			retValue[0] = 1.0 - ((double) lowest / 10.0);
+			retValue[1] = 1.0 - ((double) nextLowest / 10.0);
+			retValue[2] = 1.0 - ((double) thirdLowest / 10.0);
+			return retValue;
 	}
 
 	public int getNumberOfCardsTotal(CardType card) {
@@ -276,7 +308,7 @@ public class PositionSummary implements LookaheadState<Player> {
 	}
 
 	public double getTurns() {
-		return ((double) (game.turnNumber() - 1));
+		return turnNumber;
 	}
 
 	public void setVariables(List<CardValuationVariables> var) {

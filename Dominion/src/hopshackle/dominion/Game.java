@@ -8,6 +8,7 @@ public class Game implements Persistent {
 
 	private Player[] players;
 	private HashMap<CardType, Integer> cardsOnTable;
+	private Set<CardType> allStartingCardTypes = new HashSet<CardType>();
 	private int currentPlayer;
 	private static AtomicInteger idFountain = new AtomicInteger(1);
 	private int id = idFountain.getAndIncrement();
@@ -149,7 +150,6 @@ public class Game implements Persistent {
 				addCardType(ct, numberToUse);
 			}
 		}
-
 	}
 
 	public void addCardType(CardType newCard, int number) {
@@ -157,6 +157,7 @@ public class Game implements Persistent {
 			cardsOnTable.put(newCard, cardsOnTable.get(newCard) + number);
 		} else {
 			cardsOnTable.put(newCard, number);
+			allStartingCardTypes.add(newCard);
 		}
 	}
 
@@ -169,6 +170,14 @@ public class Game implements Persistent {
 		for (CardType ct : cardsOnTable.keySet()) {
 			if (cardsOnTable.get(ct) > 0)
 				retValue.add(ct);
+		}
+		return retValue;
+	}
+	
+	public Set<CardType> startingCardTypes() {
+		Set<CardType> retValue = new HashSet<CardType>();
+		for (CardType ct : allStartingCardTypes) {
+			retValue.add(ct);
 		}
 		return retValue;
 	}
@@ -232,33 +241,4 @@ public class Game implements Persistent {
 		return seqOfGames;
 	}
 
-
-	public double[] getPercentageDepleted(HashMap<CardType, Integer> cardsRemovedUnderScenario) {
-		int lowest = 10;
-		int nextLowest = 10;
-		int thirdLowest = 10;
-		for (CardType ct : cardsOnTable.keySet()) {
-			if (ct == CardType.NONE) continue;
-			int cardsLeft = cardsOnTable.get(ct);
-			if (cardsRemovedUnderScenario.containsKey(ct)) {
-				cardsLeft = cardsLeft - cardsRemovedUnderScenario.get(ct);
-			}
-			if (cardsLeft > 10) cardsLeft = 10;
-			if (cardsLeft < lowest) {
-				thirdLowest = nextLowest;
-				nextLowest = lowest;
-				lowest = cardsLeft;
-			} else if (cardsLeft < nextLowest) {
-				thirdLowest = nextLowest;
-				nextLowest = cardsLeft;
-			} else if (cardsLeft < thirdLowest) {
-				thirdLowest = cardsLeft;
-			}
-		}
-		double[] retValue = new double[3];
-		retValue[0] = 1.0 - ((double) lowest / 10.0);
-		retValue[1] = 1.0 - ((double) nextLowest / 10.0);
-		retValue[2] = 1.0 - ((double) thirdLowest / 10.0);
-		return retValue;
-	}
 }

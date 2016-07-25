@@ -3,10 +3,14 @@ package hopshackle.dominion.test;
 import static org.junit.Assert.*;
 import hopshackle.dominion.CardFactory;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardValuationVariables;
 import hopshackle.dominion.DeciderGenerator;
+import hopshackle.dominion.DominionLookaheadFunction;
+import hopshackle.dominion.DominionStateFactory;
 import hopshackle.dominion.Game;
 import hopshackle.dominion.GameSetup;
 import hopshackle.dominion.Player;
+import hopshackle.dominion.PositionSummary;
 import hopshackle.dominion.RunGame;
 import hopshackle.simulation.ExperienceRecordCollector;
 import hopshackle.simulation.OnInstructionTeacher;
@@ -18,11 +22,16 @@ import org.junit.Test;
 public class LearningAndExperience {
 	
 	private Game game;
+	private DominionStateFactory stateFactory;
+	private DeciderGenerator dg;
+	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
 	
 	@Before
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)));
+		dg = new DeciderGenerator(new GameSetup(), 1, 1, 0, 0);
+		game = new Game(new RunGame("Test", 1, dg));
+		stateFactory = new DominionStateFactory(dg.getPurchaseDecider().getVariables());
 	}
 
 	@Test
@@ -40,6 +49,42 @@ public class LearningAndExperience {
 		assertEquals(erc.getExperienceRecords(firstPlayer).size(), 0);
 		firstPlayer.buyCards();
 		assertEquals(erc.getExperienceRecords(firstPlayer).size(), 1);
+	}
+	
+	@Test
+	public void positionSummaryApplyReturnsUpdatedResult() {
+		Player firstPlayer = game.getCurrentPlayer();
+		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(firstPlayer);
+		PositionSummary updatedps = ps.apply(CardType.MILITIA);
+		assertFalse(ps == updatedps);
+		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(ps), 0.0, 0.001);
+		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(updatedps), 5.0/11.0 , 0.001);
+		double[] psArray = ps.getAsArray();
+		double[] updatedpsArray = updatedps.getAsArray();
+		boolean identical = true;
+		for (int i = 0; i < psArray.length; i++) {
+			if (psArray[i] != updatedpsArray[i])
+				identical = false;
+		}
+		assertFalse(identical);
+	}
+
+	@Test
+	public void lookaheadApplyReturnsUpdatedResult() {
+		Player firstPlayer = game.getCurrentPlayer();
+		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(firstPlayer);
+		PositionSummary updatedps = (PositionSummary) lookahead.apply(ps, CardType.MILITIA);
+		assertFalse(ps == updatedps);
+		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(ps), 0.0, 0.001);
+		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(updatedps), 5.0/11.0 , 0.001);
+		double[] psArray = ps.getAsArray();
+		double[] updatedpsArray = updatedps.getAsArray();
+		boolean identical = true;
+		for (int i = 0; i < psArray.length; i++) {
+			if (psArray[i] != updatedpsArray[i])
+				identical = false;
+		}
+		assertFalse(identical);
 	}
 
 }

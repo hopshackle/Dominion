@@ -12,7 +12,7 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 		super(
 				new DominionStateFactory(HopshackleUtilities.convertList(variables)), 
 				lookahead, 
-				HopshackleUtilities.convertList(actions)
+				HopshackleUtilities.convertList(actions), 100.0
 			);
 	}
 

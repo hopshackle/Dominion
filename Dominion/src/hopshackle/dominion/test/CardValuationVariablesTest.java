@@ -219,36 +219,43 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
 		game.removeCardType(CardType.CELLAR);
 		game.addCardType(CardType.CELLAR, 4);
+		recalculate();
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.MARKET);
 		game.addCardType(CardType.MARKET, 5);
+		recalculate();
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 1.0, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.WOODCUTTER);
 		game.addCardType(CardType.WOODCUTTER, 6);
+		recalculate();
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.6, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.PROVINCE);
 		game.addCardType(CardType.PROVINCE, 1); // moves third lowest to MARKET
+		recalculate();
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.1, 0.001);
 		game.removeCardType(CardType.PROVINCE);
 		game.addCardType(CardType.PROVINCE, 6); // moves third lowest back to WOODCUTTER / PROVINCE
+		recalculate();
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.6, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.ESTATE);
 		game.addCardType(CardType.ESTATE, 7); // no change
+		recalculate();
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.6, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		game.removeCardType(CardType.ESTATE);
 		game.addCardType(CardType.ESTATE, 2); // moves third lowest to MARKET
+		recalculate();
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.2, 0.001);
@@ -260,6 +267,7 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.2, 0.001);
+		recalculate();
 		p1.drawCard(CardType.MARKET);
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
@@ -320,4 +328,5 @@ public class CardValuationVariablesTest {
 		player.drawTopCardFromDeckIntoHand();
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), 0.0, 0.0001);
 	}
+	
 }

@@ -109,7 +109,7 @@ public class DeciderGenerator {
 
 		if (sampleDecider instanceof DominionNeuralDecider) {
 			for (File f : files) {
-				NeuralDecider<Player> nd = NeuralDecider.createNeuralDecider(new DominionStateFactory(new ArrayList<GeneticVariable<Player>>()), f);
+				NeuralDecider<Player> nd = NeuralDecider.createNeuralDecider(new DominionStateFactory(new ArrayList<GeneticVariable<Player>>()), f, 100.0);
 				DominionNeuralDecider newDecider = new DominionNeuralDecider(lookahead, actionsToUse, nd.getVariables());
 				newDecider.setInternalNeuralNetwork(nd);
 				deciders.add(newDecider);
