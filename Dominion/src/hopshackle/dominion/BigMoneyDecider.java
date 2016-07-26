@@ -47,7 +47,8 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 		return retValue;
 	}
 	
-	public List<ActionEnum<Player>> getChooseableOptions(Player decidingAgent, Agent contextAgent) {
+	@Override
+	public List<ActionEnum<Player>> getChooseableOptions(Player decidingAgent) {
 		Player player = (Player) decidingAgent;
 		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
 		List<ActionEnum<Player>> retValue = dpd.getPossiblePurchasesAsActionEnum();

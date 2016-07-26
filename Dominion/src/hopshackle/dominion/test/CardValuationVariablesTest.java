@@ -39,6 +39,7 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), 0.00, 0.0001);
 		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p2), 0.00, 0.0001);
 		game.drawCard(CardType.PROVINCE);
+		recalculate();
 		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), (1.0/12.0), 0.0001);
 		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p2), (1.0/12.0), 0.0001);
 		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), 0.00, 0.0001);
@@ -50,6 +51,7 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), 0.00, 0.0001);
 		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2), 0.00, 0.0001);
 		game.drawCard(CardType.DUCHY);
+		recalculate();
 		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), (1.0/12.0), 0.0001);
 		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p2), (1.0/12.0), 0.0001);
 	}
@@ -60,7 +62,6 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.00, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.00, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), 0.00, 0.0001);
-
 		p1.addCard(CardType.ESTATE);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.0, 0.0001);
