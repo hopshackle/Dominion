@@ -15,19 +15,16 @@ public class PositionSummary implements LookaheadState<Player> {
 	private HashMap<CardType, Integer> cardsOnTable = new HashMap<CardType, Integer>();
 	private CardType[] hand;
 	private Player player;
-	private Game game;
 	private List<CardValuationVariables> variables;
 
 	public PositionSummary(Player basePlayer, List<CardValuationVariables> variableList) {
 		variables = variableList;
 		player = basePlayer;
-		game = player.getGame();
-		initiateVariables();
+		initiateVariables(basePlayer.getGame());
 	}
 
 	private PositionSummary(PositionSummary base) {
 		player = base.player;
-		game = base.game;
 		hand = base.hand.clone();
 		cardsInDeck = new HashMap<CardType, Integer>();
 		for (CardType ct : base.cardsInDeck.keySet()) {
@@ -157,7 +154,7 @@ public class PositionSummary implements LookaheadState<Player> {
 		}
 	}
 
-	private void initiateVariables() {
+	private void initiateVariables(Game game) {
 		Player[] players = game.getPlayers();
 		updateHand();
 		victoryPoints = 0;
@@ -251,7 +248,7 @@ public class PositionSummary implements LookaheadState<Player> {
 	}
 
 	public double getNumberOfCardsRemaining(CardType type) {
-		double retValue = game.getNumberOfCardsRemaining(type);
+		double retValue = cardsOnTable.get(type);
 		if (cardsRemovedFromTable.containsKey(type)) {
 			retValue = retValue - cardsRemovedFromTable.get(type);
 		}

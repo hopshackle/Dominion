@@ -14,7 +14,7 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
 		Player p = (Player) decidingAgent;
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(p);
-		ps.apply(option); 
+		ps = ps.apply(option); 
 		
 		double retValue = value(ps);
 
