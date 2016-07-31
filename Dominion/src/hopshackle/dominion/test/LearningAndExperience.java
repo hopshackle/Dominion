@@ -15,6 +15,8 @@ import hopshackle.dominion.RunGame;
 import hopshackle.simulation.ExperienceRecordCollector;
 import hopshackle.simulation.OnInstructionTeacher;
 import hopshackle.simulation.SimProperties;
+import hopshackle.simulation.StandardERFactory;
+import hopshackle.simulation.basic.BasicAgent;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +38,7 @@ public class LearningAndExperience {
 
 	@Test
 	public void playingCardsDoesNotYetGenerateExperienceRecords() {
-		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>();
+		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>());
 		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
 		for (Player p : game.getPlayers()) {
 			erc.registerAgent(p);

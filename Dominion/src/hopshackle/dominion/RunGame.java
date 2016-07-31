@@ -4,7 +4,7 @@ import hopshackle.simulation.*;
 
 public class RunGame extends World {
 
-	private static boolean learningOn = SimProperties.getProperty("DominionLearningOn", "true").equals("true");
+	private static boolean learningOn = SimProperties.getProperty("DominionLearningOn ", "true").equals("true");
 	private static boolean extraLastK = SimProperties.getProperty("DominionLastThousandForScoring", "true").equals("true");
 	private static String teachingStrategy = SimProperties.getProperty("DominionTeachingStrategy", "AllPlayers");
 	private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
@@ -13,7 +13,7 @@ public class RunGame extends World {
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
 	private long count, maximum;
-	private ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>();
+	private ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new LookaheadERFactory<Player>(new DominionLookaheadFunction()));
 	private OnInstructionTeacher<Player> teacher;
 
 	public static void main(String[] args) {
