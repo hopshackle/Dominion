@@ -9,6 +9,7 @@ public class RunGame extends World {
 	private static String teachingStrategy = SimProperties.getProperty("DominionTeachingStrategy", "AllPlayers");
 	private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
 	private static int pastGamesToIncludeInTraining = SimProperties.getPropertyAsInteger("DominionPastGamesToIncludeInTraining", "0");
+	private boolean addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
 	private String baseDir = SimProperties.getProperty("BaseDirectory", "C:");
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
@@ -50,6 +51,7 @@ public class RunGame extends World {
 		super(null, descriptor, games);
 		dg = providedDG;
 		maximum = games;
+		
 		switch(teachingStrategy) {
 		case "AllPlayers":
 			teacher = new OnInstructionTeacher<Player>(pastGamesToIncludeInTraining);
@@ -60,11 +62,7 @@ public class RunGame extends World {
 		default:
 			throw new AssertionError("Unsupported DominionTeachingStrategy " + teachingStrategy);
 		}
-		for (Decider<Player> d : dg.getAllPurchaseDeciders()) {
-			teacher.registerDecider(d);
-		}
-		teacher.registerToERStream(erc);
-
+		
 		DatabaseAccessUtility databaseUtility = new DatabaseAccessUtility();
 		setDatabaseAccessUtility(databaseUtility);
 		Thread t = new Thread(databaseUtility);
@@ -99,8 +97,11 @@ public class RunGame extends World {
 	}
 
 	public void runNextGameWithLearning() {
-		Game game = new Game(this);
+		teacher.clearDeciders();
+		teacher.registerToERStream(erc);
+		Game game = new Game(this, addPaceSetters);
 		for (Player p : game.getPlayers()) {
+			teacher.registerDecider(p.getPositionDecider());
 			erc.registerAgent(p);
 		}
 		runGame(game);
@@ -112,7 +113,7 @@ public class RunGame extends World {
 		if (useBigMoneyInLastK) {
 			game = Game.againstDecider(this, dg.bigMoney);
 		} else {
-			game = new Game(this);
+			game = new Game(this, false);
 		}
 		runGame(game);
 	}

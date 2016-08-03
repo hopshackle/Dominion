@@ -27,7 +27,6 @@ public class DeciderGenerator {
 	protected double selectionThreshold = Double.valueOf(SimProperties.getProperty("DominionSelectionThreshold", "1"));
 	private boolean evenUseOfDeciders = false;
 	private boolean replaceDecidersDeterministically = false;
-	private boolean addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
 	private int totalWinners, baseDeciders;
 	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
 	private List<CardType> actionsToUse;
@@ -122,11 +121,11 @@ public class DeciderGenerator {
 			logger.info("Loaded " + startCounter + " DominionNeuralDeciders from " + directory.toString());
 	}
 
-	public LookaheadDecider<Player> getPurchaseDecider() {
+	public LookaheadDecider<Player> getPurchaseDecider(boolean paceSetters) {
 		double randomNumber = Math.random();
-		if (randomNumber < bigMoneyPacesetter) 
+		if (paceSetters && randomNumber < bigMoneyPacesetter) 
 			return bigMoney;
-		if (randomNumber < bigMoneyPacesetter + chrisPethersPacesetter)
+		if (paceSetters && randomNumber < bigMoneyPacesetter + chrisPethersPacesetter)
 			return chrisPethers;
 		LookaheadDecider<Player> choice = purchaseDeciders.get((int)(Math.random()*purchaseDeciders.size()));
 		if (evenUseOfDeciders) {
@@ -157,7 +156,7 @@ public class DeciderGenerator {
 			}
 		}
 		currentLoop++;
-		if (currentLoop >= removalThreshold) {
+		if (removalThreshold > 0 && currentLoop >= removalThreshold) {
 			initiateTurnOver();
 		}
 	}
@@ -238,29 +237,6 @@ public class DeciderGenerator {
 				newName = newName.substring(0, 20);
 			newDecider.setName(newName);
 
-			if (addPaceSetters) {
-				boolean createPacesetter = true;
-				if (deciderToCopy instanceof DominionNeuralDecider) {
-					DominionNeuralDecider dnd = (DominionNeuralDecider) deciderToCopy;
-					createPacesetter = dnd.getLearning();
-				}
-				if (createPacesetter) {
-					@SuppressWarnings("unchecked")
-					T copyOfDecider = (T) deciderToCopy.crossWith(null);
-					retValue.add(copyOfDecider);
-					victories.add(0);
-					newName = deciderToCopy.toString().substring(1, 4);
-					newName = "C" + String.format("%03d", decideNameCount + numberAdded) + " : " + newName;
-					if (newName.length() > 20)
-						newName = newName.substring(0, 20);
-					copyOfDecider.setName(newName);
-					if (copyOfDecider instanceof DominionNeuralDecider) {
-						DominionNeuralDecider dnd = (DominionNeuralDecider) copyOfDecider;
-						dnd.setLearning(false);
-						purchaseScores.put(dnd.toString(), 2.0);
-					}
-				}
-			}
 			numberAdded++;
 		} while (numberAdded < number);
 

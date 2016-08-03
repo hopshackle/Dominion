@@ -32,8 +32,8 @@ public class LearningAndExperience {
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		dg = new DeciderGenerator(new GameSetup(), 1, 1, 0, 0);
-		game = new Game(new RunGame("Test", 1, dg));
-		stateFactory = new DominionStateFactory(dg.getPurchaseDecider().getVariables());
+		game = new Game(new RunGame("Test", 1, dg), false);
+		stateFactory = new DominionStateFactory(dg.getPurchaseDecider(false).getVariables());
 	}
 
 	@Test

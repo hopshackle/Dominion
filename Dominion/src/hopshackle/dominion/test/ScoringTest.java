@@ -14,7 +14,7 @@ public class ScoringTest {
 
 	@Before
 	public void setup() {
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)));
+		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
 		p1 = game.getPlayers()[0];
 		p2 = game.getPlayers()[1];
 		p3 = game.getPlayers()[2];

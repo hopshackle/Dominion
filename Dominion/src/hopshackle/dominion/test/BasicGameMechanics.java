@@ -13,7 +13,7 @@ public class BasicGameMechanics {
 	@Before
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)));
+		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
 	}
 
 	@Test

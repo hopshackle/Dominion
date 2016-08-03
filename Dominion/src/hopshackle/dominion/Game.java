@@ -24,13 +24,13 @@ public class Game implements Persistent {
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	
 	public static Game againstDecider(RunGame gameHolder, LookaheadDecider<Player> deciderToUse) {
-		Game retValue = new Game(gameHolder);
+		Game retValue = new Game(gameHolder, false);
 		int randomPlayer = Dice.roll(1, 4) - 1;
 		retValue.getPlayers()[randomPlayer].setPositionDecider(deciderToUse);
 		return retValue;
 	}
 
-	public Game(RunGame gameHolder) {
+	public Game(RunGame gameHolder, boolean paceSetters) {
 		seqOfGames = gameHolder;
 		deciderGenerator = seqOfGames.getDeciderDenerator();
 		seqOfGames.setCalendar(new FastCalendar(0l), 0);
@@ -42,7 +42,7 @@ public class Game implements Persistent {
 			players[n] = new Player(this, n+1);
 			players[n].setDebugLocal(debugGame);
 			if (deciderGenerator != null) {
-				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider());
+				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider(paceSetters));
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
 //				players[n].setHandDecider(deciderGenerator.getDiscardDecider());
 			}
