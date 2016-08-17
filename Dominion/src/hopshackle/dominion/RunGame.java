@@ -1,21 +1,27 @@
 package hopshackle.dominion;
 
+import java.util.*;
+
 import hopshackle.simulation.*;
 
 public class RunGame extends World {
 
-	private static boolean learningOn = SimProperties.getProperty("DominionLearningOn ", "true").equals("true");
+	private static boolean learningOn = SimProperties.getProperty("DominionLearningOn", "true").equals("true");
 	private static boolean extraLastK = SimProperties.getProperty("DominionLastThousandForScoring", "true").equals("true");
 	private static String teachingStrategy = SimProperties.getProperty("DominionTeachingStrategy", "AllPlayers");
 	private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
-	private static int pastGamesToIncludeInTraining = SimProperties.getPropertyAsInteger("DominionPastGamesToIncludeInTraining", "0");
+	private static int pastSetsToIncludeInTraining = SimProperties.getPropertyAsInteger("DominionPastSetsToIncludeInTraining", "0");
+	private static int gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
 	private boolean addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
+	private boolean trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
 	private String baseDir = SimProperties.getProperty("BaseDirectory", "C:");
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
 	private long count, maximum;
-	private ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new LookaheadERFactory<Player>(new DominionLookaheadFunction()));
-	private OnInstructionTeacher<Player> teacher;
+	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
+	private ExperienceRecordFactory<Player> factory = new LookaheadERFactory<Player>(lookahead);
+	private Map<String, ExperienceRecordCollector<Player>> ercMap = new HashMap<String, ExperienceRecordCollector<Player>>();
+	private Map<String, OnInstructionTeacher<Player>> teacherMap = new HashMap<String, OnInstructionTeacher<Player>>();
 
 	public static void main(String[] args) {
 
@@ -51,16 +57,17 @@ public class RunGame extends World {
 		super(null, descriptor, games);
 		dg = providedDG;
 		maximum = games;
-		
-		switch(teachingStrategy) {
-		case "AllPlayers":
-			teacher = new OnInstructionTeacher<Player>(pastGamesToIncludeInTraining);
-			break;
-		case "SelfOnly":
-			teacher = new OnInstructionTeacherSelfOnly<Player>(pastGamesToIncludeInTraining);
-			break;
-		default:
-			throw new AssertionError("Unsupported DominionTeachingStrategy " + teachingStrategy);
+		for (LookaheadDecider<Player> d : dg.getAllPurchaseDeciders()) {
+			ercMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory));
+			OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(pastSetsToIncludeInTraining);
+			teacher.registerToERStream(ercMap.get(d.toString()));
+			teacherMap.put(d.toString(), teacher);
+			if (trainAllDeciders) {
+				for (Decider<Player> d2 : dg.getAllPurchaseDeciders())
+					teacher.registerDecider(d2);
+			} else {
+				teacher.registerDecider(d);
+			}
 		}
 		
 		DatabaseAccessUtility databaseUtility = new DatabaseAccessUtility();
@@ -82,9 +89,9 @@ public class RunGame extends World {
 	
 	public void runAll() {
 		do {
-			if (learningOn)
-				runNextGameWithLearning();
-			else
+			if (learningOn) {
+				runNextSet(gamesPerSet);
+			} else
 				runNextGameWithoutLearning();
 		} while (!finishedLearningRun());
 		if (extraLastK) {
@@ -96,19 +103,32 @@ public class RunGame extends World {
 		dg.recordBestBrains(toString(), baseDir + "\\recordedBrains");
 	}
 
-	public void runNextGameWithLearning() {
-		teacher.clearDeciders();
-		teacher.registerToERStream(erc);
-		Game game = new Game(this, addPaceSetters);
-		for (Player p : game.getPlayers()) {
-			teacher.registerDecider(p.getPositionDecider());
-			erc.registerAgent(p);
+	private void runNextSet(int numberOfGames) {
+		for (int i = 0; i < numberOfGames; i++) {
+			Game game = new Game(this, addPaceSetters);
+			for (Player p : game.getPlayers()) {
+				LookaheadDecider<Player> pd = p.getPositionDecider();
+				switch(teachingStrategy) {
+				case "AllPlayers" :
+					for (Player p2 : game.getPlayers())  {
+						ercMap.get(pd.toString()).registerAgent(p2);
+					}
+					break;
+				case "SelfOnly" :
+					ercMap.get(pd.toString()).registerAgent(p);
+					break;
+				default:
+					throw new AssertionError("Unknown teaching strategy: " + teachingStrategy);
+				}
+			}
+			runGame(game);
 		}
-		runGame(game);
-		teacher.teach();
+		for (OnInstructionTeacher<Player> teacher : teacherMap.values()) {
+			teacher.teach();
+		}
 	}
 
-	public void runNextGameWithoutLearning() {
+	private void runNextGameWithoutLearning() {
 		Game game = null;
 		if (useBigMoneyInLastK) {
 			game = Game.againstDecider(this, dg.bigMoney);
