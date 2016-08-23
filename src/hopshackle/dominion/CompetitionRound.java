@@ -21,8 +21,8 @@ public class CompetitionRound {
 	}
 
 	public void run(int trainingGames) {
+		SimProperties.setProperty("DominionLastThousandForScoring", "false"); // don't run scoring games; as this is covered later
 		setOfGames = new RunGame(descriptor, trainingGames, dg);
-		SimProperties.getProperty("DominionLastThousandForScoring", "false"); // don't run scoring games; as this is covered later
 		for (int i = 0; i < trainingGames; i++)
 			setOfGames.runAll();
 
@@ -46,7 +46,7 @@ public class CompetitionRound {
 			int loScore = dg.getScore(0.25);
 
 			double p = (double) dg.getTotalWinners() / (double) (noCycles * cycleSize * deciders);
-			//			System.out.println(String.format("%d winners in %d games gives p = %.3f", dg.getTotalWinners(), noCycles * cycleSize * deciders / 4, p));
+			System.out.println(String.format("%d winners in %d games gives p = %.3f", dg.getTotalWinners(), noCycles * cycleSize * deciders / 4, p));
 
 			double variance = p * cycleSize * noCycles * (1.0 - p);	// npq
 			double sd = Math.sqrt(variance);

@@ -112,7 +112,7 @@ public class DeciderGenerator {
 				DominionNeuralDecider newDecider = new DominionNeuralDecider(lookahead, actionsToUse, nd.getVariables());
 				newDecider.setInternalNeuralNetwork(nd);
 				deciders.add(newDecider);
-				String newName = prefix + String.format("%03d", startCounter) + " : " + newDecider.toString();
+				String newName = prefix + String.format("%03d", startCounter) + " : " + nd.toString();
 				newDecider.setName(newName);
 				startCounter++;
 			}
