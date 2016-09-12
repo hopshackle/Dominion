@@ -4,18 +4,21 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
+import com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState;
+
 public class PositionSummary implements LookaheadState<Player> {
 
 	private double victoryPoints, treasureValue;
-	private int turnNumber;
+	private int turnNumber, buys, actions, money;
 	private double victoryMargin, wealthDensity, victoryDensity, percentVictory, percentAction;
 	private double totalCards, victoryCards, actionCards, cardsInDiscard;
 	private HashMap<CardType, Integer> cardsRemovedFromTable = new HashMap<CardType, Integer>();
 	private HashMap<CardType, Integer> cardsInDeck;
 	private HashMap<CardType, Integer> cardsOnTable = new HashMap<CardType, Integer>();
-	private CardType[] hand;
+	private List<CardType> hand, cardsPlayed;
 	private Player player;
 	private List<CardValuationVariables> variables;
+	private Player.State positionState;
 
 	public PositionSummary(Player basePlayer, List<CardValuationVariables> variableList) {
 		variables = variableList;
@@ -25,7 +28,7 @@ public class PositionSummary implements LookaheadState<Player> {
 
 	private PositionSummary(PositionSummary base) {
 		player = base.player;
-		hand = base.hand.clone();
+		positionState = base.positionState;
 		cardsInDeck = new HashMap<CardType, Integer>();
 		for (CardType ct : base.cardsInDeck.keySet()) {
 			cardsInDeck.put(ct, base.cardsInDeck.get(ct));
@@ -48,6 +51,14 @@ public class PositionSummary implements LookaheadState<Player> {
 		cardsInDiscard = base.cardsInDiscard;
 		variables = base.variables;
 		turnNumber = base.turnNumber;
+		hand = new ArrayList<CardType>();
+		hand.addAll(base.hand);
+		actions = base.actions;
+		buys = base.buys;
+		money = base.money;
+		cardsPlayed = new ArrayList<CardType>();
+		cardsPlayed.addAll(base.cardsPlayed);
+		cardsPlayed = player.getCopyOfPlayedCards();
 		updateDerivedVariables();
 	}
 
@@ -62,13 +73,23 @@ public class PositionSummary implements LookaheadState<Player> {
 	public PositionSummary apply(ActionEnum<Player> ae) {
 		PositionSummary retValue = this.clone();
 		if (ae == null) return retValue;
-		if (ae instanceof CardType){
-			retValue.drawCard((CardType) ae);
-		} else if (ae instanceof CardTypeList) {
-			CardTypeList ctl = (CardTypeList) ae;
-			for (CardType c : ctl.cards) 
-				retValue.drawCard(c);
+		switch (positionState) {
+		case PLAYING:
+			retValue.playCardFromHand((CardType) ae);
+			break;
+		case PURCHASING:
+			if (ae instanceof CardType){
+				retValue.drawCard((CardType) ae);
+			} else if (ae instanceof CardTypeList) {
+				CardTypeList ctl = (CardTypeList) ae;
+				for (CardType c : ctl.cards) 
+					retValue.drawCard(c);
+			}
+			break;
+		default:
+			throw new AssertionError("Invalid PlayerState in PositionSummary: " + positionState);
 		}
+
 		return retValue;
 	}
 
@@ -156,10 +177,14 @@ public class PositionSummary implements LookaheadState<Player> {
 
 	private void initiateVariables(Game game) {
 		Player[] players = game.getPlayers();
-		updateHand();
+		updateHandFromPlayer();
+		positionState = player.getPlayerState();
 		victoryPoints = 0;
 		totalCards = 0;
 		treasureValue = 0.0;
+		actions = player.getActionsLeft();
+		buys = player.getBuys();
+		money = player.getAdditionalPurchasePower();
 		cardsInDeck = new HashMap<CardType, Integer>();
 		for (CardType card : player.getAllCards()) {
 			addCard(card);
@@ -215,6 +240,15 @@ public class PositionSummary implements LookaheadState<Player> {
 	public Player getPlayer() {
 		return player;
 	}
+	public int getActions() {
+		return actions;
+	}
+	public int getBuys() {
+		return buys;
+	}
+	public int getAdditionalPurchasePower() {
+		return money;
+	}
 
 	public double totalNumberOfCards() {
 		return totalCards;
@@ -222,14 +256,19 @@ public class PositionSummary implements LookaheadState<Player> {
 	public PositionSummary clone() {
 		return new PositionSummary(this);
 	}
-
-	public void changeHand(CardType[] newHand) {
-		hand = newHand;
-		updateDerivedVariables();
+	
+	public List<CardType> getHand() {
+		return HopshackleUtilities.cloneList(hand);
+	}
+	public int getHandSize() {
+		return hand.size();
 	}
 
-	public CardType[] getHand() {
-		return hand.clone();
+	public void changeHand(CardType[] newHand) {
+		hand = new ArrayList<CardType>();
+		for (CardType ct : newHand)
+			hand.add(ct);
+		updateDerivedVariables();
 	}
 
 	public int getNumberInHand(CardType cardType) {
@@ -240,11 +279,35 @@ public class PositionSummary implements LookaheadState<Player> {
 		}
 		return retValue;
 	}
+	public int getNumberPlayed(CardType cardType) {
+		int retValue = 0;
+		for (CardType ct : cardsPlayed) {
+			if (ct == cardType)
+				retValue++;
+		}
+		return retValue;
+	}
 
-	public void updateHand() {
-		hand = player.getCopyOfHand().toArray(new CardType[1]);
-		if (hand[0] == null)
-			hand = new CardType[0];
+	public void updateHandFromPlayer() {
+		hand = player.getCopyOfHand();
+		cardsPlayed = player.getCopyOfPlayedCards();
+	}
+	
+	public void playCardFromHand(CardType type) {
+		if (getNumberInHand(type) > 0) {
+			hand.remove(type);
+			actions--;
+			actions += type.getAdditionalActions();
+			buys += type.getAdditionalBuys();
+			money += type.getAdditionalPurchasePower();
+			for (int i = 0; i < type.getDraw(); i++)
+				hand.add(CardType.UNKNOWN); 
+			// TODO: This is the possible point to consider full MOnte Carlo rollouts..i.e. pick at random form the cards known to be in the deck
+			// For the moment, we just use a dummy card to keep track of hand size (as a variable).
+			cardsPlayed.add(type);
+		} else {
+			throw new AssertionError("Cannot play " + type + " as none in hand.");
+		}
 	}
 
 	public double getNumberOfCardsRemaining(CardType type) {

@@ -32,22 +32,28 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	CURSES_IN_HAND,
 	ADVENTURER_PERCENT,
 	ADVENTURERS_IN_HAND,
+	ADVENTURERS_PLAYED,
 	BUREAUCRAT_PERCENT,
 	BUREAUCRATS_IN_HAND,
 	BUREAUCRATS_BOUGHT,
+	BUREAUCRATS_PLAYED,
 	CELLAR_PERCENT,
 	CELLARS_IN_HAND,
 	CHAPEL_PERCENT,
 	CHAPELS_IN_HAND,
 	CHANCELLOR_PERCENT,
 	CHANCELLORS_IN_HAND,
+	CHANCELLORS_PLAYED,
 	COUNCIL_ROOM_PERCENT,
 	COUNCIL_ROOMS_IN_HAND,
 	COUNCIL_ROOMS_BOUGHT,
+	COUNCIL_ROOMS_PLAYED,
 	FEAST_PERCENT,
 	FEASTS_IN_HAND,
+	FEASTS_PLAYED,
 	FESTIVAL_PERCENT,
 	FESTIVALS_IN_HAND,
+	FESTIVALS_PLAYED,
 	GARDENS_PERCENT,
 	LABORATORY_PERCENT,
 	LABORATORIES_IN_HAND,
@@ -58,41 +64,53 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	MILITIA_PERCENT,
 	MILITIA_IN_HAND,
 	MILITIA_BOUGHT,
+	MILITIA_PLAYED,
 	MINE_PERCENT,
 	MINES_IN_HAND,
+	MINES_PLAYED,
 	MOAT_PERCENT,
 	MOATS_IN_HAND,
 	MOATS_BOUGHT,
 	MONEYLENDER_PERCENT,
 	MONEYLENDERS_IN_HAND,
+	MONEYLENDERS_PLAYED,
 	REMODEL_PERCENT,
 	REMODELS_IN_HAND,
+	REMODELS_PLAYED,
 	THRONE_ROOM_PERCENT,
 	THRONE_ROOMS_IN_HAND,
+	THRONE_ROOMS_PLAYED,
 	SMITHY_PERCENT,
 	SMITHIES_IN_HAND,
 	SPY_PERCENT,
 	SPIES_IN_HAND,
 	SPIES_BOUGHT,
+	SPIES_PLAYED,
 	THIEF_PERCENT,
 	THIEVES_IN_HAND,
 	THIEVES_BOUGHT,
+	THIEVES_PLAYED,
 	VILLAGE_PERCENT,
 	VILLAGES_IN_HAND,
 	WITCH_PERCENT,
 	WITCHES_IN_HAND,
 	WITCHES_BOUGHT,
+	WITCHES_PLAYED,
 	WOODCUTTER_PERCENT,
 	WOODCUTTERS_IN_HAND,
 	WORKSHOP_PERCENT,
 	WORKSHOPS_IN_HAND,
+	WORKSHOPS_PLAYED,
 	PERCENTAGE_DISCARD,
 	TURNS,
 	CURSE_PERCENT,
 	ESTATE_PERCENT,
-	DUCHY_PERCENT;
+	DUCHY_PERCENT,
+	BUYS,
+	ACTIONS,
+	PURCHASE_POWER,
+	UNKNOWN_IN_HAND;
 	
-
 	public double getValue(Player a) {
 		if (a instanceof Player) {
 			return getValue(((Player) a).getPositionSummaryCopy());
@@ -144,10 +162,14 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return (double)ps.getNumberInHand(CardType.MILITIA) / 5.0;
 		case MILITIA_BOUGHT:
 			return (10.0 - ps.getNumberOfCardsRemaining(CardType.MILITIA)) / 10.0;
+		case MILITIA_PLAYED:
+			return Math.max(ps.getNumberPlayed(CardType.MILITIA),1);
 		case MINE_PERCENT:
 			return ps.getPercent(CardType.MINE) * 5.0;
 		case MINES_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.MINE) / 5.0;
+		case MINES_PLAYED:
+			return ps.getNumberPlayed(CardType.MINE) / 2.0;
 		case MOAT_PERCENT:
 			return ps.getPercent(CardType.MOAT) * 5.0;
 		case MOATS_IN_HAND:
@@ -158,6 +180,8 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getPercent(CardType.REMODEL) * 5.0;
 		case REMODELS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.REMODEL) / 5.0;
+		case REMODELS_PLAYED:
+			return ps.getNumberPlayed(CardType.REMODEL) / 2.0;
 		case SMITHY_PERCENT:
 			return ps.getPercent(CardType.SMITHY) * 5.0;
 		case SMITHIES_IN_HAND:
@@ -174,6 +198,8 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getPercent(CardType.WORKSHOP) * 5.0;
 		case WORKSHOPS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.WORKSHOP) / 5.0;
+		case WORKSHOPS_PLAYED:
+			return ps.getNumberPlayed(CardType.WORKSHOP) / 2.0;
 		case CELLAR_PERCENT:
 			return ps.getPercent(CardType.CELLAR) * 5.0;
 		case CELLARS_IN_HAND:
@@ -184,10 +210,14 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return (double)ps.getNumberInHand(CardType.BUREAUCRAT) / 5.0;
 		case BUREAUCRATS_BOUGHT:
 			return (10.0 - ps.getNumberOfCardsRemaining(CardType.BUREAUCRAT)) / 10.0;
+		case BUREAUCRATS_PLAYED:
+			return ps.getNumberPlayed(CardType.BUREAUCRAT) / 2.0;
 		case FESTIVAL_PERCENT:
 			return ps.getPercent(CardType.FESTIVAL) * 5.0;
 		case FESTIVALS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.FESTIVAL) / 5.0;
+		case FESTIVALS_PLAYED:
+			return ps.getNumberPlayed(CardType.FESTIVAL) / 2.0;
 		case LIBRARY_PERCENT:
 			return ps.getPercent(CardType.LIBRARY) * 5.0;
 		case LIBRARIES_IN_HAND:
@@ -196,6 +226,8 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getPercent(CardType.THRONE_ROOM) * 5.0;
 		case THRONE_ROOMS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.THRONE_ROOM) / 5.0;
+		case THRONE_ROOMS_PLAYED:
+			return ps.getNumberPlayed(CardType.THRONE_ROOM) / 2.0;
 		case COPPER_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.COPPER) / 5.0;
 		case COPPER_PERCENT:
@@ -232,26 +264,36 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return (double)ps.getNumberInHand(CardType.SPY) / 5.0;
 		case SPIES_BOUGHT:
 			return (10.0 - ps.getNumberOfCardsRemaining(CardType.SPY)) / 10.0;
+		case SPIES_PLAYED:
+			return ps.getNumberPlayed(CardType.SPY) / 2.0;
 		case THIEF_PERCENT:
 			return ps.getPercent(CardType.THIEF) * 5.0;
 		case THIEVES_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.THIEF) / 5.0;
 		case THIEVES_BOUGHT:
 			return (10.0 - ps.getNumberOfCardsRemaining(CardType.THIEF)) / 10.0;
+		case THIEVES_PLAYED:
+			return ps.getNumberPlayed(CardType.THIEF) / 2.0;
 		case CHANCELLOR_PERCENT:
 			return ps.getPercent(CardType.CHANCELLOR) * 5.0;
 		case CHANCELLORS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.CHANCELLOR) / 5.0;
+		case CHANCELLORS_PLAYED:
+			return ps.getNumberPlayed(CardType.CHANCELLOR) / 2.0;
 		case COUNCIL_ROOM_PERCENT:
 			return ps.getPercent(CardType.COUNCIL_ROOM) * 5.0;
 		case COUNCIL_ROOMS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.COUNCIL_ROOM) / 5.0;
 		case COUNCIL_ROOMS_BOUGHT:
 			return (10.0 - ps.getNumberOfCardsRemaining(CardType.COUNCIL_ROOM)) / 10.0;
+		case COUNCIL_ROOMS_PLAYED:
+			return ps.getNumberPlayed(CardType.COUNCIL_ROOM) / 2.0;
 		case ADVENTURER_PERCENT:
 			return ps.getPercent(CardType.ADVENTURER) * 5.0;
 		case ADVENTURERS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.ADVENTURER) / 5.0;
+		case ADVENTURERS_PLAYED:
+			return ps.getNumberPlayed(CardType.ADVENTURER) / 2.0;
 		case CHAPEL_PERCENT:
 			return ps.getPercent(CardType.CHAPEL) * 5.0;
 		case CHAPELS_IN_HAND:
@@ -260,6 +302,8 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getPercent(CardType.FEAST) * 5.0;
 		case FEASTS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.FEAST) / 5.0;
+		case FEASTS_PLAYED:
+			return ps.getNumberPlayed(CardType.FEAST) / 2.0;
 		case LABORATORY_PERCENT:
 			return ps.getPercent(CardType.FEAST) * 5.0;
 		case LABORATORIES_IN_HAND:
@@ -268,12 +312,24 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getPercent(CardType.FEAST) * 5.0;
 		case MONEYLENDERS_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.FEAST) / 5.0;
+		case MONEYLENDERS_PLAYED:
+			return ps.getNumberPlayed(CardType.MONEYLENDER) / 2.0;
 		case WITCH_PERCENT:
 			return ps.getPercent(CardType.WITCH) * 5.0;
 		case WITCHES_IN_HAND:
 			return (double)ps.getNumberInHand(CardType.WITCH) / 5.0;
 		case WITCHES_BOUGHT:
 			return (10.0 - ps.getNumberOfCardsRemaining(CardType.WITCH)) / 10.0;
+		case WITCHES_PLAYED:
+			return ps.getNumberPlayed(CardType.WITCH) / 2.0;
+		case UNKNOWN_IN_HAND:
+			return ps.getNumberInHand(CardType.UNKNOWN) / 5.0;
+		case ACTIONS:
+			return ps.getActions() / 5.0;
+		case BUYS:
+			return ps.getBuys() / 3.0;
+		case PURCHASE_POWER:
+			return ps.getAdditionalPurchasePower() / 8.0 ;
 		}
 		return 0.0;
 	}
@@ -287,40 +343,14 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	
 	public CardType relatedCardType() {
 		switch (this) {
-//		case COPPER_IN_HAND:
-//		case CURSES_IN_HAND:
-//		case DECK_SIZE:
-//		case DUCHIES_IN_HAND:
-//		case DUCHIES_REMAINING:
-//		case ESTATES_IN_HAND:
-//		case GOLD_IN_HAND:
-//		case GOLD_PERCENT:
-//		case MOST_DEPLETED_PILE:
-//		case SECOND_DEPLETED_PILE:
-//		case THIRD_DEPLETED_PILE:
-//		case PERCENT_ACTION:
-//		case PERCENT_TREASURE:
-//		case PERCENT_VICTORY:
-//		case PROVINCES_IN_HAND:
-//		case PROVINCES_BOUGHT:
-//		case PROVINCES_TOTAL:
-//		case SILVER_IN_HAND:
-//		case SILVER_PERCENT:
-//		case VICTORY_DENSITY:
-//		case VICTORY_MARGIN:
-//		case VICTORY_POINTS:
-//		case WEALTH_DENSITY:
-//		case COPPER_PERCENT:
-//		case PERCENTAGE_DISCARD:
-//		case TURNS:
-//		case GAME_OVER:
-//			return CardType.NONE;
 		case ADVENTURER_PERCENT:
 		case ADVENTURERS_IN_HAND:
+		case ADVENTURERS_PLAYED:
 			return CardType.ADVENTURER;
 		case BUREAUCRATS_IN_HAND:
 		case BUREAUCRAT_PERCENT:
 		case BUREAUCRATS_BOUGHT:   
+		case BUREAUCRATS_PLAYED:
 			return CardType.BUREAUCRAT;
 		case CELLARS_IN_HAND:
 		case CELLAR_PERCENT:
@@ -330,16 +360,20 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return CardType.CHAPEL;
 		case CHANCELLOR_PERCENT:
 		case CHANCELLORS_IN_HAND:
+		case CHANCELLORS_PLAYED:
 			return CardType.CHANCELLOR;
 		case COUNCIL_ROOM_PERCENT:
 		case COUNCIL_ROOMS_IN_HAND:
 		case COUNCIL_ROOMS_BOUGHT:
+		case COUNCIL_ROOMS_PLAYED:
 			return CardType.COUNCIL_ROOM;
 		case FEASTS_IN_HAND:
 		case FEAST_PERCENT:
+		case FEASTS_PLAYED:
 			return CardType.FEAST;
 		case FESTIVALS_IN_HAND:
 		case FESTIVAL_PERCENT:
+		case FESTIVALS_PLAYED:
 			return CardType.FESTIVAL;
 		case GARDENS_PERCENT:
 			return CardType.GARDENS;
@@ -355,9 +389,11 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 		case MILITIA_IN_HAND:
 		case MILITIA_PERCENT:
 		case MILITIA_BOUGHT:
+		case MILITIA_PLAYED:
 			return CardType.MILITIA;
 		case MINES_IN_HAND:
 		case MINE_PERCENT:
+		case MINES_PLAYED:
 			return CardType.MINE;
 		case MOATS_IN_HAND:
 		case MOAT_PERCENT:
@@ -365,9 +401,11 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return CardType.MOAT;
 		case MONEYLENDERS_IN_HAND:
 		case MONEYLENDER_PERCENT:
+		case MONEYLENDERS_PLAYED:
 			return CardType.MONEYLENDER;
 		case REMODELS_IN_HAND:
 		case REMODEL_PERCENT:
+		case REMODELS_PLAYED:
 			return CardType.REMODEL;
 		case SMITHIES_IN_HAND:
 		case SMITHY_PERCENT:
@@ -375,13 +413,16 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 		case SPIES_IN_HAND:
 		case SPIES_BOUGHT:
 		case SPY_PERCENT:
+		case SPIES_PLAYED:
 			return CardType.SPY;
 		case THIEF_PERCENT:
 		case THIEVES_IN_HAND:
 		case THIEVES_BOUGHT:
+		case THIEVES_PLAYED:
 			return CardType.THIEF;
 		case THRONE_ROOMS_IN_HAND:
 		case THRONE_ROOM_PERCENT:
+		case THRONE_ROOMS_PLAYED:
 			return CardType.THRONE_ROOM;
 		case VILLAGES_IN_HAND:
 		case VILLAGE_PERCENT:
@@ -391,10 +432,12 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return CardType.WOODCUTTER;
 		case WORKSHOPS_IN_HAND:
 		case WORKSHOP_PERCENT:
+		case WORKSHOPS_PLAYED:
 			return CardType.WORKSHOP;
 		case WITCH_PERCENT:
 		case WITCHES_BOUGHT:
 		case WITCHES_IN_HAND:
+		case WITCHES_PLAYED:
 			return CardType.WITCH;
 		default:
 			break;
@@ -405,36 +448,55 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	public boolean isHandVariable() {
 		switch (this) {
 		case ADVENTURERS_IN_HAND:
+		case ADVENTURERS_PLAYED:
 		case BUREAUCRATS_IN_HAND:
+		case BUREAUCRATS_PLAYED:
 		case CELLARS_IN_HAND:
 		case CHAPELS_IN_HAND:
 		case CHANCELLORS_IN_HAND:
+		case CHANCELLORS_PLAYED:
 		case COUNCIL_ROOMS_IN_HAND:
+		case COUNCIL_ROOMS_PLAYED:
 		case COPPER_IN_HAND:
 		case CURSES_IN_HAND:
 		case DUCHIES_IN_HAND:
 		case ESTATES_IN_HAND:
 		case FEASTS_IN_HAND:
+		case FEASTS_PLAYED:
 		case FESTIVALS_IN_HAND:
+		case FESTIVALS_PLAYED:
 		case GOLD_IN_HAND:
 		case LABORATORIES_IN_HAND:
 		case LIBRARIES_IN_HAND:
 		case MARKETS_IN_HAND:
 		case MILITIA_IN_HAND:
+		case MILITIA_PLAYED:
 		case MINES_IN_HAND:
+		case MINES_PLAYED:
 		case MOATS_IN_HAND:
 		case MONEYLENDERS_IN_HAND:
+		case MONEYLENDERS_PLAYED:
 		case PROVINCES_IN_HAND:
 		case REMODELS_IN_HAND:
+		case REMODELS_PLAYED:
 		case SILVER_IN_HAND:
 		case SMITHIES_IN_HAND:
 		case SPIES_IN_HAND:
+		case SPIES_PLAYED:
 		case THIEVES_IN_HAND:
+		case THIEVES_PLAYED:
 		case THRONE_ROOMS_IN_HAND:
+		case THRONE_ROOMS_PLAYED:
 		case VILLAGES_IN_HAND:
 		case WOODCUTTERS_IN_HAND:
 		case WORKSHOPS_IN_HAND:
+		case WORKSHOPS_PLAYED:
 		case WITCHES_IN_HAND:
+		case WITCHES_PLAYED:
+		case UNKNOWN_IN_HAND:
+		case BUYS:
+		case ACTIONS:
+		case PURCHASE_POWER:
 			return true;
 		default:
 			return false;

@@ -157,7 +157,7 @@ public class Player extends Agent {
 		Card cardDrawn = drawTopCardFromDeckButNotIntoHand();
 		if (cardDrawn.getType() != CardType.NONE) {
 			hand.addCard(cardDrawn);
-			summary.updateHand();
+			summary.updateHandFromPlayer();
 		}
 		return cardDrawn;
 	}
@@ -239,11 +239,14 @@ public class Player extends Agent {
 	public List<CardType> getCopyOfHand() {
 		return hand.getAllCards();
 	}
+	public List<CardType> getCopyOfPlayedCards() {
+		return revealedCards.getAllCards();
+	}
 
 	public boolean discard(CardType cardTypeToDiscard) {
 		Card discarded = hand.removeSpecificCard(cardTypeToDiscard);
 		if (discarded.getType() != CardType.NONE) {
-			summary.updateHand();
+			summary.updateHandFromPlayer();
 			putCardOnDiscard(discarded);
 			return true;
 		}
@@ -253,7 +256,7 @@ public class Player extends Agent {
 	public void trashCardFromHand(CardType cardTypeToTrash) {
 		hand.removeSpecificCard(cardTypeToTrash);
 		summary.removeCard(cardTypeToTrash);
-		summary.updateHand();
+		summary.updateHandFromPlayer();
 	}
 	public void trashCardFromRevealed(CardType cardTypeToTrash) {
 		revealedCards.removeSpecificCard(cardTypeToTrash);
@@ -308,7 +311,7 @@ public class Player extends Agent {
 		if (cardType != CardType.NONE) {
 			Card retValue = hand.removeSpecificCard(cardType);
 			revealedCards.addCard(retValue);
-			summary.updateHand();
+			summary.updateHandFromPlayer();
 			return retValue;
 		}
 		return new Card(CardType.NONE);
@@ -327,6 +330,9 @@ public class Player extends Agent {
 	public int getBudget() {
 		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower();
 	}
+	public int getAdditionalPurchasePower() {
+		return revealedCards.getAdditionalPurchasePower();
+	}
 
 	public HardCodedDiscardDecider getHandDecider() {
 		return discardDecider;
@@ -337,5 +343,14 @@ public class Player extends Agent {
 		buyCards();
 		tidyUp();
 		setState(State.WAITING);
+	}
+
+	public List<ActionEnum<Player>> getActionsInHand() {
+		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
+		for (CardType card : hand.getAllCards()) {
+			if (card.isAction())
+				retValue.add(card);
+		}
+		return retValue;
 	}
 }

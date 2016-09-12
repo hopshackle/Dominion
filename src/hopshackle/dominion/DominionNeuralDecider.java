@@ -18,9 +18,17 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 
 	@Override
 	public List<ActionEnum<Player>> getChooseableOptions(Player player) {
-		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
-		List<ActionEnum<Player>> retValue = dpd.getPossiblePurchasesAsActionEnum();
-		return retValue;
+		switch (player.getPlayerState()) {
+		case PURCHASING:
+			DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
+			List<ActionEnum<Player>> retValue = dpd.getPossiblePurchasesAsActionEnum();
+			return retValue;
+		case PLAYING:
+			return player.getActionsInHand();
+			default:
+				throw new AssertionError("Invalid Player State in getChooseableOptions : " + player.getPlayerState());
+		}
+
 	}
 
 	@Override

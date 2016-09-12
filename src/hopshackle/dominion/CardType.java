@@ -8,6 +8,7 @@ import hopshackle.simulation.*;
 public enum CardType implements ActionEnum<Player> {
 
 	NONE		(0, 0, 0, 0, 0, 0, 0, 0),
+	UNKNOWN		(0, 0, 0, 0, 0, 0, 0, 0),
 	COPPER 		(0, 1, 0, 0, 0, 0, 0, 0),
 	SILVER 		(3, 2, 0, 0, 0, 0, 0, 0),
 	GOLD 		(6, 3, 0, 0, 0, 0, 0, 0),
