@@ -293,7 +293,7 @@ public class PositionSummary implements LookaheadState<Player> {
 		cardsPlayed = player.getCopyOfPlayedCards();
 	}
 	
-	public void playCardFromHand(CardType type) {
+	private void playCardFromHand(CardType type) {
 		if (getNumberInHand(type) > 0) {
 			hand.remove(type);
 			actions--;

@@ -96,7 +96,6 @@ public class Player extends Agent {
 	public void takeActions() {
 		if (actionDecider == null) return;
 		setState(State.PLAYING);
-		actionsLeft = 1;
 		do {
 			Action<Player> action = actionDecider.decide(this);
 			if (!(action instanceof DominionPlayAction)) {
@@ -104,13 +103,16 @@ public class Player extends Agent {
 			}
 			action.start();
 			action.run();
-			actionsLeft--;
+			decrementActionsLeft();
 			summary = new PositionSummary(this, null);
 		} while (actionsLeft > 0);
 		actionsLeft = 0;
 	}
 	public void incrementActionsLeft() {
 		actionsLeft++;
+	}
+	public void decrementActionsLeft() {
+		actionsLeft--;
 	}
 
 	public void buyCards() {
@@ -282,6 +284,11 @@ public class Player extends Agent {
 
 	public void setState(Player.State newState) {
 		playerState = newState;
+		switch (newState) {
+		case PLAYING: 
+			actionsLeft = 1;
+		default: 
+		}
 		summary = new PositionSummary(this, null);
 	}
 	public Player.State getPlayerState() {

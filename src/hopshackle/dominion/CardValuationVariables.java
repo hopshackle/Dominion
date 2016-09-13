@@ -163,7 +163,7 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 		case MILITIA_BOUGHT:
 			return (10.0 - ps.getNumberOfCardsRemaining(CardType.MILITIA)) / 10.0;
 		case MILITIA_PLAYED:
-			return Math.max(ps.getNumberPlayed(CardType.MILITIA),1);
+			return Math.min(ps.getNumberPlayed(CardType.MILITIA),1);
 		case MINE_PERCENT:
 			return ps.getPercent(CardType.MINE) * 5.0;
 		case MINES_IN_HAND:
