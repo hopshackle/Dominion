@@ -56,6 +56,7 @@ public class LearningAndExperience {
 	@Test
 	public void positionSummaryApplyReturnsUpdatedResult() {
 		Player firstPlayer = game.getCurrentPlayer();
+		firstPlayer.setState(Player.State.PURCHASING);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(firstPlayer);
 		PositionSummary updatedps = ps.apply(CardType.MILITIA);
 		assertFalse(ps == updatedps);
@@ -74,6 +75,7 @@ public class LearningAndExperience {
 	@Test
 	public void lookaheadApplyReturnsUpdatedResult() {
 		Player firstPlayer = game.getCurrentPlayer();
+		firstPlayer.setState(Player.State.PURCHASING);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(firstPlayer);
 		PositionSummary updatedps = (PositionSummary) lookahead.apply(ps, CardType.MILITIA);
 		assertFalse(ps == updatedps);

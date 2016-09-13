@@ -25,8 +25,8 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 			return retValue;
 		case PLAYING:
 			return player.getActionsInHand();
-			default:
-				throw new AssertionError("Invalid Player State in getChooseableOptions : " + player.getPlayerState());
+		default:
+			throw new AssertionError("Invalid Player State in getChooseableOptions : " + player.getPlayerState());
 		}
 
 	}

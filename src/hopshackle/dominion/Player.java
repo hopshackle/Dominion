@@ -105,6 +105,7 @@ public class Player extends Agent {
 			action.start();
 			action.run();
 			actionsLeft--;
+			summary = new PositionSummary(this, null);
 		} while (actionsLeft > 0);
 		actionsLeft = 0;
 	}
@@ -281,6 +282,7 @@ public class Player extends Agent {
 
 	public void setState(Player.State newState) {
 		playerState = newState;
+		summary = new PositionSummary(this, null);
 	}
 	public Player.State getPlayerState() {
 		return playerState;
