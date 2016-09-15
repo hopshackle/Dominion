@@ -100,7 +100,7 @@ public class RunGame extends World {
 				runNextGameWithoutLearning();
 			} while (!finishedRun());
 		}
-		dg.recordBestBrains(toString(), baseDir + "\\recordedBrains");
+		dg.recordBestPurchaseBrains(toString(), baseDir + "\\recordedBrains");
 	}
 
 	private void runNextSet(int numberOfGames) {

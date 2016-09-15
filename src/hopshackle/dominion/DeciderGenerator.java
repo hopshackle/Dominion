@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 public class DeciderGenerator {
 
-	private List<LookaheadDecider<Player>> purchaseDeciders, unusedPurchaseDeciders, actionDeciders;
+	private List<LookaheadDecider<Player>> purchaseDeciders, unusedPurchaseDeciders, actionDeciders, unusedActionDeciders;
 	protected BigMoneyDecider bigMoney;
 	protected ChrisPethersDecider chrisPethers;
 	private GameSetup gamesetup;
@@ -25,6 +25,7 @@ public class DeciderGenerator {
 	private double chrisPethersPacesetter = SimProperties.getPropertyAsDouble("DominionChrisPethersPacesetter", "0.00");
 	protected int startingInputs = Integer.valueOf(SimProperties.getProperty("DominionStartingInputs", "99"));
 	protected double selectionThreshold = Double.valueOf(SimProperties.getProperty("DominionSelectionThreshold", "1"));
+	private boolean useHardCodedAction = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	private boolean evenUseOfDeciders = false;
 	private boolean replaceDecidersDeterministically = false;
 	private int totalWinners, baseDeciders;
@@ -55,6 +56,7 @@ public class DeciderGenerator {
 		FilenameFilter nameFilter = new HopshackleFilter("", "brain");
 		loadDecidersFromFile(purchaseDeciders, new File(baseDir + "\\DecidersAtStart"), nameFilter, 
 				new DominionNeuralDecider(lookahead, actionsToUse, variablesToUseForPurchase), 0, "P");
+		// TODO: This load from file only applies to Purchase Deciders currently
 
 		for (int n = 0; n < baseDeciders; n++) {
 			LookaheadDecider<Player> pd = null;
@@ -84,19 +86,41 @@ public class DeciderGenerator {
 				purchaseDeciders.add(pd);
 			}
 
-			HardCodedActionDecider ad = new HardCodedActionDecider(actionsToUse, variablesToUseForActions);
-			ad.setName("DEFAULT");
-			actionDeciders.add(ad);
+			// TODO: We have duplicate code here for variable selection (albeit not a highly used option)
+			// TODO: Some of the Purchase variables will also be useful for action selection (re: End Game changes)
+			if (useHardCodedAction) {
+				HardCodedActionDecider ad = new HardCodedActionDecider(actionsToUse, variablesToUseForActions);
+				ad.setName("DEFAULT");
+				actionDeciders.add(ad);
+			} else {
+				LookaheadDecider<Player> ad = null;
+				if (startingInputs < 99) {
+					List<CardValuationVariables> varsToUse = new ArrayList<CardValuationVariables>();
+					for (int i = 0; i < startingInputs; i++) {
+						boolean choiceMade = false;
+						do {
+							int roll = Dice.roll(1, variablesToUseForActions.size()) - 1;
+							CardValuationVariables choice = variablesToUseForActions.get(roll);
+							if (!varsToUse.contains(choice)) {
+								choiceMade = true;
+								varsToUse.add(choice);
+							}
+						} while (!choiceMade);
+					}
+					ad = new DominionNeuralDecider(lookahead, actionsToUse, varsToUse);
+				} else {
+					ad = new DominionNeuralDecider(lookahead, actionsToUse, variablesToUseForActions);
+				}
+				ad.setName("A"+String.format("%03d", decideNameCount));
+				actionDeciders.add(ad);
+			}
 
 			decideNameCount++;
 			purchaseVictories.add(0);
-			String tempName = "DEFAULT";
-			if (pd != null)
-				tempName = pd.toString();
-			purchaseScores.put(tempName, 2.0);	// we start with a score of 2, as the initial ones are thrown out with greater alacrity
 			actionVictories.add(0);
 		}
 		unusedPurchaseDeciders = HopshackleUtilities.cloneList(purchaseDeciders);
+		unusedActionDeciders = HopshackleUtilities.cloneList(actionDeciders);
 	}
 
 	private void loadDecidersFromFile(List<LookaheadDecider<Player>> deciders, File directory, 
@@ -138,7 +162,15 @@ public class DeciderGenerator {
 		return choice;
 	}
 	public LookaheadDecider<Player> getActionDecider() {
-		return actionDeciders.get((int)(Math.random()*actionDeciders.size()));
+		LookaheadDecider<Player> choice = actionDeciders.get((int)(Math.random()*actionDeciders.size()));
+		if (evenUseOfDeciders) {
+			int index = (int)(Math.random()*unusedActionDeciders.size());
+			choice = unusedActionDeciders.get(index);
+			unusedActionDeciders.remove(index);
+			if (unusedActionDeciders.size() == 0)
+				unusedActionDeciders = HopshackleUtilities.cloneList(actionDeciders);	// reset
+		}
+		return choice;
 	}
 
 	public void reportVictory(Player winner) {
@@ -260,7 +292,7 @@ public class DeciderGenerator {
 		return retValue;
 	}
 
-	public LookaheadDecider<Player> getSingleBestBrain() {
+	public LookaheadDecider<Player> getSingleBestPurchaseBrain() {
 		List<Integer> copy = HopshackleUtilities.cloneList(purchaseVictories);
 		Collections.sort(copy);
 		int bestScore = copy.get(purchaseVictories.size() - 1);
@@ -268,7 +300,7 @@ public class DeciderGenerator {
 		return purchaseDeciders.get(index);
 	}
 	
-	public List<LookaheadDecider<Player>> getTopPercentageOfBrains(double percentile) {
+	public List<LookaheadDecider<Player>> getTopPercentageOfPurchaseBrains(double percentile) {
 		int criticalScore = this.getScore(percentile);
 		List<LookaheadDecider<Player>> retValue = new ArrayList<LookaheadDecider<Player>>();
 		for (int n = 0; n < purchaseDeciders.size(); n++) {
@@ -278,7 +310,7 @@ public class DeciderGenerator {
 		return retValue;
 	}
 
-	public void recordBestBrains(String descriptor, String directory) {
+	public void recordBestPurchaseBrains(String descriptor, String directory) {
 		List<Integer> victories = HopshackleUtilities.cloneList(lastPVictories);
 		if (lastPVictories == null)
 			victories = HopshackleUtilities.cloneList(purchaseVictories);
@@ -332,7 +364,10 @@ public class DeciderGenerator {
 	public List<LookaheadDecider<Player>> getAllPurchaseDeciders() {
 		return HopshackleUtilities.cloneList(purchaseDeciders);
 	}
-
+	public List<LookaheadDecider<Player>> getAllActionDeciders() {
+		return HopshackleUtilities.cloneList(actionDeciders);
+	}
+	
 	public void useDecidersEvenly(boolean var) {
 		evenUseOfDeciders = var;
 	}
