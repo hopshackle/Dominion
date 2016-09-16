@@ -19,7 +19,7 @@ public class Player extends Agent {
 	private PositionSummary summary;
 	private int playerNumber;
 	private int actionsLeft;
-	private Decider<Player> actionDecider;
+	private LookaheadDecider<Player> actionDecider;
 	private LookaheadDecider<Player> purchaseDecider;
 	HardCodedDiscardDecider discardDecider;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
@@ -224,7 +224,7 @@ public class Player extends Agent {
 	public Decider<Player> getDecider() {
 		return purchaseDecider;
 	}
-	public Decider<Player> getActionDecider() {
+	public LookaheadDecider<Player> getActionDecider() {
 		return actionDecider;
 	}
 	public void setPositionDecider(LookaheadDecider<Player> newDecider) {
@@ -232,7 +232,7 @@ public class Player extends Agent {
 		discardDecider = new HardCodedDiscardDecider(new DominionStateFactory(newDecider.getVariables()), HopshackleUtilities.convertList(newDecider.getActions()));
 		log("Using purchase strategy " + purchaseDecider.toString());
 	}
-	public void setActionDecider(Decider<Player> newDecider) {
+	public void setActionDecider(LookaheadDecider<Player> newDecider) {
 		actionDecider = newDecider;
 		log("Using action strategy " + actionDecider.toString());
 	}

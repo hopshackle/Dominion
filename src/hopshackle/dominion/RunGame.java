@@ -57,13 +57,43 @@ public class RunGame extends World {
 		super(null, descriptor, games);
 		dg = providedDG;
 		maximum = games;
+		EventFilter purchaseEventFilter = new EventFilter() {
+			@Override
+			public boolean ignore(AgentEvent event) {
+				Action<?> action = event.getAction();
+				if (action == null || action instanceof DominionBuyAction)
+					return false;
+				return true;
+			}
+		};
+		EventFilter actionEventFilter = new EventFilter() {
+			@Override
+			public boolean ignore(AgentEvent event) {
+				Action<?> action = event.getAction();
+				if (action == null || action instanceof DominionPlayAction)
+					return false;
+				return true;
+			}
+		};
 		for (LookaheadDecider<Player> d : dg.getAllPurchaseDeciders()) {
-			ercMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory));
+			ercMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, purchaseEventFilter));
 			OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(pastSetsToIncludeInTraining);
 			teacher.registerToERStream(ercMap.get(d.toString()));
 			teacherMap.put(d.toString(), teacher);
 			if (trainAllDeciders) {
 				for (Decider<Player> d2 : dg.getAllPurchaseDeciders())
+					teacher.registerDecider(d2);
+			} else {
+				teacher.registerDecider(d);
+			}
+		}
+		for (LookaheadDecider<Player> d : dg.getAllActionDeciders()) {
+			ercMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, actionEventFilter));
+			OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(pastSetsToIncludeInTraining);
+			teacher.registerToERStream(ercMap.get(d.toString()));
+			teacherMap.put(d.toString(), teacher);
+			if (trainAllDeciders) {
+				for (Decider<Player> d2 : dg.getAllActionDeciders())
 					teacher.registerDecider(d2);
 			} else {
 				teacher.registerDecider(d);
@@ -108,14 +138,17 @@ public class RunGame extends World {
 			Game game = new Game(this, addPaceSetters);
 			for (Player p : game.getPlayers()) {
 				LookaheadDecider<Player> pd = p.getPositionDecider();
+				LookaheadDecider<Player> ad = p.getActionDecider();
 				switch(teachingStrategy) {
 				case "AllPlayers" :
 					for (Player p2 : game.getPlayers())  {
 						ercMap.get(pd.toString()).registerAgent(p2);
+						ercMap.get(ad.toString()).registerAgent(p2);
 					}
 					break;
 				case "SelfOnly" :
 					ercMap.get(pd.toString()).registerAgent(p);
+					ercMap.get(ad.toString()).registerAgent(p);
 					break;
 				default:
 					throw new AssertionError("Unknown teaching strategy: " + teachingStrategy);
