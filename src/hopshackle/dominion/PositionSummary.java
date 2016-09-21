@@ -72,7 +72,7 @@ public class PositionSummary implements LookaheadState<Player> {
 	@Override
 	public PositionSummary apply(ActionEnum<Player> ae) {
 		PositionSummary retValue = this.clone();
-		if (ae == null) return retValue;
+		if (ae == null || ae == CardType.NONE) return retValue;
 		switch (positionState) {
 		case PLAYING:
 			retValue.playCardFromHand((CardType) ae);

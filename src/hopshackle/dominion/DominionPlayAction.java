@@ -14,7 +14,7 @@ public class DominionPlayAction extends Action<Player> {
 	}
 
 	public String toString() {
-		return cardType.toString();
+		return "Play " + cardType.toString();
 	}
 	
 	@Override
@@ -33,15 +33,12 @@ public class DominionPlayAction extends Action<Player> {
 			logger.severe("No Actual card found in hand for type " + cardType);
 		}
 	}
-	@Override
-	protected void eventDispatch(AgentEvent learningEvent) {
-		// Do nothing, as at this stage we do not want to track any experience records or Play actions.
-	};
+
 	@Override 
-	protected void doNextDecision() {
+	protected void doNextDecision(Player p) {
 		// Do nothing .. this is all handled in Game/Player
-		// Note that no learning events are generated either (in contrast to DominionBuyDecision)
-		// TODO: learn how to play cards as well as how to buy them
+		// Note that we do not override doNextDecision(), so that learning event
+		// is still dispatched
 	}
 	
 }

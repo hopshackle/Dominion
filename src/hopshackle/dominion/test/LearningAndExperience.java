@@ -5,6 +5,7 @@ import hopshackle.dominion.CardFactory;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.CardValuationVariables;
 import hopshackle.dominion.DeciderGenerator;
+import hopshackle.dominion.DominionBuyAction;
 import hopshackle.dominion.DominionLookaheadFunction;
 import hopshackle.dominion.DominionStateFactory;
 import hopshackle.dominion.Game;
@@ -12,6 +13,9 @@ import hopshackle.dominion.GameSetup;
 import hopshackle.dominion.Player;
 import hopshackle.dominion.PositionSummary;
 import hopshackle.dominion.RunGame;
+import hopshackle.simulation.Action;
+import hopshackle.simulation.AgentEvent;
+import hopshackle.simulation.EventFilter;
 import hopshackle.simulation.ExperienceRecordCollector;
 import hopshackle.simulation.OnInstructionTeacher;
 import hopshackle.simulation.SimProperties;
@@ -37,8 +41,17 @@ public class LearningAndExperience {
 	}
 
 	@Test
-	public void playingCardsDoesNotYetGenerateExperienceRecords() {
-		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>());
+	public void playingCardsDoesNotGenerateExperienceRecordsWithFilter() {
+		EventFilter purchaseEventFilter = new EventFilter() {
+			@Override
+			public boolean ignore(AgentEvent event) {
+				Action<?> action = event.getAction();
+				if (action == null || action instanceof DominionBuyAction)
+					return false;
+				return true;
+			}
+		};
+		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>(), purchaseEventFilter);
 		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
 		for (Player p : game.getPlayers()) {
 			erc.registerAgent(p);
@@ -51,6 +64,23 @@ public class LearningAndExperience {
 		assertEquals(erc.getExperienceRecords(firstPlayer).size(), 0);
 		firstPlayer.buyCards();
 		assertEquals(erc.getExperienceRecords(firstPlayer).size(), 1);
+	}
+	
+	@Test
+	public void playingCardsDoesGenerateExperienceRecordsWithoutFilter() {
+		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>());
+		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
+		for (Player p : game.getPlayers()) {
+			erc.registerAgent(p);
+		}
+		teacher.registerToERStream(erc);
+		Player firstPlayer = game.getCurrentPlayer();
+		firstPlayer.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.SMITHY));
+		assertEquals(erc.getExperienceRecords(firstPlayer).size(), 0);
+		firstPlayer.takeActions();
+		assertEquals(erc.getExperienceRecords(firstPlayer).size(), 1);
+		firstPlayer.buyCards();
+		assertEquals(erc.getExperienceRecords(firstPlayer).size(), 2);
 	}
 	
 	@Test

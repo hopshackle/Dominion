@@ -99,7 +99,7 @@ public class Player extends Agent {
 		do {
 			Action<Player> action = actionDecider.decide(this);
 			if (!(action instanceof DominionPlayAction)) {
-				throw new AssertionError("Incorrect Action type in Player.takeActions()");
+				throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
 			}
 			action.start();
 			action.run();
@@ -222,7 +222,10 @@ public class Player extends Agent {
 	}
 	@Override
 	public Decider<Player> getDecider() {
-		return purchaseDecider;
+		if (getPlayerState() == State.PLAYING) {
+			return getActionDecider();
+		}
+		return getPositionDecider();
 	}
 	public LookaheadDecider<Player> getActionDecider() {
 		return actionDecider;

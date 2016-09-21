@@ -23,7 +23,7 @@ public class DominionBuyAction extends Action<Player> {
 	}
 
 	public String toString() {
-		StringBuffer retValue = new StringBuffer();
+		StringBuffer retValue = new StringBuffer("Buy ");
 		for (CardType c : cardType) {
 			retValue.append(c.toString() + " ");
 		}
@@ -32,7 +32,7 @@ public class DominionBuyAction extends Action<Player> {
 	
 	@Override
 	protected void doStuff() {
-		player.log("Has " + player.getBudget() + " money and buys " + toString()); 
+		player.log("Has " + player.getBudget() + " money and decides to " + toString()); 
 		for (CardType cardBought : cardType) {
 			player.takeCardFromSupplyIntoDiscard(cardBought);
 		}

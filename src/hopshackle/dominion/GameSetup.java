@@ -129,6 +129,7 @@ public class GameSetup {
 		String[] varsToInclude = coreVariables.split(",");
 		for (String v : varsToInclude) {
 			deckVariables.add(CardValuationVariables.valueOf(v));
+			handVariables.add(CardValuationVariables.valueOf(v));
 		}
 	}
 
