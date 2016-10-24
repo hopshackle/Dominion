@@ -2,12 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="src" path="/hopshackle"/>
-	<classpathentry kind="lib" path="/hopshackle/encog-core-3.2.0.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/Users/James/Google%20Drive/Encog3/apidocs/"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Simulation"/>
+	<classpathentry kind="lib" path="C:/Users/James/Google Drive/Simulations/encog-core-3.3.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
