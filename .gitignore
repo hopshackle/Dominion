@@ -1,0 +1,9 @@
+/bin/
+/Dominion/
+*.jar
+*.iml
+.project
+.classpath
+/.metadata/
+/.settings/
+/.idea/
