@@ -1,4 +1,5 @@
 /bin/
+/Dominion/
 *.jar
 *.iml
 .project
