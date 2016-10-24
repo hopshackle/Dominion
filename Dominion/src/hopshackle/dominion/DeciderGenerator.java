@@ -56,7 +56,7 @@ public class DeciderGenerator {
 		loadDecidersFromFile(purchaseDeciders, new File(baseDir + "\\DecidersAtStart"), nameFilter, 
 				new DominionNeuralDecider(lookahead, actionsToUse, variablesToUseForPurchase), 0, "P");
 
-		for (int n = 0; n<numberToMaintain; n++) {
+		for (int n = 0; n < baseDeciders; n++) {
 			LookaheadDecider<Player> pd = null;
 			if (purchaseDeciders.size() <= n){
 				if (startingInputs < 99) {

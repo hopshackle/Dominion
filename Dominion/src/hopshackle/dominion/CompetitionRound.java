@@ -22,8 +22,9 @@ public class CompetitionRound {
 
 	public void run(int trainingGames) {
 		setOfGames = new RunGame(descriptor, trainingGames, dg);
+		SimProperties.getProperty("DominionLastThousandForScoring", "false"); // don't run scoring games; as this is covered later
 		for (int i = 0; i < trainingGames; i++)
-			setOfGames.runNextGameWithLearning();
+			setOfGames.runAll();
 
 		double sdHigh = 0.0;
 		double sdLow = 0.0;
@@ -34,11 +35,12 @@ public class CompetitionRound {
 		do {
 			setOfGames.worldDeath();
 			// Now we work out the best brains
+			SimProperties.getProperty("DominionLearningOn", "false"); // switch learning off
 			int deciders = dg.getAllPurchaseDeciders().size();
 			setOfGames = new RunGame(descriptor, (cycleSize * deciders / 4) + cycleSize, dg);
 
 			for (int i = 0; i < cycleSize * deciders / 4; i++)
-				setOfGames.runNextGameWithoutLearning();
+				setOfGames.runAll();
 
 			int hiScore = dg.getScore(0.75);
 			int loScore = dg.getScore(0.25);
