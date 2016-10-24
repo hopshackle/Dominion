@@ -12,7 +12,7 @@ public class ViewBrain {
 	public static void main(String[] args) {
 		String baseDir = SimProperties.getProperty("BaseDirectory", "C:");
 
-		File f = new File(baseDir + "\\DominionBrains\\TestDom5_P000.brain");
+		File f = new File(baseDir + "\\recordedBRains\\FG123_1_DUMMY_DOM1.brain");
 		NeuralDecider<Player> nd = NeuralDecider.createNeuralDecider(new DominionStateFactory(new ArrayList<GeneticVariable<Player>>()), f, 100.0);
 
 		BasicNetwork brain = nd.getBrain();

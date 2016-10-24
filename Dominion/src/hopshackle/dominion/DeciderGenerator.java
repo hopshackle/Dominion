@@ -278,23 +278,27 @@ public class DeciderGenerator {
 		return retValue;
 	}
 
-	public void recordBestBrains(String descriptor, String directory) {
-		List<Integer> victories = HopshackleUtilities.cloneList(lastPVictories);
-		if (lastPVictories == null)
-			victories = HopshackleUtilities.cloneList(purchaseVictories);
-		for (int n = 0; n < 5; n++) {
-			LookaheadDecider<Player> sample = getSampleTwoBestDeciders(purchaseDeciders, victories).get(0);
-			if(sample != null) {
-				if (sample instanceof DominionNeuralDecider) {
-					DominionNeuralDecider dec = (DominionNeuralDecider) sample;
-					dec.saveToFile(descriptor, directory);
+	public void recordBestBrains(String descriptor, String directory, int number) {
+		int found = 0;
+		do {
+			List<Integer> victories = HopshackleUtilities.cloneList(lastPVictories);
+			if (lastPVictories == null)
+				victories = HopshackleUtilities.cloneList(purchaseVictories);
+			for (int n = 0; n < 5; n++) {
+				LookaheadDecider<Player> sample = getSampleTwoBestDeciders(purchaseDeciders, victories).get(0);
+				if(sample != null) {
+					if (sample instanceof DominionNeuralDecider) {
+						DominionNeuralDecider dec = (DominionNeuralDecider) sample;
+						dec.saveToFile(descriptor, directory);
+					}
+					victories.remove(purchaseDeciders.indexOf(sample));
+					purchaseDeciders.remove(sample);
+					found++;
+				} else {
+					return;
 				}
-				victories.remove(purchaseDeciders.indexOf(sample));
-				purchaseDeciders.remove(sample);
-			} else {
-				return;
 			}
-		}
+		} while (found < number);
 	}
 
 	private <D extends Decider<Player>> List<D> getSampleTwoBestDeciders(List<D> deciders, List<Integer> victories) {

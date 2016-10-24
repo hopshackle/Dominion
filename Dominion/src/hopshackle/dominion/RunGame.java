@@ -93,7 +93,7 @@ public class RunGame extends World {
 				runNextGameWithoutLearning();
 			} while (!finishedRun());
 		}
-		dg.recordBestBrains(toString(), baseDir + "\\recordedBrains");
+		dg.recordBestBrains(toString(), baseDir + "\\recordedBrains", 5);
 	}
 
 	public void runNextGameWithLearning() {
