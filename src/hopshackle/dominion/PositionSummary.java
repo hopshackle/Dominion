@@ -387,4 +387,14 @@ public class PositionSummary implements LookaheadState<Player> {
 		return values;
 	}
 
+	@Override
+	public String getAsString() {
+		double[] values = getAsArray();
+		StringBuffer retValue = new StringBuffer();
+		for (double d : values) {
+			retValue.append(String.format(".2f|", d));
+		}
+		return retValue.toString();
+	}
+
 }
