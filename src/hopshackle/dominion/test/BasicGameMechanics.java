@@ -1,6 +1,9 @@
 package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
+
+import java.util.*;
+
 import hopshackle.dominion.*;
 import hopshackle.simulation.SimProperties;
 
@@ -8,26 +11,26 @@ import org.junit.*;
 
 public class BasicGameMechanics {
 
-	public Game game;
+	public DominionGame game;
 
 	@Before
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
 	}
 
 	@Test
 	public void newGameHasFourPlayer() {
-		assertEquals(game.getPlayers().length, 4);
+		assertEquals(game.getAllPlayers().size(), 4);
 		for (int n = 0; n < 4; n++) {
-			assertTrue(game.getPlayers()[n] != null && game.getPlayers()[n] instanceof Player);
+			assertTrue(game.getAllPlayers().get(n) != null && game.getAllPlayers().get(n) instanceof Player);
 		}
 	}
 
 	@Test
 	public void newPlayerHasHandOfFiveCardsAndDeckOfFiveCards() {
 		for (int n = 0; n < 4; n++) {
-			Player p = game.getPlayers()[n];
+			Player p = game.getAllPlayers().get(n);
 			assertEquals(p.getHandSize(), 5);
 			assertEquals(p.getDeckSize(), 5);
 		}
@@ -45,7 +48,7 @@ public class BasicGameMechanics {
 	@Test
 	public void newPlayerHasSevenCopperAndThreeEstatesSpreadAcrossHandAndDeck() {
 		for (int n = 0; n < 4; n++) {
-			Player p = game.getPlayers()[n];
+			Player p = game.getAllPlayers().get(n);
 			assertEquals(p.getNumberOfTypeTotal(CardType.COPPER), 7);
 			assertEquals(p.getNumberOfTypeTotal(CardType.ESTATE), 3);
 		}
@@ -53,7 +56,7 @@ public class BasicGameMechanics {
 
 	@Test
 	public void playersTakeTurnsInSequence() {
-		Player[] players = game.getPlayers();
+		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		assertTrue(players[0] == game.getCurrentPlayer());
 		assertEquals(game.turnNumber(), 0);
 		game.nextPlayersTurn();
@@ -128,14 +131,14 @@ public class BasicGameMechanics {
 
 	@Test
 	public void phaseFlagIsSetCorrectlyAsPlayProceeds() {
-		Player[] players = game.getPlayers();
+		List<Player> players = game.getAllPlayers();
 		for (int i = 0; i<4; i++) {
-		assertFalse(players[i].isTakingActions());
+		assertFalse(players.get(i).isTakingActions());
 		}
-		players[0].takeActions();
-		assertTrue(players[0].isTakingActions());
-		players[0].buyCards();
-		assertFalse(players[0].isTakingActions());
+		players.get(0).takeActions();
+		assertTrue(players.get(0).isTakingActions());
+		players.get(0).buyCards();
+		assertFalse(players.get(0).isTakingActions());
 	}
 	
 	@Test
@@ -148,4 +151,110 @@ public class BasicGameMechanics {
 		assertTrue(firstPlayer.getDecider() == firstPlayer.getActionDecider());
 	}
 	
+	@Test
+	public void cloneGame() {
+		// I want to clone a game, and then run the game through to completion, and confirm the original is unaffected
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		
+		List<List<CardType>> hand = new ArrayList<List<CardType>>();
+		List<List<CardType>> deck = new ArrayList<List<CardType>>();
+		List<List<CardType>> discard = new ArrayList<List<CardType>>();
+		int[] deckSize = new int[4];
+		int[] discardSize = new int[4];
+		for (int i = 1; i <=4; i++) {
+			Player player = game.getPlayer(i);
+			hand.add(player.getCopyOfHand());
+			discard.add(player.getCopyOfDiscard());
+			deck.add(player.getCopyOfDeck());
+			deckSize[i-1] = player.getDeckSize();
+			discardSize[i-1] = player.getDiscardSize();
+		}
+		Map<CardType, Integer> initialCardsAvailable = new HashMap<CardType, Integer>();
+		for (CardType ct : game.availableCardsToPurchase()) {
+			 initialCardsAvailable.put(ct, game.getNumberOfCardsRemaining(ct));
+		 }
+		DominionGame clonedGame = game.clone(game.getCurrentPlayer());
+		int perspectivePlayer = game.getCurrentPlayerNumber();
+
+		for (int i = 1; i <=4; i++) {
+			Player player = game.getPlayer(i);
+			Player cloned = clonedGame.getPlayer(i);
+			// Test that players are different (i.e. we must clone these as well)
+			assertFalse(player == cloned);
+			// Test that perspective player's hand and discard are still the same
+			List<CardType> clonedHand = cloned.getCopyOfHand();
+			List<CardType> clonedDiscard = cloned.getCopyOfDiscard();
+			List<CardType> clonedDeck = cloned.getCopyOfDeck();
+			// Test that players discards are still the same
+			assertEquals(discardSize[i-1], cloned.getDiscardSize());
+			// Test that players' decks are still the same
+			assertEquals(deckSize[i-1], cloned.getDeckSize());
+			if (i == perspectivePlayer) {
+				for (int j = 0; j < hand.get(i-1).size(); j++) {
+					assertTrue(hand.get(i-1).get(j) == clonedHand.get(j));
+				}	
+				for (int j = 0; j < discard.get(i-1).size(); j++) {
+					assertTrue(discard.get(i-1).get(j) == clonedDiscard.get(j));
+				}	
+				boolean identical = true;
+				for (int j = 0; j < deck.get(i-1).size(); j++) {
+					if (deck.get(i-1).get(j) != clonedDeck.get(j)) identical = false;
+				}
+				assertFalse(identical);
+			} else {
+				boolean identical = true;
+				for (int j = 0; j < hand.get(i-1).size(); j++) {
+					if (hand.get(i-1).get(j) != clonedHand.get(j)) identical = false;
+				}
+				assertFalse(identical);
+				for (int j = 0; j < discard.get(i-1).size(); j++) {
+					assertTrue(discard.get(i-1).get(j) == clonedDiscard.get(j));
+				}	
+				identical = true;
+				for (int j = 0; j < deck.get(i-1).size(); j++) {
+					if (deck.get(i-1).get(j) != clonedDeck.get(j)) identical = false;
+				}
+				assertFalse(identical);
+			}
+		}
+		
+		
+		clonedGame.playGame();
+		assertTrue(clonedGame.gameOver());
+		assertFalse(game.gameOver());
+		assertEquals(game.getWinningPlayers().length, 0);
+		
+		// Test we still have all the cards on the table
+		for (CardType ct : initialCardsAvailable.keySet()) {
+			assertEquals((int)initialCardsAvailable.get(ct), game.getNumberOfCardsRemaining(ct));
+		}
+		// And that the players still have exactly the same decks, hands and discards
+		for (int i = 1; i <=4; i++) {
+			Player player = game.getPlayer(i);
+			List<CardType> finalHand = player.getCopyOfHand();
+			List<CardType> finalDiscard = player.getCopyOfDiscard();
+			List<CardType> finalDeck = player.getCopyOfDeck();
+			// Test that players discards are still the same
+			assertEquals(discardSize[i-1], player.getDiscardSize());
+			// Test that players' decks are still the same
+			assertEquals(deckSize[i-1], player.getDeckSize());
+			for (int j = 0; j < hand.get(i-1).size(); j++) {
+				assertTrue(hand.get(i-1).get(j) == finalHand.get(j));
+			}
+			for (int j = 0; j < discard.get(i-1).size(); j++) {
+				assertTrue(discard.get(i-1).get(j) == finalDiscard.get(j));
+			}	
+			for (int j = 0; j < deck.get(i-1).size(); j++) {
+				assertTrue(deck.get(i-1).get(j) == finalDeck.get(j));
+			}
+		}
+	}
+
 }

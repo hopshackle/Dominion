@@ -135,13 +135,13 @@ public class RunGame extends World {
 
 	private void runNextSet(int numberOfGames) {
 		for (int i = 0; i < numberOfGames; i++) {
-			Game game = new Game(this, addPaceSetters);
-			for (Player p : game.getPlayers()) {
+			DominionGame game = new DominionGame(this, addPaceSetters);
+			for (Player p : game.getAllPlayers()) {
 				LookaheadDecider<Player> pd = p.getPositionDecider();
 				LookaheadDecider<Player> ad = p.getActionDecider();
 				switch(teachingStrategy) {
 				case "AllPlayers" :
-					for (Player p2 : game.getPlayers())  {
+					for (Player p2 : game.getAllPlayers())  {
 						ercMap.get(pd.toString()).registerAgent(p2);
 						ercMap.get(ad.toString()).registerAgent(p2);
 					}
@@ -162,23 +162,23 @@ public class RunGame extends World {
 	}
 
 	private void runNextGameWithoutLearning() {
-		Game game = null;
+		DominionGame game = null;
 		if (useBigMoneyInLastK) {
-			game = Game.againstDecider(this, dg.bigMoney);
+			game = DominionGame.againstDecider(this, dg.bigMoney);
 		} else {
-			game = new Game(this, false);
+			game = new DominionGame(this, false);
 		}
 		runGame(game);
 	}
 
-	private void runGame(Game game) {
+	private void runGame(DominionGame game) {
 		count++;
 		setCurrentTime(count);
 		maintenance();
 
 		game.playGame();
 
-		Player[] players = game.getPlayers();
+		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		for (int p : game.getWinningPlayers()) {
 			players[p-1].log("Wins Game!");
 			if (dg != null)

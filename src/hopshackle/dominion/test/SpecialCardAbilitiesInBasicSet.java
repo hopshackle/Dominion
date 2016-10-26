@@ -20,7 +20,7 @@ import org.junit.*;
 
 public class SpecialCardAbilitiesInBasicSet {
 
-	public Game game;
+	public DominionGame game;
 	public Player p1, p2, p3, p4;
 	private TestDominionDecider remodelDecider, defaultPurchaseDecider, thiefPurchaseDecider;
 	private HardCodedDiscardDecider discardDecider;
@@ -33,11 +33,11 @@ public class SpecialCardAbilitiesInBasicSet {
 	public void setup() {
 		SimProperties.setProperty("Temperature", "0.0");
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
-		p1 = game.getPlayers()[0];
-		p2 = game.getPlayers()[1];
-		p3 = game.getPlayers()[2];
-		p4 = game.getPlayers()[3];
+		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		p1 = game.getPlayer(1);
+		p2 = game.getPlayer(2);
+		p3 = game.getPlayer(3);
+		p4 = game.getPlayer(4);
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
@@ -136,14 +136,14 @@ public class SpecialCardAbilitiesInBasicSet {
 		int[] copperAfter = new int[4];
 		int[] estatesAfter = new int[4];
 		int[] estatesBefore = new int[4];
-		for (int n=1; n<4; n++){
-			copperBefore[n] = game.getPlayers()[n].getNumberOfTypeInHand(CardType.COPPER);
-			estatesBefore[n] = game.getPlayers()[n].getNumberOfTypeInHand(CardType.ESTATE);
+		for (int n=2; n<=4; n++){
+			copperBefore[n-1] = game.getPlayer(n).getNumberOfTypeInHand(CardType.COPPER);
+			estatesBefore[n-1] = game.getPlayer(n).getNumberOfTypeInHand(CardType.ESTATE);
 		}
 		p1.takeActions();
-		for (int n=1; n<4; n++){
-			copperAfter[n] = game.getPlayers()[n].getNumberOfTypeInHand(CardType.COPPER);
-			estatesAfter[n] = game.getPlayers()[n].getNumberOfTypeInHand(CardType.ESTATE);
+		for (int n=2; n<=4; n++){
+			copperAfter[n-1] = game.getPlayer(n).getNumberOfTypeInHand(CardType.COPPER);
+			estatesAfter[n-1] = game.getPlayer(n).getNumberOfTypeInHand(CardType.ESTATE);
 		}
 		for (int n=1; n<4; n++) {
 			switch (copperBefore[n]) {
@@ -539,9 +539,9 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void adventurerTakesTwoTreasuresAndDiscardsRemainder() {
-		Player[] players = game.getPlayers();
+		List<Player> players = game.getAllPlayers();
 		for (int i = 1; i < 4; i++) {
-			Player p = players[i];
+			Player p = players.get(i);
 			p.insertCardDirectlyIntoHand(new Adventurer());
 			do {
 				p.discard(CardType.COPPER);
@@ -700,7 +700,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void witchAffectsOnlyPlayerToLeftIfJustOneCurse() {
-		Game game = p2.getGame();
+		DominionGame game = p2.getGame();
 		game.removeCardType(CardType.CURSE);
 		game.addCardType(CardType.CURSE, 1);
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WITCH));

@@ -2,7 +2,7 @@ package hopshackle.dominion;
 
 import hopshackle.simulation.DAO;
 
-public class GameDAO implements DAO<Game> {
+public class GameDAO implements DAO<DominionGame> {
 
 	@Override
 	public String getTableCreationSQL(String tableSuffix) {
@@ -66,9 +66,9 @@ public class GameDAO implements DAO<Game> {
 	}
 
 	@Override
-	public String getValues(Game game) {
+	public String getValues(DominionGame game) {
 
-		Player[] players = game.getPlayers();
+		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		double winningScore = -100, lowestScore, avgScore = 0, avgTreasure = 0, avgDeckSize = 0.0;
 		int winningPlayerNumber = -1;
 		lowestScore = 100.0;

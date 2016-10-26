@@ -2,7 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.AttackCard;
 import hopshackle.dominion.CardType;
-import hopshackle.dominion.Game;
+import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.Player;
 
 public class Witch extends AttackCard {
@@ -13,7 +13,7 @@ public class Witch extends AttackCard {
 
 	@Override
 	public void executeAttackOnPlayer(Player target, Player attacker) {
-		Game game = target.getGame();
+		DominionGame game = target.getGame();
 	
 		if (game.getNumberOfCardsRemaining(CardType.CURSE) > 0) {
 			target.log("Attacked by WITCH and draws CURSE");

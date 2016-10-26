@@ -2,7 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
-import hopshackle.dominion.Game;
+import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.Player;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public class Mine extends Card {
 
 	public void takeAction(Player player) {		
 		super.takeAction(player);
-		Game game = player.getGame();
+		DominionGame game = player.getGame();
 		List<CardType> hand = player.getCopyOfHand();
 		boolean hasSilver = false;
 		boolean hasCopper = false;

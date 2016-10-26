@@ -8,13 +8,13 @@ import org.junit.*;
 
 public class ChoosingCardTypesInAGame {
 
-	private Game game;
+	private DominionGame game;
 	private Player firstPlayer;
 
 	@Before
 	public void setup() {
 		SimProperties.setProperty("DominionCardSetup", "NONE");
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
 		firstPlayer = game.getCurrentPlayer();
 	}
 

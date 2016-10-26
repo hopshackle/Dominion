@@ -11,7 +11,7 @@ import org.junit.*;
 
 public class BuysActionsAndPurchasePowerFromCards {
 
-	public Game game;
+	public DominionGame game;
 	public Player p1;
 	TestDominionDecider villageDecider, marketDecider, smithyDecider, woodcutterDecider;
 	TestDominionDecider copperDecider, silverDecider, provinceDecider, generalPurchaseDecider;
@@ -20,7 +20,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		SimProperties.setProperty("Temperature", "0.0");
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
 		p1 = game.getCurrentPlayer();
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates

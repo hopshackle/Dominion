@@ -3,7 +3,7 @@ package hopshackle.dominion.basecards;
 import hopshackle.dominion.AttackCard;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
-import hopshackle.dominion.Game;
+import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.Player;
 
 public class Bureaucrat extends AttackCard {
@@ -14,7 +14,7 @@ public class Bureaucrat extends AttackCard {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
-		Game game = player.getGame();
+		DominionGame game = player.getGame();
 		if (game.drawCard(CardType.SILVER)) {
 			player.insertCardDirectlyIntoHand(new Card(CardType.SILVER));
 			player.putCardFromHandOnTopOfDeck(CardType.SILVER);

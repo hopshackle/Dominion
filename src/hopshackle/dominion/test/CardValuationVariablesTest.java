@@ -8,23 +8,23 @@ import org.junit.*;
 
 public class CardValuationVariablesTest {
 	
-	Game game;
+	DominionGame game;
 	PositionSummary p1, p2, p3, p4;
 	
 	@Before
 	public void setUp() {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
 		recalculate();
 	}
 	
 	private void recalculate() {
 		for (int n = 0; n<4; n++)
-			game.getPlayers()[n].tidyUp();
-		p1 = game.getPlayers()[0].getPositionSummaryCopy();
-		p2 = game.getPlayers()[1].getPositionSummaryCopy();
-		p3 = game.getPlayers()[2].getPositionSummaryCopy();
-		p4 = game.getPlayers()[3].getPositionSummaryCopy();
+			game.getAllPlayers().get(n).tidyUp();
+		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
+		p2 = game.getAllPlayers().get(1).getPositionSummaryCopy();
+		p3 = game.getAllPlayers().get(2).getPositionSummaryCopy();
+		p4 = game.getAllPlayers().get(3).getPositionSummaryCopy();
 	}
 
 	@Test
@@ -67,21 +67,21 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.0, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.0, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), 0.0, 0.0001);
-		game.getPlayers()[0].takeCardFromSupplyIntoDiscard(CardType.ESTATE);
+		game.getAllPlayers().get(0).takeCardFromSupplyIntoDiscard(CardType.ESTATE);
 		recalculate();
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), -.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), -.1, 0.0001);
 		
-		game.getPlayers()[1].takeCardFromSupplyIntoDiscard(CardType.CURSE);
+		game.getAllPlayers().get(1).takeCardFromSupplyIntoDiscard(CardType.CURSE);
 		recalculate();
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -0.20, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), -.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), -.1, 0.0001);
 		
-		game.getPlayers()[2].takeCardFromSupplyIntoDiscard(CardType.PROVINCE);
+		game.getPlayer(3).takeCardFromSupplyIntoDiscard(CardType.PROVINCE);
 		recalculate();
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), -.5, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -.7, 0.0001);
@@ -170,19 +170,19 @@ public class CardValuationVariablesTest {
 	public void cardsInHand() {
 		p1.addCard(CardType.SILVER);
 		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1), 0.0, 0.001);
-		game.getPlayers()[0].insertCardDirectlyIntoHand(new Card(CardType.SILVER));
-		p1 = game.getPlayers()[0].getPositionSummaryCopy();
+		game.getPlayer(1).insertCardDirectlyIntoHand(new Card(CardType.SILVER));
+		p1 = game.getPlayer(1).getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1), 0.20, 0.001);
 		p1.addCard(CardType.VILLAGE);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.0, 0.001);
-		game.getPlayers()[0].insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
-		p1 = game.getPlayers()[0].getPositionSummaryCopy();
+		game.getPlayer(1).insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
+		p1 = game.getPlayer(1).getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.20, 0.001);
 	}
 	
 	@Test
 	public void actionCardsInDeck() {
-		Player player = game.getPlayers()[0];
+		Player player = game.getPlayer(1);
 		game.addCardType(CardType.REMODEL, 12);
 		game.addCardType(CardType.MINE, 12);
 		game.addCardType(CardType.MARKET, 12);

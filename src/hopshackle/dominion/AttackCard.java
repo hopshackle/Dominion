@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import java.util.List;
+
 public abstract class AttackCard extends Card {
 
 	public AttackCard(CardType type) {
@@ -15,15 +17,15 @@ public abstract class AttackCard extends Card {
 	}
 
 	public void executeAttack(Player attacker) {
-		Game game = attacker.getGame();
+		DominionGame game = attacker.getGame();
 		int attackingPlayerNumber = game.getPlayerNumber(attacker);
 		Player[] victims = new Player[3];
 		int victimNumber = attackingPlayerNumber + 1;	// start with person to the left
-		Player[] allPlayers = game.getPlayers();
+		List<Player> allPlayers = game.getAllPlayers();
 		for (int i = 0 ; i < 3; i++) {
 			if (victimNumber > 4)
 				victimNumber = 1;
-			victims[i] = allPlayers[victimNumber-1];
+			victims[i] = allPlayers.get(victimNumber-1);
 			victimNumber++;
 		}
 		for (Player victim : victims) {

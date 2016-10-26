@@ -175,8 +175,8 @@ public class PositionSummary implements LookaheadState<Player> {
 		}
 	}
 
-	private void initiateVariables(Game game) {
-		Player[] players = game.getPlayers();
+	private void initiateVariables(DominionGame game) {
+		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		updateHandFromPlayer();
 		positionState = player.getPlayerState();
 		victoryPoints = 0;

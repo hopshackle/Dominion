@@ -9,6 +9,20 @@ public class Deck {
 	public Deck() {
 		cards = new LinkedList<Card>();
 	}
+	private Deck(Deck toClone, boolean keepOrder) {
+		cards = new LinkedList<Card>();
+		for (Card c : toClone.cards) {
+			cards.add(new Card(c.getType()));
+		}
+		if (!keepOrder)
+			this.shuffle();
+	}
+	public Deck copyWithShuffle() {
+		return new Deck(this, false);
+	}
+	public Deck copy() {
+		return new Deck(this, true);
+	}
 	protected Deck(LinkedList<Card> cards) {
 		this.cards = cards;
 	}

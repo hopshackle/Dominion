@@ -15,7 +15,7 @@ public class Player extends Agent {
 	private Deck deck;
 	private Deck discard;
 	private Deck revealedCards;
-	private Game game;
+	private DominionGame game;
 	private PositionSummary summary;
 	private int playerNumber;
 	private int actionsLeft;
@@ -24,7 +24,7 @@ public class Player extends Agent {
 	HardCodedDiscardDecider discardDecider;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
 	
-	public Player(Game game, int number) {
+	public Player(DominionGame game, int number) {
 		super(game.getWorld());
 		playerState = State.WAITING;
 		playerNumber = number;
@@ -36,6 +36,23 @@ public class Player extends Agent {
 		summary = new PositionSummary(this, null);
 		dealFreshHand();
 		log("Player #" + number + " in Game " + game.getUniqueId());
+	}
+
+	public Player(Player player, DominionGame newGame) {
+		super(newGame.getWorld());
+		playerState = player.playerState;
+		playerNumber = player.playerNumber;
+		actionsLeft = player.actionsLeft;
+		game = newGame;
+		// Responsibility for taking into account the information set resides in the caller
+		deck = player.deck.copy();
+		discard = player.discard.copy();
+		hand = player.hand.copy();
+		revealedCards = player.revealedCards.copy();
+		purchaseDecider = player.purchaseDecider;
+		actionDecider = player.actionDecider;
+		discardDecider = player.discardDecider;
+		summary = new PositionSummary(this, null);
 	}
 
 	private void dealFreshHand() {
@@ -139,6 +156,21 @@ public class Player extends Agent {
 		summary = new PositionSummary(this, null);
 	}
 
+	public void shuffleDeckAndHandTogether() {
+		// for use when cloning for MCTS
+		int handSize = hand.getSize();
+		deck.addDeck(hand);
+		deck.shuffle();
+		hand = new Deck();
+		for (int i = 0; i < handSize; i++)
+			hand.addCard(deck.drawTopCard());
+		summary = new PositionSummary(this, null);
+	}
+	
+	public void shuffleDeck() {
+		deck.shuffle();
+	}
+
 	private void shuffleDiscardToFormNewDeck() {
 		log("Shuffles discard to form new deck");
 		deck = discard;
@@ -152,7 +184,7 @@ public class Player extends Agent {
 		return 100.0;
 	}
 
-	public Game getGame() {
+	public DominionGame getGame() {
 		return game;
 	}
 
@@ -220,6 +252,7 @@ public class Player extends Agent {
 	public LookaheadDecider<Player> getPositionDecider() {
 		return purchaseDecider;
 	}
+	@SuppressWarnings("unchecked")
 	@Override
 	public Decider<Player> getDecider() {
 		if (getPlayerState() == State.PLAYING) {
@@ -244,6 +277,12 @@ public class Player extends Agent {
 	}
 	public List<CardType> getCopyOfHand() {
 		return hand.getAllCards();
+	}
+	public List<CardType> getCopyOfDiscard() {
+		return discard.getAllCards();
+	}
+	public List<CardType> getCopyOfDeck() {
+		return deck.getAllCards();
 	}
 	public List<CardType> getCopyOfPlayedCards() {
 		return revealedCards.getAllCards();
@@ -364,5 +403,9 @@ public class Player extends Agent {
 				retValue.add(card);
 		}
 		return retValue;
+	}
+	
+	public Player clone(DominionGame newGame) {
+		return new Player(this, newGame);
 	}
 }

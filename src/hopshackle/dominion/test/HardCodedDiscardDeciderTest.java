@@ -10,7 +10,7 @@ import org.junit.*;
 
 public class HardCodedDiscardDeciderTest {
 
-	public Game game;
+	public DominionGame game;
 	public Player p1, p2, p3, p4;
 	TestDominionDecider militiaDecider;
 	LookaheadDecider<Player> discardDecider;
@@ -21,11 +21,11 @@ public class HardCodedDiscardDeciderTest {
 	
 	@Before
 	public void setup() {
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
 		p1 = game.getCurrentPlayer();
-		p2 = game.getPlayers()[1];
-		p3 = game.getPlayers()[2];
-		p4 = game.getPlayers()[3];
+		p2 = game.getPlayer(2);
+		p3 = game.getPlayer(3);
+		p4 = game.getPlayer(4);
 		discardDecider = new HardCodedDiscardDecider(stateFactory, actionsToUse);
 		p1.setPositionDecider(discardDecider);
 		p2.setPositionDecider(discardDecider);

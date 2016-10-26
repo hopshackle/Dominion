@@ -8,7 +8,7 @@ import hopshackle.dominion.DeciderGenerator;
 import hopshackle.dominion.DominionBuyAction;
 import hopshackle.dominion.DominionLookaheadFunction;
 import hopshackle.dominion.DominionStateFactory;
-import hopshackle.dominion.Game;
+import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.GameSetup;
 import hopshackle.dominion.Player;
 import hopshackle.dominion.PositionSummary;
@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class LearningAndExperience {
 	
-	private Game game;
+	private DominionGame game;
 	private DominionStateFactory stateFactory;
 	private DeciderGenerator dg;
 	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
@@ -36,7 +36,7 @@ public class LearningAndExperience {
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		dg = new DeciderGenerator(new GameSetup(), 1, 1, 0, 0);
-		game = new Game(new RunGame("Test", 1, dg), false);
+		game = new DominionGame(new RunGame("Test", 1, dg), false);
 		stateFactory = new DominionStateFactory(dg.getPurchaseDecider(false).getVariables());
 	}
 
@@ -53,7 +53,7 @@ public class LearningAndExperience {
 		};
 		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>(), purchaseEventFilter);
 		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
-		for (Player p : game.getPlayers()) {
+		for (Player p : game.getAllPlayers()) {
 			erc.registerAgent(p);
 		}
 		teacher.registerToERStream(erc);
@@ -70,7 +70,7 @@ public class LearningAndExperience {
 	public void playingCardsDoesGenerateExperienceRecordsWithoutFilter() {
 		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>());
 		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
-		for (Player p : game.getPlayers()) {
+		for (Player p : game.getAllPlayers()) {
 			erc.registerAgent(p);
 		}
 		teacher.registerToERStream(erc);

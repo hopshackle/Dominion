@@ -4,7 +4,7 @@ import hopshackle.simulation.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Game implements Persistent {
+public class DominionGame implements Persistent, Game<Player, CardType> {
 
 	private Player[] players;
 	private HashMap<CardType, Integer> cardsOnTable;
@@ -18,19 +18,20 @@ public class Game implements Persistent {
 	private int[] winningPlayerNumbers = new int[0];
 	private double highestScore, lowestScore;
 	private double score[] = new double[4];
-	private static DatabaseWriter<Game> gameWriter = new DatabaseWriter<Game>(new GameDAO());
+	private static DatabaseWriter<DominionGame> gameWriter = new DatabaseWriter<DominionGame>(new GameDAO());
 	private DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
+	private boolean clonedGame = false;
 	
-	public static Game againstDecider(RunGame gameHolder, LookaheadDecider<Player> deciderToUse) {
-		Game retValue = new Game(gameHolder, false);
+	public static DominionGame againstDecider(RunGame gameHolder, LookaheadDecider<Player> deciderToUse) {
+		DominionGame retValue = new DominionGame(gameHolder, false);
 		int randomPlayer = Dice.roll(1, 4) - 1;
-		retValue.getPlayers()[randomPlayer].setPositionDecider(deciderToUse);
+		retValue.players[randomPlayer].setPositionDecider(deciderToUse);
 		return retValue;
 	}
 
-	public Game(RunGame gameHolder, boolean paceSetters) {
+	public DominionGame(RunGame gameHolder, boolean paceSetters) {
 		seqOfGames = gameHolder;
 		deciderGenerator = seqOfGames.getDeciderDenerator();
 		seqOfGames.setCalendar(new FastCalendar(0l), 0);
@@ -44,13 +45,29 @@ public class Game implements Persistent {
 			if (deciderGenerator != null) {
 				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider(paceSetters));
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
-//				players[n].setHandDecider(deciderGenerator.getDiscardDecider());
 			}
 		}
 		currentPlayer = -1;
 	}
 
-	public void playGame() {
+	private DominionGame(DominionGame master) {
+		seqOfGames = master.seqOfGames;
+		deciderGenerator = master.deciderGenerator;
+		players = new Player[4];
+		for (int i = 0; i < 4; i++)
+			players[i] = master.players[i].clone(this);
+		cardsOnTable = new HashMap<CardType, Integer>();
+		for (CardType ct : master.cardsOnTable.keySet()) {
+			cardsOnTable.put(ct, master.getNumberOfCardsRemaining(ct));
+		}
+		currentPlayer = master.currentPlayer;
+		allStartingCardTypes = master.allStartingCardTypes;
+		turn = master.turn;
+		clonedGame = true;
+	}
+
+	@Override
+	public double[] playGame() {
 		do {
 			nextPlayersTurn();
 		} while (!gameOver());
@@ -74,7 +91,9 @@ public class Game implements Persistent {
 		for (int n = 0; n < 4; n++) 
 			players[n].die("Game Over");
 
-		gameWriter.write(this, seqOfGames.toString());
+		if (!clonedGame)
+			gameWriter.write(this, seqOfGames.toString());
+		return score;
 	}
 
 	public void nextPlayersTurn() {
@@ -121,8 +140,12 @@ public class Game implements Persistent {
 		}
 	}
 
-	public Player[] getPlayers() {
-		return players;
+	@Override
+	public List<Player> getAllPlayers() {
+		List<Player> retValue = new ArrayList<Player>();
+		for (Player p : players)
+			retValue.add(p);
+		return retValue;
 	}
 
 	public Player getCurrentPlayer() {
@@ -235,10 +258,40 @@ public class Game implements Persistent {
 		}
 		return 0;
 	}
+	
+	@Override
+	public Player getPlayer(int n) {
+		return players[n-1];
+	}
 
 	@Override
 	public World getWorld() {
 		return seqOfGames;
 	}
 
+	@Override
+	public DominionGame clone(Player perspectivePlayer) {
+		int perspective = perspectivePlayer.getGame().getPlayerNumber(perspectivePlayer);
+		DominionGame newGame = new DominionGame(this);
+		for (int i = 1; i <= 4; i++) {
+			Player p = newGame.getPlayer(i);
+			if (i != perspective) {
+				// We know what is in the discard pile, but not the distribution between Hand and Deck
+				// Technically we might know a bit more (e.g. from Bureaucrats, Spies, Moats revealed defensively). TODO: 
+				// Also some stuff could be inferred from discards (Militia).
+				// Could add some form of opponent information to Player at a later point
+				p.shuffleDeckAndHandTogether();
+			} else {
+				// while the perspective player does not know the contents of the Deck (in most, albeit not all cases)
+				// TODO: for track of known features of Deck that could be tracked
+				p.shuffleDeck();
+			}
+		}
+		return newGame;
+	}
+
+	@Override
+	public int getCurrentPlayerNumber() {
+		return currentPlayer + 1;
+	}
 }

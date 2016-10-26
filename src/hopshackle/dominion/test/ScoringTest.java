@@ -9,16 +9,16 @@ import org.junit.*;
 
 public class ScoringTest {
 
-	private Game game;
+	private DominionGame game;
 	private Player p1, p2, p3, p4;
 
 	@Before
 	public void setup() {
-		game = new Game(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
-		p1 = game.getPlayers()[0];
-		p2 = game.getPlayers()[1];
-		p3 = game.getPlayers()[2];
-		p4 = game.getPlayers()[3];
+		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		p1 = game.getPlayer(1);
+		p2 = game.getPlayer(2);
+		p3 = game.getPlayer(3);
+		p4 = game.getPlayer(4);
 		game.addCardType(CardType.GARDENS, 12);
 	}
 
@@ -41,12 +41,12 @@ public class ScoringTest {
 		values.put(CardType.SILVER, 0.50);
 		TestDominionDecider newDecider = new TestDominionDecider(values);
 		for (int p=0; p<4; p++) {
-			game.getPlayers()[p].setPositionDecider(newDecider);
+			game.getAllPlayers().get(p).setPositionDecider(newDecider);
 		}
 		game.playGame();
 		int winners[] = game.getWinningPlayers();
 		int loser = game.getLosingPlayer();
-		Player[] players = game.getPlayers();
+		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		double[] scores = new double[4];
 		for (int n = 0; n < 4; n++) {
 			scores[n] = players[n].getScore();
