@@ -46,6 +46,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider(paceSetters));
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
 			}
+			players[n].setGame(this);
 		}
 		currentPlayer = -1;
 	}
