@@ -14,6 +14,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	private int id = idFountain.getAndIncrement();
 	private int turn;
 	private RunGame	seqOfGames;
+	private World turnClock;
 	private int losingPlayerNumber;
 	private int[] winningPlayerNumbers = new int[0];
 	private double highestScore, lowestScore;
@@ -52,9 +53,12 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	}
 
 	private DominionGame(DominionGame master) {
-		seqOfGames = master.seqOfGames;
+		seqOfGames = null;
 		deciderGenerator = master.deciderGenerator;
 		players = new Player[4];
+		long currentTime = master.turnClock.getCurrentTime();
+		turnClock = new World();
+		turnClock.setCalendar(new FastCalendar(currentTime));
 		for (int i = 0; i < 4; i++)
 			players[i] = master.players[i].clone(this);
 		cardsOnTable = new HashMap<CardType, Integer>();
@@ -103,7 +107,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 			currentPlayer = 0;
 
 		if (currentPlayer == 0) turn++;
-		seqOfGames.setCurrentTime((long) ((turn-1) * 4 + currentPlayer + 1));
+		turnClock.setCurrentTime((long) ((turn-1) * 4 + currentPlayer + 1));
 		players[currentPlayer].takeTurn();
 	}
 
@@ -267,7 +271,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 
 	@Override
 	public World getWorld() {
-		return seqOfGames;
+		return turnClock;
 	}
 
 	@Override
