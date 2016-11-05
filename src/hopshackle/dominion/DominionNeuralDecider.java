@@ -8,10 +8,9 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 
 	private boolean ableToLearn = true;
 
-	public DominionNeuralDecider(LookaheadFunction<Player> lookahead, List<CardType> actions, List<CardValuationVariables> variables) {
+	public DominionNeuralDecider(List<CardType> actions, List<CardValuationVariables> variables) {
 		super(
 				new DominionStateFactory(HopshackleUtilities.convertList(variables)), 
-				lookahead, 
 				HopshackleUtilities.convertList(actions), 100.0
 			);
 	}

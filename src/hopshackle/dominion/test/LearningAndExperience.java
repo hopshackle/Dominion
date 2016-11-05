@@ -1,26 +1,8 @@
 package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
-import hopshackle.dominion.CardFactory;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.CardValuationVariables;
-import hopshackle.dominion.DeciderGenerator;
-import hopshackle.dominion.DominionBuyAction;
-import hopshackle.dominion.DominionLookaheadFunction;
-import hopshackle.dominion.DominionStateFactory;
-import hopshackle.dominion.DominionGame;
-import hopshackle.dominion.GameSetup;
-import hopshackle.dominion.Player;
-import hopshackle.dominion.PositionSummary;
-import hopshackle.dominion.RunGame;
-import hopshackle.simulation.Action;
-import hopshackle.simulation.AgentEvent;
-import hopshackle.simulation.EventFilter;
-import hopshackle.simulation.ExperienceRecordCollector;
-import hopshackle.simulation.OnInstructionTeacher;
-import hopshackle.simulation.SimProperties;
-import hopshackle.simulation.StandardERFactory;
-import hopshackle.simulation.basic.BasicAgent;
+import hopshackle.dominion.*;
+import hopshackle.simulation.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,13 +12,12 @@ public class LearningAndExperience {
 	private DominionGame game;
 	private DominionStateFactory stateFactory;
 	private DeciderGenerator dg;
-	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
 	
 	@Before
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		dg = new DeciderGenerator(new GameSetup(), 1, 1, 0, 0);
-		game = new DominionGame(new RunGame("Test", 1, dg), false);
+		game = new DominionGame(dg, "Test", false);
 		stateFactory = new DominionStateFactory(dg.getPurchaseDecider(false).getVariables());
 	}
 
@@ -107,7 +88,7 @@ public class LearningAndExperience {
 		Player firstPlayer = game.getCurrentPlayer();
 		firstPlayer.setState(Player.State.PURCHASING);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(firstPlayer);
-		PositionSummary updatedps = (PositionSummary) lookahead.apply(ps, CardType.MILITIA);
+		PositionSummary updatedps = ps.apply(CardType.MILITIA);
 		assertFalse(ps == updatedps);
 		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(ps), 0.0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(updatedps), 5.0/11.0 , 0.001);

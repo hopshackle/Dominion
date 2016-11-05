@@ -7,7 +7,7 @@ import java.util.*;
 public class HardCodedDiscardDecider extends LookaheadDecider<Player> {
 	
 	public HardCodedDiscardDecider(StateFactory<Player> stateFactory, List<CardType> actions) {
-		super(stateFactory, new DominionLookaheadFunction(), CardType.toActionEnum(actions));
+		super(stateFactory, CardType.toActionEnum(actions));
 	}
 
 	/*
@@ -17,7 +17,7 @@ public class HardCodedDiscardDecider extends LookaheadDecider<Player> {
 	 *  Hence ensuring that victory cards are discarded first, then copper, then action cards
 	 */
 	@Override
-	public double value(LookaheadState<Player> state) {
+	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		for (CardType ct : ps.getHand()) {

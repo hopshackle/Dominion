@@ -7,7 +7,7 @@ import java.util.*;
 public class HardCodedActionDecider extends LookaheadDecider<Player> {
 	
 	public HardCodedActionDecider(List<CardType> actions, List<CardValuationVariables> variables) {
-		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)), new DominionLookaheadFunction(), CardType.toActionEnum(actions));
+		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)), CardType.toActionEnum(actions));
 		generateLearningEvents = false;
 	}
 
@@ -92,7 +92,7 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 	}
 
 	@Override
-	public double value(LookaheadState<Player> state) {
+	public double value(State<Player> state) {
 		return 0;
 	}
 

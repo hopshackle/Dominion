@@ -14,7 +14,7 @@ public class CardValuationVariablesTest {
 	@Before
 	public void setUp() {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		recalculate();
 	}
 	

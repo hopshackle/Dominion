@@ -1,11 +1,7 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.AttackCard;
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardFactory;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.Player;
-import hopshackle.dominion.PositionSummary;
+import hopshackle.dominion.*;
+import hopshackle.simulation.*;
 
 public class Thief extends AttackCard {
 
@@ -21,10 +17,11 @@ public class Thief extends AttackCard {
 		if (cardToTrash.getType() == CardType.NONE)
 			return;
 		target.trashCardFromDiscard(cardToTrash.getType());
-		PositionSummary ps = (PositionSummary) attacker.getPositionDecider().getCurrentState(attacker);
-		double baseValue = attacker.getPositionDecider().value(ps);
+		LookaheadDecider<Player> decider = (LookaheadDecider<Player>) attacker.getPurchaseDecider();
+		PositionSummary ps = (PositionSummary) decider.getCurrentState(attacker);
+		double baseValue = decider.value(ps);
 		ps.addCard(cardToTrash.getType());
-		double newValue = attacker.getPositionDecider().value(ps);
+		double newValue = decider.value(ps);
 		if (newValue > baseValue) {
 			attacker.putCardOnDiscard(cardToTrash);
 			attacker.log("Keeps " + cardToTrash);

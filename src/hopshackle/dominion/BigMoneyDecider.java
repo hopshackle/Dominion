@@ -7,7 +7,7 @@ import java.util.*;
 public class BigMoneyDecider extends LookaheadDecider<Player> {
 	
 	public BigMoneyDecider(List<ActionEnum<Player>> actionsToUse, List<GeneticVariable<Player>> variables) {
-		super(new DominionStateFactory(variables), new DominionLookaheadFunction(), actionsToUse);
+		super(new DominionStateFactory(variables), actionsToUse);
 	}
 	
 	@Override
@@ -25,7 +25,7 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 	}
 	
 	@Override
-	public double value(LookaheadState<Player> state) {
+	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		

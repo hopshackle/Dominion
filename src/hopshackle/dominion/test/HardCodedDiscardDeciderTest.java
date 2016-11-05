@@ -14,23 +14,22 @@ public class HardCodedDiscardDeciderTest {
 	public Player p1, p2, p3, p4;
 	TestDominionDecider militiaDecider;
 	LookaheadDecider<Player> discardDecider;
-	LookaheadFunction<Player> lookahead = new DominionLookaheadFunction();
 	ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
 	ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
 	DominionStateFactory stateFactory = new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse));
 	
 	@Before
 	public void setup() {
-		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		p1 = game.getCurrentPlayer();
 		p2 = game.getPlayer(2);
 		p3 = game.getPlayer(3);
 		p4 = game.getPlayer(4);
 		discardDecider = new HardCodedDiscardDecider(stateFactory, actionsToUse);
-		p1.setPositionDecider(discardDecider);
-		p2.setPositionDecider(discardDecider);
-		p3.setPositionDecider(discardDecider);
-		p4.setPositionDecider(discardDecider);
+		p1.setDecider(discardDecider);
+		p2.setDecider(discardDecider);
+		p3.setDecider(discardDecider);
+		p4.setDecider(discardDecider);
 		militiaDecider = TestDominionDecider.getExample(CardType.MILITIA);
 	}
 	
@@ -85,7 +84,7 @@ public class HardCodedDiscardDeciderTest {
 	@Test
 	public void crossWithReturnsTheSameDecider() {
 		HardCodedDiscardDecider discardDecider2 = new HardCodedDiscardDecider(stateFactory, actionsToUse);
-		Decider baby = discardDecider.crossWith(discardDecider2);
+		Decider<Player> baby = discardDecider.crossWith(discardDecider2);
 		assertTrue(baby instanceof HardCodedDiscardDecider);
 		assertTrue(baby == discardDecider);
 	}

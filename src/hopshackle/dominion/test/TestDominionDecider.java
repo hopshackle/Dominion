@@ -10,7 +10,6 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 	private HashMap<CardType, Double> values;
 	private static ArrayList<CardType> actionsToUse;
 	private static ArrayList<CardValuationVariables> variablesToUse;
-	private static LookaheadFunction<Player> lookahead = new DominionLookaheadFunction();
 
 	static {
 		variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
@@ -18,7 +17,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 	}
 
 	public TestDominionDecider(HashMap<CardType, Double> values) {
-		super(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse)), lookahead,  HopshackleUtilities.convertList(actionsToUse));
+		super(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse)),  HopshackleUtilities.convertList(actionsToUse));
 		this.values = values;
 		if (this.values == null)
 			this.values = new HashMap<CardType, Double>();
@@ -51,7 +50,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 	}
 
 	@Override
-	public double value(LookaheadState<Player> state) {
+	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		//		for (CardType ct : ps.getHand()) {
@@ -91,7 +90,7 @@ class TestThiefDominionDecider extends TestDominionDecider {
 	}
 
 	@Override
-	public double value(LookaheadState<Player> state) {
+	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 		for (CardType ct : ps.getHand()) {

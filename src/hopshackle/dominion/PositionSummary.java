@@ -1,12 +1,9 @@
 package hopshackle.dominion;
 
 import hopshackle.simulation.*;
-
 import java.util.*;
 
-import com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState;
-
-public class PositionSummary implements LookaheadState<Player> {
+public class PositionSummary implements State<Player> {
 
 	private double victoryPoints, treasureValue;
 	private int turnNumber, buys, actions, money;
@@ -253,6 +250,8 @@ public class PositionSummary implements LookaheadState<Player> {
 	public double totalNumberOfCards() {
 		return totalCards;
 	}
+	
+	@Override
 	public PositionSummary clone() {
 		return new PositionSummary(this);
 	}

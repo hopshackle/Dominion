@@ -34,7 +34,6 @@ public class Militia extends AttackCard {
 				for (int loop3=loop2+1; loop3<cardsInHand.length; loop3++) {
 					possibleCombination[2] = cardsInHand[loop3];
 					PositionSummary positionWithReducedHand = (PositionSummary) victimDecider.getCurrentState(victim);
-					ArrayList<CardType> possCombAsList = new ArrayList<CardType>();
 					positionWithReducedHand.changeHand(possibleCombination);
 					double value = victimDecider.value(positionWithReducedHand);
 					if (value > bestValue) {

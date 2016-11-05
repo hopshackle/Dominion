@@ -33,7 +33,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	public void setup() {
 		SimProperties.setProperty("Temperature", "0.0");
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		p1 = game.getPlayer(1);
 		p2 = game.getPlayer(2);
 		p3 = game.getPlayer(3);
@@ -42,10 +42,10 @@ public class SpecialCardAbilitiesInBasicSet {
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
 		discardDecider = new HardCodedDiscardDecider(stateFactory, actionsToUse);
-		p1.setPositionDecider(discardDecider);
-		p2.setPositionDecider(discardDecider);
-		p3.setPositionDecider(discardDecider);
-		p4.setPositionDecider(discardDecider);
+		p1.setDecider(discardDecider);
+		p2.setDecider(discardDecider);
+		p3.setDecider(discardDecider);
+		p4.setDecider(discardDecider);
 		p1.setActionDecider(hardCodedActionDecider);
 		p2.setActionDecider(hardCodedActionDecider);
 		p3.setActionDecider(hardCodedActionDecider);
@@ -62,10 +62,10 @@ public class SpecialCardAbilitiesInBasicSet {
 		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
 		thiefPurchaseDecider = new TestThiefDominionDecider(purchasePreferences);
 		
-		p1.setPositionDecider(defaultPurchaseDecider);
-		p2.setPositionDecider(defaultPurchaseDecider);
-		p3.setPositionDecider(defaultPurchaseDecider);
-		p4.setPositionDecider(defaultPurchaseDecider);
+		p1.setDecider(defaultPurchaseDecider);
+		p2.setDecider(defaultPurchaseDecider);
+		p3.setDecider(defaultPurchaseDecider);
+		p4.setDecider(defaultPurchaseDecider);
 	}
 
 	@Test
@@ -509,7 +509,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void thiefTakesHighestValueTreasureCardIfNotCopper() {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.THIEF));
-		p2.setPositionDecider(thiefPurchaseDecider);
+		p2.setDecider(thiefPurchaseDecider);
 
 		p1.putCardOnTopOfDeck(CardType.SILVER);
 		p1.putCardOnTopOfDeck(CardType.COPPER);
@@ -622,7 +622,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		purchasePreferences.put(CardType.MOAT, -0.25);
 		purchasePreferences.put(CardType.MINE, 0.40);
 		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
-		p2.setPositionDecider(defaultPurchaseDecider);
+		p2.setDecider(defaultPurchaseDecider);
 		p2.insertCardDirectlyIntoHand(new Feast());
 		assertEquals(p2.getNumberOfTypeTotal(CardType.FEAST), 1);
 		

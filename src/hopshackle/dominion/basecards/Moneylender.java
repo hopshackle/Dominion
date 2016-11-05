@@ -1,11 +1,7 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.DominionBuyingDecision;
-import hopshackle.dominion.DominionStateFactory;
-import hopshackle.dominion.Player;
-import hopshackle.dominion.PositionSummary;
+import hopshackle.dominion.*;
+import hopshackle.simulation.*;
 
 import java.util.List;
 
@@ -38,7 +34,7 @@ public class Moneylender extends Card {
 			return;
 		
 		player.setState(Player.State.PURCHASING);
-		stateFactory = new DominionStateFactory(player.getPositionDecider().getVariables());
+		stateFactory = new DominionStateFactory(player.getPurchaseDecider().getVariables());
 		
 		double valueOfNotTrashing = value(player, treasure, null);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(player);
@@ -73,7 +69,8 @@ public class Moneylender extends Card {
 		for (CardType cardBought : purchase) {
 			ps.addCard(cardBought);
 		}
-		return player.getPositionDecider().value(ps);
+		LookaheadDecider<Player> decider = (LookaheadDecider<Player>) player.getPurchaseDecider();
+		return decider.value(ps);
 	}
 	
 }

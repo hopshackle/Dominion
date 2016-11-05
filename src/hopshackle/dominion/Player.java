@@ -19,8 +19,7 @@ public class Player extends Agent {
 	private PositionSummary summary;
 	private int playerNumber;
 	private int actionsLeft;
-	private LookaheadDecider<Player> actionDecider;
-	private LookaheadDecider<Player> purchaseDecider;
+	private Decider<Player> actionDecider;
 	HardCodedDiscardDecider discardDecider;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
 	
@@ -49,7 +48,7 @@ public class Player extends Agent {
 		discard = player.discard.copy();
 		hand = player.hand.copy();
 		revealedCards = player.revealedCards.copy();
-		purchaseDecider = player.purchaseDecider;
+		decider = player.decider;
 		actionDecider = player.actionDecider;
 		discardDecider = player.discardDecider;
 		summary = new PositionSummary(this, null);
@@ -134,7 +133,7 @@ public class Player extends Agent {
 
 	public void buyCards() {
 		setState(State.PURCHASING);
-		DominionBuyAction decision = (DominionBuyAction) getPositionDecider().decide(this);
+		DominionBuyAction decision = (DominionBuyAction) getDecider().decide(this);
 		decision.start();
 		decision.run();
 	}
@@ -249,24 +248,27 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	public LookaheadDecider<Player> getPositionDecider() {
-		return purchaseDecider;
-	}
 	@SuppressWarnings("unchecked")
 	@Override
 	public Decider<Player> getDecider() {
 		if (getPlayerState() == State.PLAYING) {
 			return getActionDecider();
 		}
-		return getPositionDecider();
+		return getPurchaseDecider();
 	}
-	public LookaheadDecider<Player> getActionDecider() {
+	public Decider<Player> getActionDecider() {
 		return actionDecider;
 	}
-	public void setPositionDecider(LookaheadDecider<Player> newDecider) {
-		purchaseDecider = newDecider;
-		discardDecider = new HardCodedDiscardDecider(new DominionStateFactory(newDecider.getVariables()), HopshackleUtilities.convertList(newDecider.getActions()));
-		log("Using purchase strategy " + purchaseDecider.toString());
+	public Decider<Player> getPurchaseDecider() {
+		return super.getDecider();
+	}
+	@Override
+	public void setDecider(Decider<?> newDecider) {
+		discardDecider = new HardCodedDiscardDecider(
+				new DominionStateFactory(HopshackleUtilities.convertList(newDecider.getVariables())), 
+				HopshackleUtilities.convertList(newDecider.getActions()));
+		log("Using purchase strategy " + newDecider.toString());
+		super.setDecider(newDecider);
 	}
 	public void setActionDecider(LookaheadDecider<Player> newDecider) {
 		actionDecider = newDecider;

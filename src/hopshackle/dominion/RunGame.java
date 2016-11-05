@@ -18,8 +18,7 @@ public class RunGame extends World {
 	private DeciderGenerator dg;
 	private int finalScoring = extraLastK ? 1000 : 0;
 	private long count, maximum;
-	private DominionLookaheadFunction lookahead = new DominionLookaheadFunction();
-	private ExperienceRecordFactory<Player> factory = new LookaheadERFactory<Player>(lookahead);
+	private ExperienceRecordFactory<Player> factory = new StandardERFactory<Player>();
 	private Map<String, ExperienceRecordCollector<Player>> ercMap = new HashMap<String, ExperienceRecordCollector<Player>>();
 	private Map<String, OnInstructionTeacher<Player>> teacherMap = new HashMap<String, OnInstructionTeacher<Player>>();
 
@@ -135,10 +134,10 @@ public class RunGame extends World {
 
 	private void runNextSet(int numberOfGames) {
 		for (int i = 0; i < numberOfGames; i++) {
-			DominionGame game = new DominionGame(this, addPaceSetters);
+			DominionGame game = new DominionGame(this.getDeciderDenerator(), this.name, addPaceSetters);
 			for (Player p : game.getAllPlayers()) {
-				LookaheadDecider<Player> pd = p.getPositionDecider();
-				LookaheadDecider<Player> ad = p.getActionDecider();
+				Decider<Player> pd = p.getPurchaseDecider();
+				Decider<Player> ad = p.getActionDecider();
 				switch(teachingStrategy) {
 				case "AllPlayers" :
 					for (Player p2 : game.getAllPlayers())  {
@@ -164,9 +163,9 @@ public class RunGame extends World {
 	private void runNextGameWithoutLearning() {
 		DominionGame game = null;
 		if (useBigMoneyInLastK) {
-			game = DominionGame.againstDecider(this, dg.bigMoney);
+			game = DominionGame.againstDecider(getDeciderDenerator(), name, dg.bigMoney);
 		} else {
-			game = new DominionGame(this, false);
+			game = new DominionGame(getDeciderDenerator(), name, false);
 		}
 		runGame(game);
 	}

@@ -13,8 +13,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	private static AtomicInteger idFountain = new AtomicInteger(1);
 	private int id = idFountain.getAndIncrement();
 	private int turn;
-	private RunGame	seqOfGames;
-	private World turnClock;
+	private World turnClock = new World();
 	private int losingPlayerNumber;
 	private int[] winningPlayerNumbers = new int[0];
 	private double highestScore, lowestScore;
@@ -24,18 +23,19 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	private final int MAX_TURNS = 200;
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
+	private String name;
 	
-	public static DominionGame againstDecider(RunGame gameHolder, LookaheadDecider<Player> deciderToUse) {
-		DominionGame retValue = new DominionGame(gameHolder, false);
+	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, LookaheadDecider<Player> deciderToUse) {
+		DominionGame retValue = new DominionGame(deciderGen, name, false);
 		int randomPlayer = Dice.roll(1, 4) - 1;
-		retValue.players[randomPlayer].setPositionDecider(deciderToUse);
+		retValue.players[randomPlayer].setDecider(deciderToUse);
 		return retValue;
 	}
 
-	public DominionGame(RunGame gameHolder, boolean paceSetters) {
-		seqOfGames = gameHolder;
-		deciderGenerator = seqOfGames.getDeciderDenerator();
-		seqOfGames.setCalendar(new FastCalendar(0l), 0);
+	public DominionGame(DeciderGenerator deciderGen, String name, boolean paceSetters) {
+		deciderGenerator = deciderGen;
+		this.name = name;
+		turnClock.setCalendar(new FastCalendar(0l), 0);
 		players = new Player[4];
 		boolean debugGame = false;
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
@@ -44,7 +44,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 			players[n] = new Player(this, n+1);
 			players[n].setDebugLocal(debugGame);
 			if (deciderGenerator != null) {
-				players[n].setPositionDecider(deciderGenerator.getPurchaseDecider(paceSetters));
+				players[n].setDecider(deciderGenerator.getPurchaseDecider(paceSetters));
 				players[n].setActionDecider(deciderGenerator.getActionDecider());
 			}
 			players[n].setGame(this);
@@ -53,11 +53,9 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	}
 
 	private DominionGame(DominionGame master) {
-		seqOfGames = null;
 		deciderGenerator = master.deciderGenerator;
 		players = new Player[4];
 		long currentTime = master.turnClock.getCurrentTime();
-		turnClock = new World();
 		turnClock.setCalendar(new FastCalendar(currentTime));
 		for (int i = 0; i < 4; i++)
 			players[i] = master.players[i].clone(this);
@@ -97,7 +95,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 			players[n].die("Game Over");
 
 		if (!clonedGame)
-			gameWriter.write(this, seqOfGames.toString());
+			gameWriter.write(this, name);
 		return score;
 	}
 

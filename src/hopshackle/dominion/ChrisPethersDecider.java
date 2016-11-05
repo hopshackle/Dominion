@@ -2,9 +2,7 @@ package hopshackle.dominion;
 
 import java.util.List;
 
-import hopshackle.simulation.ActionEnum;
-import hopshackle.simulation.GeneticVariable;
-import hopshackle.simulation.LookaheadState;
+import hopshackle.simulation.*;
 
 public class ChrisPethersDecider extends BigMoneyDecider{
 
@@ -13,7 +11,7 @@ public class ChrisPethersDecider extends BigMoneyDecider{
 	}
 
 	@Override
-	public double value(LookaheadState<Player> state) {
+	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
 

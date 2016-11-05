@@ -16,7 +16,7 @@ public class BasicGameMechanics {
 	@Before
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new DominionGame(new RunGame("Test", 1, new DeciderGenerator(new GameSetup(), 1, 1, 0, 0)), false);
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 	}
 
 	@Test
@@ -144,9 +144,9 @@ public class BasicGameMechanics {
 	@Test
 	public void correctDeciderIsReturnedBasedOnPhase() {
 		Player firstPlayer = game.getCurrentPlayer();
-		assertTrue(firstPlayer.getPositionDecider() != firstPlayer.getActionDecider());
+		assertTrue(firstPlayer.getPurchaseDecider() != firstPlayer.getActionDecider());
 		firstPlayer.setState(Player.State.PURCHASING);
-		assertTrue(firstPlayer.getDecider() == firstPlayer.getPositionDecider());
+		assertTrue(firstPlayer.getDecider() == firstPlayer.getPurchaseDecider());
 		firstPlayer.setState(Player.State.PLAYING);
 		assertTrue(firstPlayer.getDecider() == firstPlayer.getActionDecider());
 	}

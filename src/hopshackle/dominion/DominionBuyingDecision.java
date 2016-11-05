@@ -18,7 +18,7 @@ public class DominionBuyingDecision {
 		this.player = player;
 		totalBudget = budget;
 		totalBuys = buys;
-		stateFactory = new DominionStateFactory(player.getPositionDecider().getVariables());
+		stateFactory = new DominionStateFactory(player.getPurchaseDecider().getVariables());
 		DominionGame game = player.getGame();
 		limitedCards = new HashMap<CardType, Integer>();
 		for (CardType card : game.availableCardsToPurchase()) {
@@ -60,7 +60,8 @@ public class DominionBuyingDecision {
 		for (List<CardType> purchase : allOptions) {
 			for (CardType card : purchase) 
 				ps.drawCard(card);
-			double value = player.getPositionDecider().value(ps);
+			LookaheadDecider<Player> decider = (LookaheadDecider<Player>) player.getPurchaseDecider();
+			double value = decider.value(ps);
 			if (value > bestValue) {
 				bestValue = value;
 				bestPurchase = purchase;
