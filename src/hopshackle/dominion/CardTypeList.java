@@ -23,6 +23,23 @@ public class CardTypeList implements ActionEnum<Player> {
 	public String getChromosomeDesc() {return "NONE";}
 	
 	@Override
+	public boolean equals(Object other) {
+		if (other instanceof CardTypeList) {
+			CardTypeList otherCTL = (CardTypeList) other;
+			List<CardType> inBoth = HopshackleUtilities.cloneList(otherCTL.cards);
+			for (CardType ct : cards) {
+				if (inBoth.contains(ct)) {
+					inBoth.remove(ct);
+				} else {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
 	public DominionBuyAction getAction(Player a) {return new DominionBuyAction((Player)a, cards);}
 	
 	@Override

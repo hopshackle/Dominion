@@ -35,6 +35,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	public DominionGame(DeciderGenerator deciderGen, String name, boolean paceSetters) {
 		deciderGenerator = deciderGen;
 		this.name = name;
+		turn = 1;
 		turnClock.setCalendar(new FastCalendar(0l), 0);
 		players = new Player[4];
 		boolean debugGame = false;
@@ -49,7 +50,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 			}
 			players[n].setGame(this);
 		}
-		currentPlayer = -1;
+		currentPlayer = 0;
 	}
 
 	private DominionGame(DominionGame master) {
@@ -100,13 +101,15 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	}
 
 	public void nextPlayersTurn() {
+		players[currentPlayer].takeTurn();
+	//	System.out.println("Taken turn " + turn + " for Player " + (currentPlayer+1) + " in Game " + this.toString());
+		
+		if (currentPlayer == 3) turn++;
+		turnClock.setCurrentTime((long) ((turn-1) * 4 + currentPlayer));
 		currentPlayer++;
 		if (currentPlayer == 4)
 			currentPlayer = 0;
-
-		if (currentPlayer == 0) turn++;
-		turnClock.setCurrentTime((long) ((turn-1) * 4 + currentPlayer + 1));
-		players[currentPlayer].takeTurn();
+		
 	}
 
 	public boolean gameOver() {
@@ -297,4 +300,5 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	public int getCurrentPlayerNumber() {
 		return currentPlayer + 1;
 	}
+
 }

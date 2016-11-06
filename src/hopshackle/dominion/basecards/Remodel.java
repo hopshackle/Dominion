@@ -17,7 +17,7 @@ public class Remodel extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
-		LookaheadDecider<Player> purchaseDecider = (LookaheadDecider<Player>) player.getPurchaseDecider();
+		LookaheadDecider<Player> purchaseDecider = player.getLookaheadDecider();
 		List<CardType> hand = player.getCopyOfHand();
 		CardType[] cardsInHand = hand.toArray(new CardType[1]);
 		if (cardsInHand[0] == null) return;

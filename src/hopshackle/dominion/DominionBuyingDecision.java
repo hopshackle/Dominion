@@ -60,7 +60,7 @@ public class DominionBuyingDecision {
 		for (List<CardType> purchase : allOptions) {
 			for (CardType card : purchase) 
 				ps.drawCard(card);
-			LookaheadDecider<Player> decider = (LookaheadDecider<Player>) player.getPurchaseDecider();
+			LookaheadDecider<Player> decider = player.getLookaheadDecider();
 			double value = decider.value(ps);
 			if (value > bestValue) {
 				bestValue = value;
@@ -89,12 +89,26 @@ public class DominionBuyingDecision {
 		if (remainingBuys == 0)
 			return retValue;
 		List<CardType> purchasableCards = getPurchasableCards(Math.min(maxValueCard, budget));
+		// this excludes any cards with higher values than those purchased so far
+		// but includes cards with the same value (even if already purchased)
+
 		for (CardType A : purchasableCards) {
 			List<List<CardType>> B = getPossibleBuys(remainingBuys-1, A.getCost(), budget - A.getCost());
 			for (List<CardType> subList : B) {
-				subList.add(A);
-				if (!breaksCardLimit(subList))
-					retValue.add(subList);
+				int initialIndex = purchasableCards.indexOf(A);
+				// only consider cards on or after this index if identical cost
+				boolean skip = false;
+				for (CardType ct : subList) {
+					if (ct.getCost() == A.getCost() && purchasableCards.indexOf(ct) < initialIndex) {
+						skip = true;
+						break;
+					}
+				}
+				if (!skip) {
+					subList.add(A);
+					if (!breaksCardLimit(subList))
+						retValue.add(subList);
+				}
 			}
 			List<CardType> justA = new ArrayList<CardType>();
 			justA.add(A);
@@ -115,14 +129,16 @@ public class DominionBuyingDecision {
 	}
 
 	public List<ActionEnum<Player>> getPossiblePurchasesAsActionEnum() {
-		List<List<CardType>> temp = getPossibleBuys(totalBuys, 20, totalBudget);
+		List<List<CardType>> temp = getPossibleBuys(totalBuys, totalBudget, totalBudget);
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (final List<CardType> purc : temp) {
-			retValue.add(new CardTypeList(purc));
+			if (purc.size() == 1) {
+				retValue.add(purc.get(0));
+			} else {
+				retValue.add(new CardTypeList(purc));
+			}
 		}
-		List<CardType> noPurchases = new ArrayList<CardType>();
-		noPurchases.add(CardType.NONE);
-		retValue.add(new CardTypeList(noPurchases));
+		retValue.add(CardType.NONE);
 		return retValue;
 	}
 }

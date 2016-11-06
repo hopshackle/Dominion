@@ -58,9 +58,6 @@ public class BasicGameMechanics {
 	public void playersTakeTurnsInSequence() {
 		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		assertTrue(players[0] == game.getCurrentPlayer());
-		assertEquals(game.turnNumber(), 0);
-		game.nextPlayersTurn();
-		assertTrue(players[0] == game.getCurrentPlayer());
 		assertEquals(game.turnNumber(), 1);
 		game.nextPlayersTurn();
 		assertTrue(players[1] == game.getCurrentPlayer());
@@ -73,6 +70,9 @@ public class BasicGameMechanics {
 		assertEquals(game.turnNumber(), 1);
 		game.nextPlayersTurn();
 		assertTrue(players[0] == game.getCurrentPlayer());
+		assertEquals(game.turnNumber(), 2);
+		game.nextPlayersTurn();
+		assertTrue(players[1] == game.getCurrentPlayer());
 		assertEquals(game.turnNumber(), 2);
 		game.nextPlayersTurn();
 	}
@@ -182,7 +182,11 @@ public class BasicGameMechanics {
 		 }
 		DominionGame clonedGame = game.clone(game.getCurrentPlayer());
 		int perspectivePlayer = game.getCurrentPlayerNumber();
+		assertEquals(game.getCurrentPlayerNumber(), clonedGame.getCurrentPlayerNumber());
 
+		assertEquals(clonedGame.turnNumber(), 3);
+		assertEquals(game.turnNumber(), 3);
+		
 		for (int i = 1; i <=4; i++) {
 			Player player = game.getPlayer(i);
 			Player cloned = clonedGame.getPlayer(i);
@@ -224,7 +228,6 @@ public class BasicGameMechanics {
 				assertFalse(identical);
 			}
 		}
-		
 		
 		clonedGame.playGame();
 		assertTrue(clonedGame.gameOver());

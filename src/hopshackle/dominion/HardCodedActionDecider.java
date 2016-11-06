@@ -8,7 +8,6 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 	
 	public HardCodedActionDecider(List<CardType> actions, List<CardValuationVariables> variables) {
 		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)), CardType.toActionEnum(actions));
-		generateLearningEvents = false;
 	}
 
 	@Override

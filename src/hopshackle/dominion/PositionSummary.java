@@ -391,7 +391,7 @@ public class PositionSummary implements State<Player> {
 		double[] values = getAsArray();
 		StringBuffer retValue = new StringBuffer();
 		for (double d : values) {
-			retValue.append(String.format(".2f|", d));
+			retValue.append(String.format("%.2f|", d));
 		}
 		return retValue.toString();
 	}

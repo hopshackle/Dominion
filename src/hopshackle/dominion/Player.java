@@ -262,6 +262,20 @@ public class Player extends Agent {
 	public Decider<Player> getPurchaseDecider() {
 		return super.getDecider();
 	}
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	/* horribly messy kludge. This is purely temporary while I test MCTS framework
+	 * for  Card Buying. This will then be removed once a generalised decision stream is implemented.
+	 */
+	public LookaheadDecider<Player> getLookaheadDecider() {
+		if (decider instanceof LookaheadDecider) {
+			return (LookaheadDecider) super.getDecider();
+		} else if (decider instanceof MCTSMasterDecider) {
+			return (LookaheadDecider<Player>)  ((MCTSMasterDecider) decider).getRolloutDecider();
+		} else if (decider instanceof MCTSChildDecider) {
+			return (LookaheadDecider<Player>)  ((MCTSChildDecider) decider).getRolloutDecider();
+		}
+		throw new AssertionError("No LookaheadDecider available");
+	}
 	@Override
 	public void setDecider(Decider<?> newDecider) {
 		discardDecider = new HardCodedDiscardDecider(

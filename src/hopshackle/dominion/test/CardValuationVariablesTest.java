@@ -385,4 +385,21 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0, 0.001);
 	}
 	
+	@Test
+	public void turnNumber() {
+		assertEquals(CardValuationVariables.TURNS.getValue(p1), 0.0, 0.0001);
+		game.nextPlayersTurn();
+		recalculate();
+		assertEquals(CardValuationVariables.TURNS.getValue(p1), 0.0, 0.0001);
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		recalculate();
+		assertEquals(CardValuationVariables.TURNS.getValue(p1), 0.0, 0.0001);
+		assertEquals(CardValuationVariables.TURNS.getValue(p2), 0.0, 0.0001);
+		game.nextPlayersTurn();
+		recalculate();
+		assertEquals(CardValuationVariables.TURNS.getValue(p1), 0.025, 0.0001);
+		assertEquals(CardValuationVariables.TURNS.getValue(p2), 0.025, 0.0001);
+	}
+	
 }

@@ -4,6 +4,7 @@ import hopshackle.simulation.*;
 
 public class DominionPlayAction extends Action<Player> {
 	
+	private static boolean hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	private CardType cardType;
 	private Player player;
 
@@ -37,8 +38,17 @@ public class DominionPlayAction extends Action<Player> {
 	@Override 
 	protected void doNextDecision(Player p) {
 		// Do nothing .. this is all handled in Game/Player
-		// Note that we do not override doNextDecision(), so that learning event
-		// is still dispatched
+	}
+	@Override
+	protected void eventDispatch(AgentEvent learningEvent) {
+		if (hardCodedActionDecider) {
+			return;	// override to turn off any ER stream
+		}
+		super.eventDispatch(learningEvent);
+	}
+	
+	public static void refresh() {
+		hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	}
 	
 }

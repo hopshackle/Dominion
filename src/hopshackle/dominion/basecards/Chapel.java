@@ -22,7 +22,7 @@ public class Chapel extends Card {
 
 	private void trashCard(Player player) {
 		List<CardType> hand = player.getCopyOfHand();
-		LookaheadDecider<Player> dpd = (LookaheadDecider<Player>) player.getPurchaseDecider();
+		LookaheadDecider<Player> dpd = player.getLookaheadDecider();
 		PositionSummary ps = (PositionSummary) dpd.getCurrentState(player);
 		double startingValue = dpd.value(ps);
 		double bestGain = 0.0;

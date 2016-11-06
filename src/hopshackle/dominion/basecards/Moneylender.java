@@ -69,7 +69,7 @@ public class Moneylender extends Card {
 		for (CardType cardBought : purchase) {
 			ps.addCard(cardBought);
 		}
-		LookaheadDecider<Player> decider = (LookaheadDecider<Player>) player.getPurchaseDecider();
+		LookaheadDecider<Player> decider = player.getLookaheadDecider();
 		return decider.value(ps);
 	}
 	

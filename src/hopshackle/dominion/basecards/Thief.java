@@ -17,7 +17,7 @@ public class Thief extends AttackCard {
 		if (cardToTrash.getType() == CardType.NONE)
 			return;
 		target.trashCardFromDiscard(cardToTrash.getType());
-		LookaheadDecider<Player> decider = (LookaheadDecider<Player>) attacker.getPurchaseDecider();
+		LookaheadDecider<Player> decider = attacker.getLookaheadDecider();
 		PositionSummary ps = (PositionSummary) decider.getCurrentState(attacker);
 		double baseValue = decider.value(ps);
 		ps.addCard(cardToTrash.getType());
