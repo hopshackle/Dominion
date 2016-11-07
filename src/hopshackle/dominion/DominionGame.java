@@ -50,6 +50,8 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 			}
 			players[n].setGame(this);
 		}
+		for (int n = 0; n < players.length; n++)
+			players[n].refreshPositionSummary();
 		currentPlayer = 0;
 	}
 
@@ -58,8 +60,6 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 		players = new Player[4];
 		long currentTime = master.turnClock.getCurrentTime();
 		turnClock.setCalendar(new FastCalendar(currentTime));
-		for (int i = 0; i < 4; i++)
-			players[i] = master.players[i].clone(this);
 		cardsOnTable = new HashMap<CardType, Integer>();
 		for (CardType ct : master.cardsOnTable.keySet()) {
 			cardsOnTable.put(ct, master.getNumberOfCardsRemaining(ct));
@@ -68,6 +68,11 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 		allStartingCardTypes = master.allStartingCardTypes;
 		turn = master.turn;
 		clonedGame = true;
+		
+		for (int i = 0; i < 4; i++)
+			players[i] = master.players[i].clone(this);
+		for (int n = 0; n < players.length; n++)
+			players[n].refreshPositionSummary();
 	}
 
 	@Override

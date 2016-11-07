@@ -402,4 +402,14 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.TURNS.getValue(p2), 0.025, 0.0001);
 	}
 	
+	@Test
+	public void victoryMarginAfterCloning() {
+		DominionGame clonedGame = game.clone(game.getCurrentPlayer());
+		PositionSummary clonedP1 = clonedGame.getCurrentPlayer().getPositionSummaryCopy();
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(clonedP1), 0.0, 0.001);
+		clonedP1.addCard(CardType.COPPER);
+		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(clonedP1), 0.0, 0.001);
+
+	}
+	
 }

@@ -9,6 +9,8 @@ import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
 
+import com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState;
+
 public class BasicGameMechanics {
 
 	public DominionGame game;
@@ -133,12 +135,12 @@ public class BasicGameMechanics {
 	public void phaseFlagIsSetCorrectlyAsPlayProceeds() {
 		List<Player> players = game.getAllPlayers();
 		for (int i = 0; i<4; i++) {
-		assertFalse(players.get(i).isTakingActions());
+		assertTrue(players.get(i).isTakingActions());
 		}
 		players.get(0).takeActions();
-		assertTrue(players.get(0).isTakingActions());
-		players.get(0).buyCards();
 		assertFalse(players.get(0).isTakingActions());
+		players.get(0).buyCards();
+		assertTrue(players.get(0).isTakingActions());
 	}
 	
 	@Test
@@ -170,6 +172,7 @@ public class BasicGameMechanics {
 		int[] discardSize = new int[4];
 		for (int i = 1; i <=4; i++) {
 			Player player = game.getPlayer(i);
+			assertEquals(player.getPositionSummaryCopy().getNumberOfCardsRemaining(CardType.PROVINCE), 12.0, 0.001);
 			hand.add(player.getCopyOfHand());
 			discard.add(player.getCopyOfDiscard());
 			deck.add(player.getCopyOfDeck());
@@ -190,6 +193,7 @@ public class BasicGameMechanics {
 		for (int i = 1; i <=4; i++) {
 			Player player = game.getPlayer(i);
 			Player cloned = clonedGame.getPlayer(i);
+			assertEquals(cloned.getPositionSummaryCopy().getNumberOfCardsRemaining(CardType.PROVINCE), 12.0, 0.001);
 			// Test that players are different (i.e. we must clone these as well)
 			assertFalse(player == cloned);
 			// Test that perspective player's hand and discard are still the same
@@ -258,6 +262,82 @@ public class BasicGameMechanics {
 				assertTrue(deck.get(i-1).get(j) == finalDeck.get(j));
 			}
 		}
+	}
+	
+	@Test
+	public void cloneGameAfterPlayingBeforeBuying() {
+		Player p1 = game.getCurrentPlayer();
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
+		assertEquals(p1.getCopyOfHand().size(), 6);
+
+		int oldBudget = p1.getBudget();
+		assertEquals(p1.getBuys(), 1);
+		p1.takeActions();
+		// Player has now played Woodcutter, leaving +1 Buy, and +2 purchasing power
+		
+		DominionGame clonedGame = game.clone(p1);
+		assertEquals(clonedGame.getCurrentPlayerNumber(), 1);
+		
+		Player newPlayer1 = clonedGame.getPlayer(1);
+		assertEquals(newPlayer1.getBudget(), oldBudget+2);
+		assertEquals(newPlayer1.getBuys(), 2);
+		assertEquals(newPlayer1.getCopyOfHand().size(), 5);
+	}
+	
+	@Test
+	public void nextActionTakesIntoAccountCurrentState() {
+		TestDominionDecider copperDecider = TestDominionDecider.getExample(CardType.COPPER);
+		Player p1 = game.getCurrentPlayer();
+		p1.setDecider(copperDecider);
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
+		assertEquals(p1.getCopyOfHand().size(), 7);
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+		p1.takeActions();
+		game.nextPlayersTurn();
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 9);
+	}
+	
+	@Test
+	public void nextActionTakesIntoAccountCurrentStateAfterCloning() {
+		TestDominionDecider copperDecider = TestDominionDecider.getExample(CardType.COPPER);
+		Player p1 = game.getCurrentPlayer();
+		p1.setDecider(copperDecider);
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+		p1.takeActions();
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+		assertEquals(p1.getBuys(), 2);
+		
+		DominionGame clonedGame = game.clone(p1);
+		Player newP1 = clonedGame.getCurrentPlayer();
+		assertEquals(newP1.getBuys(), 2);
+		assertEquals(clonedGame.getCurrentPlayerNumber(), 1);
+		clonedGame.nextPlayersTurn();
+		assertEquals(newP1.getNumberOfTypeTotal(CardType.COPPER), 9);
+	}
+	
+	
+	@Test
+	public void nextActionTakesIntoAccountCurrentStateAfterCloningWithMCTSLikeBehaviour() {
+		TestDominionDecider copperDecider = TestDominionDecider.getExample(CardType.COPPER);
+		Player p1 = game.getCurrentPlayer();
+		p1.setDecider(copperDecider);
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+		p1.takeActions();
+		p1.setState(Player.State.PURCHASING);	// to emulate the purchasing behaviour of MCTS
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+		assertEquals(p1.getBuys(), 2);
+		
+		DominionGame clonedGame = game.clone(p1);
+		Player newP1 = clonedGame.getCurrentPlayer();
+		assertEquals(newP1.getBuys(), 2);
+		assertEquals(clonedGame.getCurrentPlayerNumber(), 1);
+		clonedGame.nextPlayersTurn();
+		assertEquals(newP1.getNumberOfTypeTotal(CardType.COPPER), 9);
 	}
 
 }

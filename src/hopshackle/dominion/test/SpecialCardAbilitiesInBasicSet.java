@@ -259,7 +259,6 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p3.totalTreasureValue(), 10);
 		assertEquals(p3.totalVictoryValue(), 4);
 		assertFalse(p3.getCopyOfHand().contains(CardType.SMITHY));
-		assertTrue(p3.isTakingActions());
 	}
 
 	@Test

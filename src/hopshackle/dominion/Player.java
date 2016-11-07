@@ -32,8 +32,9 @@ public class Player extends Agent {
 		discard = new Deck();
 		hand = new Deck();
 		revealedCards = new Deck();
-		summary = new PositionSummary(this, null);
+		refreshPositionSummary();
 		dealFreshHand();
+		setState(State.PLAYING);
 		log("Player #" + number + " in Game " + game.getUniqueId());
 	}
 
@@ -51,7 +52,6 @@ public class Player extends Agent {
 		decider = player.decider;
 		actionDecider = player.actionDecider;
 		discardDecider = player.discardDecider;
-		summary = new PositionSummary(this, null);
 	}
 
 	private void dealFreshHand() {
@@ -109,10 +109,44 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	public void takeActions() {
-		if (actionDecider == null) return;
+	public boolean takeNextAction() {
+		if (game.getCurrentPlayer() == this) {
+			switch (playerState) {
+			case PURCHASING:
+				DominionBuyAction decision = (DominionBuyAction) getDecider().decide(this);
+				decision.start();
+				decision.run();
+				setState(State.PLAYING);
+				return true;
+			case PLAYING:
+				Action<Player> action = actionDecider.decide(this);
+				if (!(action instanceof DominionPlayAction)) {
+					throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
+				}
+				action.start();
+				action.run();
+				decrementActionsLeft();
+				if (actionsLeft == 0) setState(State.PURCHASING);
+				return true;
+			case WAITING:
+				return false;
+			}
+		} 
+		return false;
+	}
+	public void buyCards() {
+		if (playerState != State.PURCHASING) 
+			throw new AssertionError("Incorrect state for Purchasing " + playerState);
+		DominionBuyAction decision = (DominionBuyAction) getDecider().decide(this);
+		decision.start();
+		decision.run();
 		setState(State.PLAYING);
-		do {
+	}
+	public void takeActions() {
+		if (playerState != State.PLAYING) 
+			throw new AssertionError("Incorrect state for Purchasing " + playerState);
+		if (actionDecider == null) return;
+		while (actionsLeft > 0) {
 			Action<Player> action = actionDecider.decide(this);
 			if (!(action instanceof DominionPlayAction)) {
 				throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
@@ -120,22 +154,15 @@ public class Player extends Agent {
 			action.start();
 			action.run();
 			decrementActionsLeft();
-			summary = new PositionSummary(this, null);
-		} while (actionsLeft > 0);
-		actionsLeft = 0;
+			refreshPositionSummary();
+		}
+		setState(State.PURCHASING);
 	}
 	public void incrementActionsLeft() {
 		actionsLeft++;
 	}
 	public void decrementActionsLeft() {
 		actionsLeft--;
-	}
-
-	public void buyCards() {
-		setState(State.PURCHASING);
-		DominionBuyAction decision = (DominionBuyAction) getDecider().decide(this);
-		decision.start();
-		decision.run();
 	}
 
 	public void tidyUp() {
@@ -152,7 +179,7 @@ public class Player extends Agent {
 			}
 			drawTopCardFromDeckIntoHand();
 		}
-		summary = new PositionSummary(this, null);
+		refreshPositionSummary();
 	}
 
 	public void shuffleDeckAndHandTogether() {
@@ -163,7 +190,7 @@ public class Player extends Agent {
 		hand = new Deck();
 		for (int i = 0; i < handSize; i++)
 			hand.addCard(deck.drawTopCard());
-		summary = new PositionSummary(this, null);
+		refreshPositionSummary();
 	}
 	
 	public void shuffleDeck() {
@@ -186,7 +213,7 @@ public class Player extends Agent {
 	public DominionGame getGame() {
 		return game;
 	}
-
+	
 	public Card drawTopCardFromDeckIntoHand() {
 		Card cardDrawn = drawTopCardFromDeckButNotIntoHand();
 		if (cardDrawn.getType() != CardType.NONE) {
@@ -220,7 +247,7 @@ public class Player extends Agent {
 
 	public void insertCardDirectlyIntoHand(Card c) {
 		hand.addCard(c);
-		summary = new PositionSummary(this, null);
+		refreshPositionSummary();
 	}
 
 	public int totalTreasureValue() {
@@ -347,7 +374,7 @@ public class Player extends Agent {
 			actionsLeft = 1;
 		default: 
 		}
-		summary = new PositionSummary(this, null);
+		refreshPositionSummary();
 	}
 	public Player.State getPlayerState() {
 		return playerState;
@@ -406,10 +433,14 @@ public class Player extends Agent {
 	}
 
 	public void takeTurn() {
-		takeActions();
-		buyCards();
+		switch (playerState) {
+		case PLAYING:
+			takeActions();
+		case PURCHASING:
+			buyCards();
+		case WAITING:
+		}
 		tidyUp();
-		setState(State.WAITING);
 	}
 
 	public List<ActionEnum<Player>> getActionsInHand() {
@@ -423,5 +454,8 @@ public class Player extends Agent {
 	
 	public Player clone(DominionGame newGame) {
 		return new Player(this, newGame);
+	}
+	public void refreshPositionSummary() {
+		summary = new PositionSummary(this, null);
 	}
 }

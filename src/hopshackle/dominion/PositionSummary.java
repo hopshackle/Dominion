@@ -176,7 +176,7 @@ public class PositionSummary implements State<Player> {
 		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		updateHandFromPlayer();
 		positionState = player.getPlayerState();
-		victoryPoints = 0;
+		victoryPoints = 0.0;
 		totalCards = 0;
 		treasureValue = 0.0;
 		actions = player.getActionsLeft();
@@ -190,6 +190,7 @@ public class PositionSummary implements State<Player> {
 			cardsOnTable.put(ct, game.getNumberOfCardsRemaining(ct));
 		}
 		cardsInDiscard = player.getDiscardSize();
+		recalculateVictoryPoints();
 		if (players[3] != null) {
 			double highestScore = -100;
 			double secondScore = -100;
@@ -206,7 +207,7 @@ public class PositionSummary implements State<Player> {
 				victoryMargin = victoryPoints - secondScore;
 			else
 				victoryMargin = victoryPoints - highestScore;
-		}
+		} 
 		turnNumber = game.turnNumber() - 1;
 		updateDerivedVariables();
 	}
