@@ -71,10 +71,10 @@ public class CompetitionRound {
 	
 
 	private void outputNeuronUsage() {
-		List<LookaheadDecider<Player>> allBrains = dg.getAllPurchaseDeciders();
-		List<LookaheadDecider<Player>> bestBrains = dg.getTopPercentageOfPurchaseBrains(0.5);
+		List<Decider<Player>> allBrains = dg.getAllPurchaseDeciders();
+		List<Decider<Player>> bestBrains = dg.getTopPercentageOfPurchaseBrains(0.5);
 		Map<GeneticVariable<Player>, Integer> gvUsage = new HashMap<GeneticVariable<Player>, Integer>();
-		for (LookaheadDecider<Player> brain : allBrains) {
+		for (Decider<Player> brain : allBrains) {
 			for (GeneticVariable<Player> gv : brain.getVariables()) {
 				if (gvUsage.containsKey(gv)) {
 					gvUsage.put(gv, gvUsage.get(gv) + 1);
@@ -84,7 +84,7 @@ public class CompetitionRound {
 			}
 		}
 		Map<GeneticVariable<Player>, Integer> bestGvUsage = new HashMap<GeneticVariable<Player>, Integer>();
-		for (LookaheadDecider<Player> brain : bestBrains) {
+		for (Decider<Player> brain : bestBrains) {
 			for (GeneticVariable<Player> gv : brain.getVariables()) {
 				if (bestGvUsage.containsKey(gv)) {
 					bestGvUsage.put(gv, bestGvUsage.get(gv) + 1);

@@ -74,7 +74,7 @@ public class RunGame extends World {
 				return true;
 			}
 		};
-		for (LookaheadDecider<Player> d : dg.getAllPurchaseDeciders()) {
+		for (Decider<Player> d : dg.getAllPurchaseDeciders()) {
 			ercMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, purchaseEventFilter));
 			OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(pastSetsToIncludeInTraining);
 			teacher.registerToERStream(ercMap.get(d.toString()));
@@ -86,7 +86,7 @@ public class RunGame extends World {
 				teacher.registerDecider(d);
 			}
 		}
-		for (LookaheadDecider<Player> d : dg.getAllActionDeciders()) {
+		for (Decider<Player> d : dg.getAllActionDeciders()) {
 			ercMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, actionEventFilter));
 			OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(pastSetsToIncludeInTraining);
 			teacher.registerToERStream(ercMap.get(d.toString()));
@@ -135,6 +135,7 @@ public class RunGame extends World {
 	private void runNextSet(int numberOfGames) {
 		for (int i = 0; i < numberOfGames; i++) {
 			DominionGame game = new DominionGame(this.getDeciderDenerator(), this.name, addPaceSetters);
+			game.setWorld(this);
 			for (Player p : game.getAllPlayers()) {
 				Decider<Player> pd = p.getPurchaseDecider();
 				Decider<Player> ad = p.getActionDecider();
@@ -167,6 +168,7 @@ public class RunGame extends World {
 		} else {
 			game = new DominionGame(getDeciderDenerator(), name, false);
 		}
+		game.setWorld(this);
 		runGame(game);
 	}
 

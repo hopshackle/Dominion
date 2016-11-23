@@ -23,9 +23,10 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	private final int MAX_TURNS = 200;
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
-	private String name;
+	private String tableSuffix;
+	private World databasePersistence;
 	
-	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, LookaheadDecider<Player> deciderToUse) {
+	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, Decider<Player> deciderToUse) {
 		DominionGame retValue = new DominionGame(deciderGen, name, false);
 		int randomPlayer = Dice.roll(1, 4) - 1;
 		retValue.players[randomPlayer].setDecider(deciderToUse);
@@ -34,7 +35,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 
 	public DominionGame(DeciderGenerator deciderGen, String name, boolean paceSetters) {
 		deciderGenerator = deciderGen;
-		this.name = name;
+		this.tableSuffix = name;
 		turn = 1;
 		turnClock.setCalendar(new FastCalendar(0l), 0);
 		players = new Player[4];
@@ -100,8 +101,9 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 		for (int n = 0; n < 4; n++) 
 			players[n].die("Game Over");
 
-		if (!clonedGame)
-			gameWriter.write(this, name);
+		if (!clonedGame) {
+			gameWriter.write(this, tableSuffix);
+		}
 		return score;
 	}
 
@@ -275,9 +277,15 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 		return players[n-1];
 	}
 
+	public World getTurnClock() {
+		return turnClock;
+	}
 	@Override
 	public World getWorld() {
-		return turnClock;
+		return databasePersistence;
+	}
+	public void setWorld(World w) {
+		databasePersistence = w;
 	}
 
 	@Override

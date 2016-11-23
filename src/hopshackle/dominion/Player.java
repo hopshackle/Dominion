@@ -24,7 +24,7 @@ public class Player extends Agent {
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
 	
 	public Player(DominionGame game, int number) {
-		super(game.getWorld());
+		super(game.getTurnClock());
 		playerState = State.WAITING;
 		playerNumber = number;
 		this.game = game;
@@ -39,7 +39,7 @@ public class Player extends Agent {
 	}
 
 	public Player(Player player, DominionGame newGame) {
-		super(newGame.getWorld());
+		super(newGame.getTurnClock());
 		playerState = player.playerState;
 		playerNumber = player.playerNumber;
 		actionsLeft = player.actionsLeft;
@@ -311,7 +311,7 @@ public class Player extends Agent {
 		log("Using purchase strategy " + newDecider.toString());
 		super.setDecider(newDecider);
 	}
-	public void setActionDecider(LookaheadDecider<Player> newDecider) {
+	public void setActionDecider(Decider<Player> newDecider) {
 		actionDecider = newDecider;
 		log("Using action strategy " + actionDecider.toString());
 	}
