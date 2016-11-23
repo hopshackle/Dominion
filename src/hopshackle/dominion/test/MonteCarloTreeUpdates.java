@@ -3,7 +3,9 @@ package hopshackle.dominion.test;
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
 import hopshackle.simulation.*;
+
 import java.util.*;
+
 import org.junit.*;
 public class MonteCarloTreeUpdates {
 	
@@ -50,6 +52,19 @@ public class MonteCarloTreeUpdates {
 		assertTrue(cmActionEnum.toString().equals("COPPER MARKET "));
 		assertTrue(cmAction.getType().equals(cmActionEnum));
 		assertTrue(cmAction.toString().equals("Buy COPPER MARKET "));
+	}
+	
+	@Test
+	public void settingPurchaseDeciderOnClonedPlayerDoesNotAffectParent() {
+		Player p1 = game.getCurrentPlayer();
+		p1.takeActions();
+		Decider<Player> p1Decider = p1.getDecider();
+		Game<Player, CardType> clonedGame = game.clone(p1);
+		Player p2 = clonedGame.getCurrentPlayer();
+		assertTrue(p2.getDecider() == p1.getDecider());
+		p2.setDecider(new HardCodedDecider<Player>(CardType.ADVENTURER));
+		assertFalse(p2.getDecider() == p1.getDecider());
+		assertTrue(p1.getDecider() == p1Decider);
 	}
 
 }

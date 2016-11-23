@@ -48,7 +48,8 @@ public class Player extends Agent {
 		discard = player.discard.copy();
 		hand = player.hand.copy();
 		revealedCards = player.revealedCards.copy();
-		deciders = player.deciders;
+		deciders.purchase = player.deciders.purchase;
+		deciders.action = player.deciders.action;
 	}
 
 	private void dealFreshHand() {
@@ -106,31 +107,6 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	public boolean takeNextAction() {
-		if (game.getCurrentPlayer() == this) {
-			switch (playerState) {
-			case PURCHASING:
-				DominionBuyAction decision = (DominionBuyAction) getDecider().decide(this);
-				decision.start();
-				decision.run();
-				setState(State.PLAYING);
-				return true;
-			case PLAYING:
-				Action<Player> action = getDecider().decide(this);
-				if (!(action instanceof DominionPlayAction)) {
-					throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
-				}
-				action.start();
-				action.run();
-				decrementActionsLeft();
-				if (actionsLeft == 0) setState(State.PURCHASING);
-				return true;
-			case WAITING:
-				return false;
-			}
-		} 
-		return false;
-	}
 	public void buyCards() {
 		if (playerState != State.PURCHASING) 
 			throw new AssertionError("Incorrect state for Purchasing " + playerState);
@@ -348,7 +324,6 @@ public class Player extends Agent {
 	 * This is a bit of a hack to cater for Purchase decisions made during the
 	 * Action Phase. 
 	 * If it is not the player's turn, then the default is false.
-	 * NOT to be confused with isInActionPhase(), which indicates which Phase we are in.
 	 */
 	public boolean isTakingActions() {
 		return playerState == State.PLAYING;
@@ -440,5 +415,9 @@ public class Player extends Agent {
 	}
 	public void refreshPositionSummary() {
 		summary = new PositionSummary(this, null);
+	}
+
+	public DominionDeciderContainer getDeciderContainer() {
+		return deciders;
 	}
 }
