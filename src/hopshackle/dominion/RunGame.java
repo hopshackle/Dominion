@@ -4,7 +4,7 @@ import java.util.*;
 
 import hopshackle.simulation.*;
 
-public class RunGame extends World {
+public class RunGame {
 
 	private static boolean learningOn = SimProperties.getProperty("DominionLearningOn", "true").equals("true");
 	private static boolean extraLastK = SimProperties.getProperty("DominionLastThousandForScoring", "true").equals("true");
@@ -21,6 +21,8 @@ public class RunGame extends World {
 	private ExperienceRecordFactory<Player> factory = new StandardERFactory<Player>();
 	private Map<String, ExperienceRecordCollector<Player>> ercMap = new HashMap<String, ExperienceRecordCollector<Player>>();
 	private Map<String, OnInstructionTeacher<Player>> teacherMap = new HashMap<String, OnInstructionTeacher<Player>>();
+	private DatabaseAccessUtility databaseUtility;
+	private String name;
 
 	public static void main(String[] args) {
 
@@ -53,9 +55,9 @@ public class RunGame extends World {
 	}
 
 	public RunGame(String descriptor, int games, DeciderGenerator providedDG) {
-		super(null, descriptor, games);
 		dg = providedDG;
 		maximum = games;
+		name = descriptor;
 		EventFilter purchaseEventFilter = new EventFilter() {
 			@Override
 			public boolean ignore(AgentEvent event) {
@@ -99,8 +101,7 @@ public class RunGame extends World {
 			}
 		}
 		
-		DatabaseAccessUtility databaseUtility = new DatabaseAccessUtility();
-		setDatabaseAccessUtility(databaseUtility);
+		databaseUtility = new DatabaseAccessUtility();
 		Thread t = new Thread(databaseUtility);
 		t.start();
 	}
@@ -130,25 +131,23 @@ public class RunGame extends World {
 			} while (!finishedRun());
 		}
 		dg.recordBestPurchaseBrains(toString(), baseDir + "\\recordedBrains");
+		databaseUtility.addUpdate("EXIT");
 	}
 
 	private void runNextSet(int numberOfGames) {
 		for (int i = 0; i < numberOfGames; i++) {
 			DominionGame game = new DominionGame(this.getDeciderDenerator(), this.name, addPaceSetters);
-			game.setWorld(this);
+			game.setDatabaseAccessUtility(databaseUtility);
 			for (Player p : game.getAllPlayers()) {
-				Decider<Player> pd = p.getPurchaseDecider();
-				Decider<Player> ad = p.getActionDecider();
+				Decider<Player> decider = p.getDecider();
 				switch(teachingStrategy) {
 				case "AllPlayers" :
 					for (Player p2 : game.getAllPlayers())  {
-						ercMap.get(pd.toString()).registerAgent(p2);
-						ercMap.get(ad.toString()).registerAgent(p2);
+						ercMap.get(decider.toString()).registerAgent(p2);
 					}
 					break;
 				case "SelfOnly" :
-					ercMap.get(pd.toString()).registerAgent(p);
-					ercMap.get(ad.toString()).registerAgent(p);
+					ercMap.get(decider.toString()).registerAgent(p);
 					break;
 				default:
 					throw new AssertionError("Unknown teaching strategy: " + teachingStrategy);
@@ -168,15 +167,12 @@ public class RunGame extends World {
 		} else {
 			game = new DominionGame(getDeciderDenerator(), name, false);
 		}
-		game.setWorld(this);
+		game.setDatabaseAccessUtility(databaseUtility);
 		runGame(game);
 	}
 
 	private void runGame(DominionGame game) {
 		count++;
-		setCurrentTime(count);
-		maintenance();
-
 		game.playGame();
 
 		Player[] players = game.getAllPlayers().toArray(new Player[1]);
@@ -188,8 +184,6 @@ public class RunGame extends World {
 
 		if (maximum + finalScoring > count)
 			return;
-
-		worldDeath();
 	}
 
 	public boolean finishedRun() {
@@ -200,12 +194,16 @@ public class RunGame extends World {
 		return (maximum <= count);
 	}
 
-	public void worldDeath() {
-		super.worldDeath();
-		updateDatabase("EXIT");
-	}
-
 	public DeciderGenerator getDeciderDenerator() {
 		return dg;
+	}
+
+	public DatabaseAccessUtility getDatabaseUtility() {
+		return databaseUtility;
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 }

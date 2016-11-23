@@ -224,8 +224,10 @@ public class BuysActionsAndPurchasePowerFromCards {
 	@Test
 	public void threeBuysWithSufficientTopCards() {
 		p1.setDecider(generalPurchaseDecider);
+		p1.takeActions();
 		DominionBuyingDecision dpd = new DominionBuyingDecision(p1, 12, 3);
 		List<CardType> purchase = dpd.getBestPurchase();
+		System.out.println(purchase);
 		assertEquals(purchase.size(), 3);
 		int gold = 0;
 		int smithy = 0;
@@ -246,11 +248,13 @@ public class BuysActionsAndPurchasePowerFromCards {
 	@Test
 	public void threeBuysWithInsufficientTopCards() {
 		p1.setDecider(generalPurchaseDecider);
+		p1.takeActions();
 		for (int i = 0; i < 9; i++)
 			game.drawCard(CardType.SMITHY);
 		assertEquals(game.getNumberOfCardsRemaining(CardType.SMITHY), 1);
 		DominionBuyingDecision dpd = new DominionBuyingDecision(p1, 12, 3);
 		List<CardType> purchase = dpd.getBestPurchase();
+		System.out.println(purchase);
 		assertEquals(purchase.size(), 3);
 		int gold = 0;
 		int smithy = 0;

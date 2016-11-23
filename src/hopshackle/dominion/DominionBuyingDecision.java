@@ -18,7 +18,7 @@ public class DominionBuyingDecision {
 		this.player = player;
 		totalBudget = budget;
 		totalBuys = buys;
-		stateFactory = new DominionStateFactory(player.getPurchaseDecider().getVariables());
+		stateFactory = new DominionStateFactory(player.getDecider().getVariables());
 		DominionGame game = player.getGame();
 		limitedCards = new HashMap<CardType, Integer>();
 		for (CardType card : game.availableCardsToPurchase()) {

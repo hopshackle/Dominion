@@ -4,7 +4,7 @@ import hopshackle.simulation.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DominionGame implements Persistent, Game<Player, CardType> {
+public class DominionGame extends World implements Persistent, Game<Player, CardType> {
 
 	private Player[] players;
 	private HashMap<CardType, Integer> cardsOnTable;
@@ -13,7 +13,6 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	private static AtomicInteger idFountain = new AtomicInteger(1);
 	private int id = idFountain.getAndIncrement();
 	private int turn;
-	private World turnClock = new World();
 	private int losingPlayerNumber;
 	private int[] winningPlayerNumbers = new int[0];
 	private double highestScore, lowestScore;
@@ -24,7 +23,6 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
 	private String tableSuffix;
-	private World databasePersistence;
 	
 	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, Decider<Player> deciderToUse) {
 		DominionGame retValue = new DominionGame(deciderGen, name, false);
@@ -37,9 +35,10 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 		deciderGenerator = deciderGen;
 		this.tableSuffix = name;
 		turn = 1;
-		turnClock.setCalendar(new FastCalendar(0l), 0);
 		players = new Player[4];
 		boolean debugGame = false;
+		setCalendar(new FastCalendar(0l), 0);
+		setName(name);
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
 		if (Math.random() < debugGameProportion) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
@@ -59,8 +58,8 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	private DominionGame(DominionGame master) {
 		deciderGenerator = master.deciderGenerator;
 		players = new Player[4];
-		long currentTime = master.turnClock.getCurrentTime();
-		turnClock.setCalendar(new FastCalendar(currentTime));
+		long currentTime = master.getCurrentTime();
+		setCalendar(new FastCalendar(currentTime));
 		cardsOnTable = new HashMap<CardType, Integer>();
 		for (CardType ct : master.cardsOnTable.keySet()) {
 			cardsOnTable.put(ct, master.getNumberOfCardsRemaining(ct));
@@ -112,7 +111,7 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	//	System.out.println("Taken turn " + turn + " for Player " + (currentPlayer+1) + " in Game " + this.toString());
 		
 		if (currentPlayer == 3) turn++;
-		turnClock.setCurrentTime((long) ((turn-1) * 4 + currentPlayer));
+		setCurrentTime((long) ((turn-1) * 4 + currentPlayer));
 		currentPlayer++;
 		if (currentPlayer == 4)
 			currentPlayer = 0;
@@ -275,17 +274,6 @@ public class DominionGame implements Persistent, Game<Player, CardType> {
 	@Override
 	public Player getPlayer(int n) {
 		return players[n-1];
-	}
-
-	public World getTurnClock() {
-		return turnClock;
-	}
-	@Override
-	public World getWorld() {
-		return databasePersistence;
-	}
-	public void setWorld(World w) {
-		databasePersistence = w;
 	}
 
 	@Override

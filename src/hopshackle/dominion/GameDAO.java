@@ -8,46 +8,45 @@ public class GameDAO implements DAO<DominionGame> {
 	public String getTableCreationSQL(String tableSuffix) {
 
 		return  "CREATE TABLE IF NOT EXISTS DomAllGames_" + tableSuffix +
-		" ( id 				INT			PRIMARY KEY,"		+
-		" turns				INT			NOT NULL,"		+
-		" winningScore		INT			NOT NULL,"		+
-		" winningPlayer		INT			NOT NULL,"		+
-		" lowestScore		INT			NOT NULL,"		+
-		" provinces		 	INT			NOT NULL,"		+
-		" duchies	 		INT			NOT NULL,"		+
-		" estates			INT			NOT NULL,"		+
-		" curses			INT			NOT NULL,"		+
-		" adventurers		INT			NOT NULL,"		+
-		" bureaucrats		INT			NOT NULL,"		+
-		" cellars			INT			NOT NULL,"		+
-		" chancellors		INT			NOT NULL,"		+
-		" chapels			INT			NOT NULL,"		+
-		" council_rooms		INT			NOT NULL,"		+
-		" feasts			INT			NOT NULL,"		+
-		" festivals			INT			NOT NULL,"		+
-		" gardens			INT			NOT NULL,"		+
-		" laboratories		INT			NOT NULL,"		+
-		" libraries			INT			NOT NULL,"		+
-		" markets			INT			NOT NULL,"		+
-		" militia			INT			NOT NULL,"		+
-		" mines				INT			NOT NULL,"		+
-		" moats				INT			NOT NULL,"		+
-		" moneylenders		INT			NOT NULL,"		+
-		" remodels			INT			NOT NULL,"		+
-		" smithies			INT			NOT NULL,"		+
-		" spies				INT			NOT NULL,"		+
-		" thieves			INT			NOT NULL,"		+
-		" throne_rooms		INT			NOT NULL,"		+
-		" villages			INT			NOT NULL,"		+
-		" witches			INT			NOT NULL,"		+
-		" woodcutters		INT			NOT NULL,"		+
-		" workshops			INT			NOT NULL,"		+
-		" avgDeckSize		FLOAT		NOT NULL,"		+
-		" avgTreasure		FLOAT		NOT NULL,"		+
-		" avgVictory		FLOAT		NOT NULL,"		+
-		" winningPStrategy   VARCHAR(30) NOT NULL,"		+
-		" winningAStrategy   VARCHAR(30) NOT NULL"		+
-		");";
+				" ( id 				INT			PRIMARY KEY,"		+
+				" turns				INT			NOT NULL,"		+
+				" winningScore		INT			NOT NULL,"		+
+				" winningPlayer		INT			NOT NULL,"		+
+				" lowestScore		INT			NOT NULL,"		+
+				" provinces		 	INT			NOT NULL,"		+
+				" duchies	 		INT			NOT NULL,"		+
+				" estates			INT			NOT NULL,"		+
+				" curses			INT			NOT NULL,"		+
+				" adventurers		INT			NOT NULL,"		+
+				" bureaucrats		INT			NOT NULL,"		+
+				" cellars			INT			NOT NULL,"		+
+				" chancellors		INT			NOT NULL,"		+
+				" chapels			INT			NOT NULL,"		+
+				" council_rooms		INT			NOT NULL,"		+
+				" feasts			INT			NOT NULL,"		+
+				" festivals			INT			NOT NULL,"		+
+				" gardens			INT			NOT NULL,"		+
+				" laboratories		INT			NOT NULL,"		+
+				" libraries			INT			NOT NULL,"		+
+				" markets			INT			NOT NULL,"		+
+				" militia			INT			NOT NULL,"		+
+				" mines				INT			NOT NULL,"		+
+				" moats				INT			NOT NULL,"		+
+				" moneylenders		INT			NOT NULL,"		+
+				" remodels			INT			NOT NULL,"		+
+				" smithies			INT			NOT NULL,"		+
+				" spies				INT			NOT NULL,"		+
+				" thieves			INT			NOT NULL,"		+
+				" throne_rooms		INT			NOT NULL,"		+
+				" villages			INT			NOT NULL,"		+
+				" witches			INT			NOT NULL,"		+
+				" woodcutters		INT			NOT NULL,"		+
+				" workshops			INT			NOT NULL,"		+
+				" avgDeckSize		FLOAT		NOT NULL,"		+
+				" avgTreasure		FLOAT		NOT NULL,"		+
+				" avgVictory		FLOAT		NOT NULL,"		+
+				" winningPStrategy   VARCHAR(30) NOT NULL"		+
+				");";
 	}
 
 	@Override
@@ -58,11 +57,11 @@ public class GameDAO implements DAO<DominionGame> {
 	@Override
 	public String getTableUpdateSQL(String tableSuffix) {
 		return "INSERT INTO DomAllGames_" + tableSuffix + 
-		" (id,  turns, winningScore, winningPlayer, lowestScore, provinces, duchies, estates, curses, " +
-			"adventurers, bureaucrats, cellars, chapels, chancellors, council_rooms, feasts, festivals, gardens, laboratories, " +
-			"libraries, markets, militia, mines, moats, moneylenders, remodels, " +
-			"smithies, spies, thieves, throne_rooms, villages, witches, woodcutters, workshops, " + 
-			"avgDeckSize, avgTreasure, avgVictory, winningPStrategy, winningAStrategy) VALUES";
+				" (id,  turns, winningScore, winningPlayer, lowestScore, provinces, duchies, estates, curses, " +
+				"adventurers, bureaucrats, cellars, chapels, chancellors, council_rooms, feasts, festivals, gardens, laboratories, " +
+				"libraries, markets, militia, mines, moats, moneylenders, remodels, " +
+				"smithies, spies, thieves, throne_rooms, villages, witches, woodcutters, workshops, " + 
+				"avgDeckSize, avgTreasure, avgVictory, winningPStrategy) VALUES";
 	}
 
 	@Override
@@ -94,7 +93,7 @@ public class GameDAO implements DAO<DominionGame> {
 			// on the basis that we want to pick the winning player with least first player advantage
 		}
 
-		return String.format(" (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %.2f, %.2f, %.2f, '%s', '%s')",
+		return String.format(" (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %.2f, %.2f, %.2f, '%s')",
 				game.getUniqueId(),
 				game.turnNumber(),
 				(int) winningScore,
@@ -132,10 +131,8 @@ public class GameDAO implements DAO<DominionGame> {
 				avgTreasure,
 				avgDeckSize,
 				avgScore,
-				(gameHasWinner)?players[winningPlayerNumber-1].getPurchaseDecider().toString():"NONE",
-				(gameHasWinner)?players[winningPlayerNumber-1].getActionDecider().toString():"NONE"
-		);
-
+				(gameHasWinner)?players[winningPlayerNumber-1].getDecider().toString():"NONE"
+				);
 	}
 
 }

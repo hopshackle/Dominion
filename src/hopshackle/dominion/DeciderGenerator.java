@@ -12,7 +12,7 @@ public class DeciderGenerator {
 	protected BigMoneyDecider bigMoney;
 	protected ChrisPethersDecider chrisPethers;
 	private GameSetup gamesetup;
-	private List<Integer> purchaseVictories, actionVictories, lastPVictories;
+	private List<Integer> purchaseVictories, lastPVictories;
 	private Map<String, Double> purchaseScores;
 	private int currentLoop;
 	private int removalThreshold;
@@ -44,7 +44,6 @@ public class DeciderGenerator {
 		actionDeciders = new ArrayList<Decider<Player>>();
 		purchaseVictories = new ArrayList<Integer>();
 		purchaseScores = new HashMap<String, Double>();
-		actionVictories = new ArrayList<Integer>();
 
 		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
 		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
@@ -124,7 +123,6 @@ public class DeciderGenerator {
 
 			decideNameCount++;
 			purchaseVictories.add(0);
-			actionVictories.add(0);
 		}
 		unusedPurchaseDeciders = HopshackleUtilities.cloneList(purchaseDeciders);
 		unusedActionDeciders = HopshackleUtilities.cloneList(actionDeciders);
@@ -183,15 +181,10 @@ public class DeciderGenerator {
 	public void reportVictory(Player winner) {
 		totalWinners++;
 		if (winner != null) {
-			Decider<Player> purchaseWinner = winner.getPurchaseDecider();
+			Decider<Player> purchaseWinner = winner.getDecider();
 			for (int loop = 0; loop < purchaseDeciders.size(); loop++) {
 				if (purchaseWinner.equals(purchaseDeciders.get(loop))) 
 					purchaseVictories.set(loop, purchaseVictories.get(loop) + 1);
-			}
-			Decider<Player> actionWinner = winner.getActionDecider();
-			for (int loop = 0; loop < actionDeciders.size(); loop++) {
-				if (actionWinner.equals(actionDeciders.get(loop))) 
-					actionVictories.set(loop, actionVictories.get(loop) + 1);
 			}
 		}
 		currentLoop++;
@@ -239,11 +232,8 @@ public class DeciderGenerator {
 	public void resetVariables() {
 		lastPVictories = purchaseVictories;
 		purchaseVictories = new ArrayList<Integer>();
-		actionVictories = new ArrayList<Integer>();
 		for (int n = 0; n < purchaseDeciders.size(); n++) 
 			purchaseVictories.add(0);
-		for (int n = 0; n < actionDeciders.size(); n++) 
-			actionVictories.add(0);
 
 		currentLoop = 0;
 		totalWinners = 0;

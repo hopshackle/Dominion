@@ -2,8 +2,11 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.AttackCard;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.DominionStateFactory;
+import hopshackle.dominion.HardCodedDiscardDecider;
 import hopshackle.dominion.Player;
 import hopshackle.dominion.PositionSummary;
+import hopshackle.simulation.HopshackleUtilities;
 import hopshackle.simulation.LookaheadDecider;
 
 import java.util.*;
@@ -25,7 +28,9 @@ public class Militia extends AttackCard {
 		victim.log("Victim of MILITIA:");
 		CardType[] possibleCombination = new CardType[3];
 		CardType[] bestCombination = new CardType[3];
-		LookaheadDecider<Player> victimDecider = victim.getHandDecider();
+		LookaheadDecider<Player> victimDecider = new HardCodedDiscardDecider(
+				new DominionStateFactory(HopshackleUtilities.convertList(victim.getDecider().getVariables())), 
+				HopshackleUtilities.convertList(victim.getDecider().getActions()));
 		double bestValue = -1.0;
 		for (int loop=0; loop<cardsInHand.length; loop++) {
 			possibleCombination[0] = cardsInHand[loop];

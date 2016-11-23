@@ -33,7 +33,6 @@ public class CompetitionRound {
 		dg.resetVariables();
 		SimProperties.setProperty("StartTemperature", "0.00");	// set exploration to zero during the comparison phase
 		do {
-			setOfGames.worldDeath();
 			// Now we work out the best brains
 			SimProperties.getProperty("DominionLearningOn", "false"); // switch learning off
 			int deciders = dg.getAllPurchaseDeciders().size();
@@ -65,7 +64,6 @@ public class CompetitionRound {
 
 	public void recordResults() {
 		outputNeuronUsage();
-		setOfGames.worldDeath();
 		dg.initiateTurnOver();
 	}
 	
@@ -102,7 +100,9 @@ public class CompetitionRound {
 						bestPercentage = 100.0 * (double)bestGvUsage.get(gv)/(double)bestBrains.size();
 					String output = String.format("%25s : Total %.0f%%  /  Best Half %.0f%% ", gv.toString(), totalPercentage, bestPercentage);
 					System.out.println(output);
-					VariableRoundResults vrr = new VariableRoundResults(setOfGames, metaCycle, gv.toString(), totalPercentage, bestPercentage);
+					World tempWorld = new World(null, setOfGames.toString(), 0l);
+					tempWorld.setDatabaseAccessUtility(setOfGames.getDatabaseUtility());
+					VariableRoundResults vrr = new VariableRoundResults(tempWorld, metaCycle, gv.toString(), totalPercentage, bestPercentage);
 					agentWriter.write(vrr, descriptor);
 				}
 			}

@@ -19,12 +19,11 @@ public class Player extends Agent {
 	private PositionSummary summary;
 	private int playerNumber;
 	private int actionsLeft;
-	private Decider<Player> actionDecider;
-	HardCodedDiscardDecider discardDecider;
+	private DominionDeciderContainer deciders = new DominionDeciderContainer();
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
 	
 	public Player(DominionGame game, int number) {
-		super(game.getTurnClock());
+		super(game.getWorld());
 		playerState = State.WAITING;
 		playerNumber = number;
 		this.game = game;
@@ -39,7 +38,7 @@ public class Player extends Agent {
 	}
 
 	public Player(Player player, DominionGame newGame) {
-		super(newGame.getTurnClock());
+		super(newGame.getWorld());
 		playerState = player.playerState;
 		playerNumber = player.playerNumber;
 		actionsLeft = player.actionsLeft;
@@ -49,9 +48,7 @@ public class Player extends Agent {
 		discard = player.discard.copy();
 		hand = player.hand.copy();
 		revealedCards = player.revealedCards.copy();
-		decider = player.decider;
-		actionDecider = player.actionDecider;
-		discardDecider = player.discardDecider;
+		deciders = player.deciders;
 	}
 
 	private void dealFreshHand() {
@@ -119,7 +116,7 @@ public class Player extends Agent {
 				setState(State.PLAYING);
 				return true;
 			case PLAYING:
-				Action<Player> action = actionDecider.decide(this);
+				Action<Player> action = getDecider().decide(this);
 				if (!(action instanceof DominionPlayAction)) {
 					throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
 				}
@@ -145,9 +142,8 @@ public class Player extends Agent {
 	public void takeActions() {
 		if (playerState != State.PLAYING) 
 			throw new AssertionError("Incorrect state for Purchasing " + playerState);
-		if (actionDecider == null) return;
 		while (actionsLeft > 0) {
-			Action<Player> action = actionDecider.decide(this);
+			Action<Player> action = getDecider().decide(this);
 			if (!(action instanceof DominionPlayAction)) {
 				throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
 			}
@@ -278,42 +274,33 @@ public class Player extends Agent {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Decider<Player> getDecider() {
-		if (getPlayerState() == State.PLAYING) {
-			return getActionDecider();
-		}
-		return getPurchaseDecider();
+		return deciders.getDecider(this);
 	}
-	public Decider<Player> getActionDecider() {
-		return actionDecider;
-	}
-	public Decider<Player> getPurchaseDecider() {
-		return super.getDecider();
-	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	/* horribly messy kludge. This is purely temporary while I test MCTS framework
 	 * for  Card Buying. This will then be removed once a generalised decision stream is implemented.
 	 */
 	public LookaheadDecider<Player> getLookaheadDecider() {
-		if (decider instanceof LookaheadDecider) {
-			return (LookaheadDecider) super.getDecider();
-		} else if (decider instanceof MCTSMasterDecider) {
-			return (LookaheadDecider<Player>)  ((MCTSMasterDecider) decider).getRolloutDecider();
-		} else if (decider instanceof MCTSChildDecider) {
-			return (LookaheadDecider<Player>)  ((MCTSChildDecider) decider).getRolloutDecider();
+		Decider<Player> d = deciders.purchase;
+		if (d instanceof LookaheadDecider) {
+			return (LookaheadDecider) d;
+		} else if (d instanceof MCTSMasterDecider) {
+			return (LookaheadDecider<Player>)  ((MCTSMasterDecider) d).getRolloutDecider();
+		} else if (d instanceof MCTSChildDecider) {
+			return (LookaheadDecider<Player>)  ((MCTSChildDecider) d).getRolloutDecider();
 		}
 		throw new AssertionError("No LookaheadDecider available");
 	}
+	@SuppressWarnings("unchecked")
 	@Override
 	public void setDecider(Decider<?> newDecider) {
-		discardDecider = new HardCodedDiscardDecider(
-				new DominionStateFactory(HopshackleUtilities.convertList(newDecider.getVariables())), 
-				HopshackleUtilities.convertList(newDecider.getActions()));
 		log("Using purchase strategy " + newDecider.toString());
-		super.setDecider(newDecider);
+		deciders.setPurchaseDecider((Decider<Player>) newDecider);
 	}
 	public void setActionDecider(Decider<Player> newDecider) {
-		actionDecider = newDecider;
-		log("Using action strategy " + actionDecider.toString());
+		deciders.setActionDecider(newDecider);
+		log("Using action strategy " + newDecider.toString());
 	}
 	public PositionSummary getPositionSummaryCopy() {
 		return summary.clone();
@@ -426,10 +413,6 @@ public class Player extends Agent {
 	}
 	public int getAdditionalPurchasePower() {
 		return revealedCards.getAdditionalPurchasePower();
-	}
-
-	public HardCodedDiscardDecider getHandDecider() {
-		return discardDecider;
 	}
 
 	public void takeTurn() {

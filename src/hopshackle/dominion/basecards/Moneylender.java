@@ -34,7 +34,7 @@ public class Moneylender extends Card {
 			return;
 		
 		player.setState(Player.State.PURCHASING);
-		stateFactory = new DominionStateFactory(player.getPurchaseDecider().getVariables());
+		stateFactory = new DominionStateFactory(player.getDecider().getVariables());
 		
 		double valueOfNotTrashing = value(player, treasure, null);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(player);

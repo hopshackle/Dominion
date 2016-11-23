@@ -146,11 +146,10 @@ public class BasicGameMechanics {
 	@Test
 	public void correctDeciderIsReturnedBasedOnPhase() {
 		Player firstPlayer = game.getCurrentPlayer();
-		assertTrue(firstPlayer.getPurchaseDecider() != firstPlayer.getActionDecider());
 		firstPlayer.setState(Player.State.PURCHASING);
-		assertTrue(firstPlayer.getDecider() == firstPlayer.getPurchaseDecider());
+		assertFalse(firstPlayer.getDecider() instanceof HardCodedActionDecider);
 		firstPlayer.setState(Player.State.PLAYING);
-		assertTrue(firstPlayer.getDecider() == firstPlayer.getActionDecider());
+		assertTrue(firstPlayer.getDecider() instanceof HardCodedActionDecider);
 	}
 	
 	@Test
