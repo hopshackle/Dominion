@@ -1,6 +1,8 @@
 package hopshackle.dominion;
 
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.*;
+
 import java.util.*;
 
 public class PositionSummary implements State<Player> {
@@ -59,13 +61,6 @@ public class PositionSummary implements State<Player> {
 		updateDerivedVariables();
 	}
 
-	public void drawCard(CardType drawnCard) {
-		if (drawnCard != null && drawnCard != CardType.NONE) {
-			changeNumberOnTable(drawnCard, -1);
-			addCard(drawnCard);
-		}
-	}
-
 	@Override
 	public PositionSummary apply(ActionEnum<Player> ae) {
 		PositionSummary retValue = this.clone();
@@ -79,8 +74,16 @@ public class PositionSummary implements State<Player> {
 				retValue.drawCard((CardType) ae);
 			} else if (ae instanceof CardTypeList) {
 				CardTypeList ctl = (CardTypeList) ae;
-				for (CardType c : ctl.cards) 
-					retValue.drawCard(c);
+				for (CardTypeAugment cta : ctl.cards) {
+					switch (cta.type) {
+					case GAIN:
+						retValue.drawCard(cta.card, cta.dest);
+						break;
+					case LOSS:
+						retValue.trashCard(cta.card, cta.dest);
+						break;
+					}
+				}
 			}
 			break;
 		default:
@@ -89,35 +92,34 @@ public class PositionSummary implements State<Player> {
 
 		return retValue;
 	}
+	
+	public void drawCard(CardType drawnCard) {
+		drawCard(drawnCard, CardSink.DISCARD);
+	}
 
-	public void undrawCard(CardType drawnCard) {
+	public void drawCard(CardType drawnCard, CardSink to) {
 		if (drawnCard != null && drawnCard != CardType.NONE) {
-			changeNumberOnTable(drawnCard, 1);
-			removeCard(drawnCard);
+			changeNumberOnTable(drawnCard, -1);
+			addCard(drawnCard, to);
 		}
 	}
-
-	public void undrawCard(ActionEnum<Player> ae) {
-		if (ae == null) return;
-		if (ae instanceof CardType){
-			undrawCard((CardType) ae);
-			return;
-		}
-		if (ae instanceof CardTypeList) {
-			CardTypeList ctl = (CardTypeList) ae;
-			for (CardType c : ctl.cards) 
-				undrawCard(c);
-			return;
-		}
-		return;
-	}
-
-	public void addCard(CardType newCard) {
+	
+	public void addCard(CardType newCard, CardSink to) {
 		if (newCard != CardType.NONE) {
 			totalCards++;
 			if (newCard.isVictory()) victoryCards++;
 			if (newCard.isAction()) {
 				actionCards++;
+			}
+			switch (to) {
+			case DISCARD:
+				cardsInDiscard++;
+				break;
+			case HAND:
+				hand.add(newCard);
+				break;
+			case DECK:
+			case REVEALED:
 			}
 			Integer currentAmount = cardsInDeck.get(newCard);
 			if (currentAmount == null)
@@ -130,7 +132,7 @@ public class PositionSummary implements State<Player> {
 		}
 	}
 
-	public void removeCard(CardType oldCard) {
+	public void trashCard(CardType oldCard, CardSink from) {
 		if (oldCard != CardType.NONE && oldCard != null) {
 			totalCards--;
 			if (oldCard.isVictory()) victoryCards--;
@@ -143,6 +145,17 @@ public class PositionSummary implements State<Player> {
 			currentAmount--;
 			cardsInDeck.put(oldCard, currentAmount);
 			treasureValue -= oldCard.getTreasure();
+			switch(from) {
+			case DISCARD:
+				cardsInDiscard--;
+				break;
+			case HAND:
+				hand.remove(oldCard);
+				break;
+			case DECK:
+			case REVEALED:
+			}
+			
 			recalculateVictoryPoints();
 			updateDerivedVariables();
 		}
@@ -184,7 +197,7 @@ public class PositionSummary implements State<Player> {
 		money = player.getAdditionalPurchasePower();
 		cardsInDeck = new HashMap<CardType, Integer>();
 		for (CardType card : player.getAllCards()) {
-			addCard(card);
+			addCard(card, CardSink.DECK);
 		}
 		for (CardType ct : game.startingCardTypes()) {
 			cardsOnTable.put(ct, game.getNumberOfCardsRemaining(ct));

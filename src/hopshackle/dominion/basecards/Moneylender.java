@@ -38,7 +38,7 @@ public class Moneylender extends Card {
 		
 		double valueOfNotTrashing = value(player, treasure, null);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(player);
-		ps.removeCard(CardType.COPPER);
+		ps.trashCard(CardType.COPPER);
 		double valueOfTrashing = value(player, treasure+2, ps);	// only +2 as we have to remove the Copper that was just trashed
 		
 		if (valueOfTrashing > valueOfNotTrashing) {

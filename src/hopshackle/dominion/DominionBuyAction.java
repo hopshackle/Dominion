@@ -18,7 +18,7 @@ public class DominionBuyAction extends Action<Player> {
 
 	public DominionBuyAction(Player player, CardTypeList purc) {
 		super(purc, player, false);
-		this.cardType = purc.cards;
+		this.cardType = purc.getCards();
 		this.player = player;
 	}
 

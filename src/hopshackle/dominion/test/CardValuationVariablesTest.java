@@ -2,6 +2,7 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.assertEquals;
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
@@ -30,7 +31,7 @@ public class CardValuationVariablesTest {
 	@Test
 	public void deckSize() {
 		assertEquals(CardValuationVariables.DECK_SIZE.getValue(p1), 0.00, 0.0001);
-		p1.addCard(CardType.COPPER);
+		p1.addCard(CardType.COPPER, CardSink.DECK);
 		assertEquals(CardValuationVariables.DECK_SIZE.getValue(p1), 0.05, 0.0001);
 	}
 	
@@ -62,7 +63,7 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.00, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.00, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), 0.00, 0.0001);
-		p1.addCard(CardType.ESTATE);
+		p1.addCard(CardType.ESTATE, CardSink.DECK);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.0, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.0, 0.0001);
@@ -95,48 +96,48 @@ public class CardValuationVariablesTest {
 		assertEquals(p1.getVictoryDensity(), 0.30, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 7);
 		assertEquals(p1.getPercent(CardType.COPPER), 0.70, 0.001);
-		p1.addCard(CardType.COPPER);
+		p1.addCard(CardType.COPPER, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 0.727, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.273, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 8);
 		assertEquals(p1.getPercent(CardType.COPPER), 0.727, 0.001);
-		p1.addCard(CardType.SILVER);
+		p1.addCard(CardType.SILVER, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 0.833, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.25, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 8);
 		assertEquals(p1.getPercent(CardType.COPPER), 0.667, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.SILVER), 1);
 		assertEquals(p1.getPercent(CardType.SILVER), 0.083, 0.001);
-		p1.addCard(CardType.GOLD);
+		p1.addCard(CardType.GOLD, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 1.00, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.231, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.GOLD), 1);
 		assertEquals(p1.getPercent(CardType.GOLD), 0.077, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.SILVER), 1);
 		assertEquals(p1.getPercent(CardType.SILVER), 0.077, 0.001);
-		p1.addCard(CardType.ESTATE);
+		p1.addCard(CardType.ESTATE, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 0.929, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.286, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 8);
 		assertEquals(p1.getPercent(CardType.COPPER), 0.571, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.SILVER), 1);
 		assertEquals(p1.getPercent(CardType.SILVER), 0.0714, 0.001);
-		p1.addCard(CardType.DUCHY);
+		p1.addCard(CardType.DUCHY, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 0.867, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.467, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.PROVINCE), 0);
-		p1.addCard(CardType.PROVINCE);
+		p1.addCard(CardType.PROVINCE, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 0.813, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.813, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.PROVINCE), 1);
-		p1.addCard(CardType.CURSE);
+		p1.addCard(CardType.CURSE, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 0.765, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.706, 0.001);
 		game.addCardType(CardType.VILLAGE, 10);
-		p1.addCard(CardType.VILLAGE);
+		p1.addCard(CardType.VILLAGE, CardSink.DECK);
 		assertEquals(p1.getWealthDensity(), 0.722, 0.001);
 		assertEquals(p1.getVictoryDensity(), 0.667, 0.001);
-		p1.removeCard(CardType.SILVER);
+		p1.trashCard(CardType.SILVER, CardSink.DECK);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.SILVER), 0);
 		assertEquals(p1.getPercent(CardType.SILVER), 0.0, 0.001);
 		assertEquals(p1.getWealthDensity(), 0.647, 0.001);
@@ -148,19 +149,19 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.60, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.40, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
-		p1.addCard(CardType.CURSE);
+		p1.addCard(CardType.CURSE, CardSink.DECK);
 		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.728, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.272, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
-		p1.addCard(CardType.ESTATE);
+		p1.addCard(CardType.ESTATE, CardSink.DECK);
 		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.834, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.166, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
-		p1.addCard(CardType.GOLD);
+		p1.addCard(CardType.GOLD, CardSink.DECK);
 		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.77, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.230, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), 0.00, 0.001);
-		p1.addCard(CardType.CELLAR);
+		p1.addCard(CardType.CELLAR, CardSink.DECK);
 		assertEquals(CardValuationVariables.PERCENT_VICTORY.getValue(p1), 0.714, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_TREASURE.getValue(p1), 1.143, 0.001);
 		assertEquals(CardValuationVariables.PERCENT_ACTION.getValue(p1), (1.0/14.0 *2.0), 0.001);
@@ -168,12 +169,12 @@ public class CardValuationVariablesTest {
 	
 	@Test
 	public void cardsInHand() {
-		p1.addCard(CardType.SILVER);
+		p1.addCard(CardType.SILVER, CardSink.DECK);
 		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1), 0.0, 0.001);
 		game.getPlayer(1).insertCardDirectlyIntoHand(new Card(CardType.SILVER));
 		p1 = game.getPlayer(1).getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.SILVER_IN_HAND.getValue(p1), 0.20, 0.001);
-		p1.addCard(CardType.VILLAGE);
+		p1.addCard(CardType.VILLAGE, CardSink.DECK);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.0, 0.001);
 		game.getPlayer(1).insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
 		p1 = game.getPlayer(1).getPositionSummaryCopy();
@@ -277,18 +278,12 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.1, 0.001);
-		p1.undrawCard(CardType.MARKET);
-		assertEquals(CardValuationVariables.THIRD_DEPLETED_PILE.getValue(p1), 0.5, 0.001);
-		assertEquals(CardValuationVariables.SECOND_DEPLETED_PILE.getValue(p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.MOST_DEPLETED_PILE.getValue(p1), 0.1, 0.001);
 	}
 	
 	@Test
 	public void gameVariablesInPositionSummaryCorrectlyUpdatedForHypotheticallyDrawnCard() {
 		p1.drawCard(CardType.DUCHY);
 		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), (1.0/12.0), 0.001);
-		p1.undrawCard(CardType.DUCHY);
-		assertEquals(CardValuationVariables.DUCHIES_BOUGHT.getValue(p1), 0.00, 0.001);
 	}
 	
 	@Test
@@ -298,7 +293,7 @@ public class CardValuationVariablesTest {
 		p1.drawCard(CardType.PROVINCE);
 		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), (1.0/12.0), 0.001);
 		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1), (3.0 + 6.0) / 11.0 / 2.0, 0.001);
-		p1.removeCard(CardType.PROVINCE);
+		p1.trashCard(CardType.PROVINCE, CardSink.DECK);
 		assertEquals(CardValuationVariables.PROVINCES_BOUGHT.getValue(p1), (1.0/12.0), 0.001);
 		assertEquals(CardValuationVariables.VICTORY_DENSITY.getValue(p1), 3.0 / 10.0 / 2.0, 0.001);
 	}
@@ -306,7 +301,7 @@ public class CardValuationVariablesTest {
 	@Test
 	public void percentageInDiscardBasic() {
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1), 0.50, 0.0001);
-		p1.addCard(CardType.CELLAR);
+		p1.addCard(CardType.CELLAR, CardSink.DECK);
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1), (5.0/11.0), 0.0001);
 	}
 	
@@ -407,7 +402,7 @@ public class CardValuationVariablesTest {
 		DominionGame clonedGame = game.clone(game.getCurrentPlayer());
 		PositionSummary clonedP1 = clonedGame.getCurrentPlayer().getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(clonedP1), 0.0, 0.001);
-		clonedP1.addCard(CardType.COPPER);
+		clonedP1.addCard(CardType.COPPER, CardSink.DECK);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(clonedP1), 0.0, 0.001);
 
 	}

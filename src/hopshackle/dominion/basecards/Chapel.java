@@ -28,7 +28,7 @@ public class Chapel extends Card {
 		double bestGain = 0.0;
 		CardType cardToTrash = CardType.NONE;
 		for (CardType ct : hand) {
-			ps.removeCard(ct);
+			ps.trashCard(ct);
 			double newValue = dpd.value(ps);
 			ps.addCard(ct);
 

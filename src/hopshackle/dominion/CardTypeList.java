@@ -1,16 +1,32 @@
 package hopshackle.dominion;
 
-import java.util.List;
+import java.util.*;
 
+import hopshackle.dominion.CardTypeAugment.*;
 import hopshackle.simulation.*;
 
 public class CardTypeList implements ActionEnum<Player> {
 
 	private static final long serialVersionUID = 1L;
-	public List<CardType> cards;
+	public List<CardTypeAugment> cards;
 
 	public CardTypeList(List<CardType> purc) {
-		cards = purc;
+		cards = new ArrayList<CardTypeAugment>(purc.size());
+		for (CardType p : purc) {
+			cards.add(new CardTypeAugment(p, CardSink.DISCARD, ChangeType.GAIN));
+		}
+	}
+	
+	public CardTypeList(List<CardTypeAugment> augments, boolean flag) {
+		cards = augments;
+	}
+	
+	public List<CardType> getCards() {
+		List<CardType> retValue = new ArrayList<CardType>(cards.size());
+		for (CardTypeAugment cta : cards) {
+			retValue.add(cta.card);
+		}
+		return retValue;
 	}
 
 	@Override
@@ -26,8 +42,8 @@ public class CardTypeList implements ActionEnum<Player> {
 	public boolean equals(Object other) {
 		if (other instanceof CardTypeList) {
 			CardTypeList otherCTL = (CardTypeList) other;
-			List<CardType> inBoth = HopshackleUtilities.cloneList(otherCTL.cards);
-			for (CardType ct : cards) {
+			List<CardTypeAugment> inBoth = HopshackleUtilities.cloneList(otherCTL.cards);
+			for (CardTypeAugment ct : cards) {
 				if (inBoth.contains(ct)) {
 					inBoth.remove(ct);
 				} else {
@@ -45,7 +61,7 @@ public class CardTypeList implements ActionEnum<Player> {
 	@Override
 	public String toString() {
 		StringBuffer retValue = new StringBuffer();
-		for (CardType c : cards) {
+		for (CardTypeAugment c : cards) {
 			retValue.append(c.toString() + " ");
 		}
 		return retValue.toString();

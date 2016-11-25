@@ -1,5 +1,6 @@
 package hopshackle.dominion;
 
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -210,8 +211,7 @@ public class Player extends Agent {
 		if (type.equals(CardType.NONE)) return;
 		if (game.drawCard(type)) {
 			discard.addCard(CardFactory.instantiateCard(type));
-			summary.addCard(type);
-			summary.discardCard(1);
+			summary.drawCard(type);
 		} else {
 			throw new AssertionError("Card Type " + type + " not available." );
 		}
@@ -306,17 +306,15 @@ public class Player extends Agent {
 
 	public void trashCardFromHand(CardType cardTypeToTrash) {
 		hand.removeSpecificCard(cardTypeToTrash);
-		summary.removeCard(cardTypeToTrash);
-		summary.updateHandFromPlayer();
+		summary.trashCard(cardTypeToTrash, CardSink.HAND);
 	}
 	public void trashCardFromRevealed(CardType cardTypeToTrash) {
 		revealedCards.removeSpecificCard(cardTypeToTrash);
-		summary.removeCard(cardTypeToTrash);
+		summary.trashCard(cardTypeToTrash, CardSink.REVEALED);
 	}
 	public void trashCardFromDiscard(CardType cardTypeToTrash) {
 		discard.removeSpecificCard(cardTypeToTrash);
-		summary.removeCard(cardTypeToTrash);
-		summary.discardCard(-1);
+		summary.trashCard(cardTypeToTrash, CardSink.DISCARD);
 	}
 
 	/**

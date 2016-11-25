@@ -17,6 +17,20 @@ public class Remodel extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
+		
+		/*
+		 * Now I want to:
+		 * 	- Compile a list of all possible actions, which is simply every distinct card in hand, and every
+		 *  card it could be remodelled to. 
+		 *  - This does not currently specify an ActionEnum. I can have an ActionEnum that is a set of acquired cards,
+		 *  but not one that is a combination of acquiring and losing. This is therefore what I need first.
+		 *  - That would give the ActionEnum list that I simply feed to the Decider. 
+		 *  - OK, it' slightly more complicated in that the Trashed card comes out of hand! This needs to be factored in.
+		 *  - So in the ActionEnum that defines a change to the cards possessed, each element also needs to specify whether the
+		 *  loss/gain occurs from/to Hand/Discard/Deck. I think I can skip Revealed cards as an option, as that occurs when
+		 *  a card is played rather then acquired. (Although there is bound to be a card out there that affects this...)
+		 */
+		
 		LookaheadDecider<Player> purchaseDecider = player.getLookaheadDecider();
 		List<CardType> hand = player.getCopyOfHand();
 		CardType[] cardsInHand = hand.toArray(new CardType[1]);
@@ -41,7 +55,7 @@ public class Remodel extends Card {
 			if (optionsAlreadyExamined.contains(possibleCardToRemodel)) continue;
 			optionsAlreadyExamined.add(possibleCardToRemodel);
 			PositionSummary withoutCard = (PositionSummary) purchaseDecider.getCurrentState(player);
-			withoutCard.removeCard(possibleCardToRemodel);
+			withoutCard.trashCard(possibleCardToRemodel);
 			int budget = possibleCardToRemodel.getCost() + 2;
 			DominionBuyingDecision dpd = new DominionBuyingDecision(player, budget, 1);
 			dpd.setPositionSummaryOverride(withoutCard);

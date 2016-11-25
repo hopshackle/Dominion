@@ -51,13 +51,14 @@ public class DominionBuyingDecision {
 	private List<CardType> chooseBestOption(List<List<CardType>> allOptions) {
 		double bestValue = Double.NEGATIVE_INFINITY;
 		List<CardType> bestPurchase = null;
-		PositionSummary ps = null;
+		PositionSummary ps, startingPS = null;
 		if (overridePS == null) 
-			ps = (PositionSummary) stateFactory.getCurrentState(player);
+			startingPS = (PositionSummary) stateFactory.getCurrentState(player);
 		else
-			ps = overridePS.clone();
+			startingPS = overridePS.clone();
 
 		for (List<CardType> purchase : allOptions) {
+			ps = startingPS.clone();
 			for (CardType card : purchase) 
 				ps.drawCard(card);
 			LookaheadDecider<Player> decider = player.getLookaheadDecider();
@@ -66,8 +67,6 @@ public class DominionBuyingDecision {
 				bestValue = value;
 				bestPurchase = purchase;
 			}
-			for (CardType card : purchase) 
-				ps.undrawCard(card);
 		}
 		return bestPurchase;
 	}
