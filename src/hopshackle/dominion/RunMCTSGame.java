@@ -17,7 +17,7 @@ public class RunMCTSGame {
 		Player firstPlayer = game.getPlayer(1);
 		List<CardValuationVariables> varList = gamesetup.getDeckVariables();
 		List<CardType> actionsToUse = gamesetup.getCardTypes();
-		MCTSMasterDecider<Player> mctsDecider = new MCTSMasterDominion(actionsToUse, varList, dg.bigMoney, dg.bigMoney);
+		MCTSMasterDecider<Player> mctsDecider = new MCTSMasterDominion(actionsToUse, varList, dg.completeHeuristic, dg.completeHeuristic);
 		firstPlayer.setDecider(mctsDecider);
 //		do {
 //			game.nextPlayersTurn();

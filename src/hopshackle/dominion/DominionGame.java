@@ -45,8 +45,10 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 			players[n] = new Player(this, n+1);
 			players[n].setDebugLocal(debugGame);
 			if (deciderGenerator != null) {
-				players[n].setDecider(deciderGenerator.getPurchaseDecider(paceSetters));
-				players[n].setActionDecider(deciderGenerator.getActionDecider());
+				DominionDeciderContainer ddc = new DominionDeciderContainer(
+						deciderGenerator.getPurchaseDecider(paceSetters), 
+						deciderGenerator.getActionDecider());
+				players[n].setDecider(ddc);
 			}
 			players[n].setGame(this);
 		}

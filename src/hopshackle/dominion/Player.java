@@ -9,7 +9,7 @@ public class Player extends Agent {
 	public enum State {
 		PLAYING, PURCHASING, WAITING;
 	}
-	
+
 	private State playerState;
 	private Deck hand;
 	private Deck deck;
@@ -19,9 +19,8 @@ public class Player extends Agent {
 	private PositionSummary summary;
 	private int playerNumber;
 	private int actionsLeft;
-	private DominionDeciderContainer deciders = new DominionDeciderContainer();
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
-	
+
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
 		playerState = State.WAITING;
@@ -48,8 +47,7 @@ public class Player extends Agent {
 		discard = player.discard.copy();
 		hand = player.hand.copy();
 		revealedCards = player.revealedCards.copy();
-		deciders.purchase = player.deciders.purchase;
-		deciders.action = player.deciders.action;
+		decider = player.decider;
 	}
 
 	private void dealFreshHand() {
@@ -75,7 +73,7 @@ public class Player extends Agent {
 	public int getNumberOfTypeInHand(CardType type) {
 		return hand.getNumberOfType(type);
 	}
-	
+
 	public int getNumberOfTypePlayedSoFar(CardType type) {
 		return revealedCards.getNumberOfType(type);
 	}
@@ -110,15 +108,18 @@ public class Player extends Agent {
 	public void buyCards() {
 		if (playerState != State.PURCHASING) 
 			throw new AssertionError("Incorrect state for Purchasing " + playerState);
+		refreshPositionSummary();
 		DominionBuyAction decision = (DominionBuyAction) getDecider().decide(this);
 		decision.start();
 		decision.run();
 		setState(State.PLAYING);
 	}
+
 	public void takeActions() {
 		if (playerState != State.PLAYING) 
 			throw new AssertionError("Incorrect state for Purchasing " + playerState);
 		while (actionsLeft > 0) {
+			refreshPositionSummary();
 			Action<Player> action = getDecider().decide(this);
 			if (!(action instanceof DominionPlayAction)) {
 				throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
@@ -126,7 +127,6 @@ public class Player extends Agent {
 			action.start();
 			action.run();
 			decrementActionsLeft();
-			refreshPositionSummary();
 		}
 		setState(State.PURCHASING);
 	}
@@ -164,7 +164,7 @@ public class Player extends Agent {
 			hand.addCard(deck.drawTopCard());
 		refreshPositionSummary();
 	}
-	
+
 	public void shuffleDeck() {
 		deck.shuffle();
 	}
@@ -185,7 +185,7 @@ public class Player extends Agent {
 	public DominionGame getGame() {
 		return game;
 	}
-	
+
 	public Card drawTopCardFromDeckIntoHand() {
 		Card cardDrawn = drawTopCardFromDeckButNotIntoHand();
 		if (cardDrawn.getType() != CardType.NONE) {
@@ -247,37 +247,37 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public Decider<Player> getDecider() {
-		return deciders.getDecider(this);
-	}
-
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	/* horribly messy kludge. This is purely temporary while I test MCTS framework
-	 * for  Card Buying. This will then be removed once a generalised decision stream is implemented.
+	 * for Card Buying. This will then be removed once a generalised decision stream is implemented.
 	 */
 	public LookaheadDecider<Player> getLookaheadDecider() {
-		Decider<Player> d = deciders.purchase;
+		Decider<Player> d = decider;
+		if (decider instanceof DominionDeciderContainer) {
+			d = ((DominionDeciderContainer)decider).purchase;
+		}
 		if (d instanceof LookaheadDecider) {
 			return (LookaheadDecider) d;
 		} else if (d instanceof MCTSMasterDecider) {
-			return (LookaheadDecider<Player>)  ((MCTSMasterDecider) d).getRolloutDecider();
+			d =  ((MCTSMasterDecider) d).getRolloutDecider();
+			if (d instanceof DominionDeciderContainer)
+				d = ((DominionDeciderContainer)d).purchase;
+			return (LookaheadDecider<Player>) d;
 		} else if (d instanceof MCTSChildDecider) {
-			return (LookaheadDecider<Player>)  ((MCTSChildDecider) d).getRolloutDecider();
+			d =  ((MCTSChildDecider) d).getRolloutDecider();
+			if (d instanceof DominionDeciderContainer)
+				d = ((DominionDeciderContainer)d).purchase;
+			return (LookaheadDecider<Player>) d;
 		}
 		throw new AssertionError("No LookaheadDecider available");
 	}
+
 	@SuppressWarnings("unchecked")
 	@Override
-	public void setDecider(Decider<?> newDecider) {
-		log("Using purchase strategy " + newDecider.toString());
-		deciders.setPurchaseDecider((Decider<Player>) newDecider);
+	public Decider<Player> getDecider() {
+		return decider;
 	}
-	public void setActionDecider(Decider<Player> newDecider) {
-		deciders.setActionDecider(newDecider);
-		log("Using action strategy " + newDecider.toString());
-	}
+
 	public PositionSummary getPositionSummaryCopy() {
 		return summary.clone();
 	}
@@ -409,7 +409,7 @@ public class Player extends Agent {
 		}
 		return retValue;
 	}
-	
+
 	public Player clone(DominionGame newGame) {
 		return new Player(this, newGame);
 	}
@@ -417,7 +417,4 @@ public class Player extends Agent {
 		summary = new PositionSummary(this, null);
 	}
 
-	public DominionDeciderContainer getDeciderContainer() {
-		return deciders;
-	}
 }

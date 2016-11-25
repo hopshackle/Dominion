@@ -139,19 +139,14 @@ public class RunGame {
 			DominionGame game = new DominionGame(this.getDeciderDenerator(), this.name, addPaceSetters);
 			game.setDatabaseAccessUtility(databaseUtility);
 			for (Player p : game.getAllPlayers()) {
-				DominionDeciderContainer deciders = p.getDeciderContainer();
-				Decider<Player> pd = deciders.purchase;
-				Decider<Player> ad = deciders.action;
 				switch(teachingStrategy) {
 				case "AllPlayers" :
 					for (Player p2 : game.getAllPlayers())  {
-						ercMap.get(pd.toString()).registerAgent(p2);
-						if (ad != pd) ercMap.get(ad.toString()).registerAgent(p2);
+						ercMap.get(p.getDecider().toString()).registerAgent(p2);
 					}
 					break;
 				case "SelfOnly" :
-					ercMap.get(pd.toString()).registerAgent(p);
-					if (ad != pd) ercMap.get(ad.toString()).registerAgent(p);
+					ercMap.get(p.getDecider().toString()).registerAgent(p);
 					break;
 				default:
 					throw new AssertionError("Unknown teaching strategy: " + teachingStrategy);
@@ -167,7 +162,8 @@ public class RunGame {
 	private void runNextGameWithoutLearning() {
 		DominionGame game = null;
 		if (useBigMoneyInLastK) {
-			game = DominionGame.againstDecider(getDeciderDenerator(), name, dg.bigMoney);
+			game = DominionGame.againstDecider(getDeciderDenerator(), name, 
+					new DominionDeciderContainer(dg.bigMoney, dg.hardCodedActionDecider));
 		} else {
 			game = new DominionGame(getDeciderDenerator(), name, false);
 		}

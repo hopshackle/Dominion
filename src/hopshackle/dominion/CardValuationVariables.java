@@ -106,6 +106,7 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	CURSE_PERCENT,
 	ESTATE_PERCENT,
 	DUCHY_PERCENT,
+	BUY_PHASE,
 	BUYS,
 	ACTIONS,
 	PURCHASE_POWER,
@@ -326,6 +327,10 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getNumberInHand(CardType.UNKNOWN) / 5.0;
 		case ACTIONS:
 			return ps.getActions() / 5.0;
+		case BUY_PHASE:
+			if (ps.getPlayerState() == Player.State.PURCHASING)
+				return 1.0;
+			return 0.0;
 		case BUYS:
 			return ps.getBuys() / 3.0;
 		case PURCHASE_POWER:

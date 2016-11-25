@@ -10,6 +10,8 @@ public class DeciderGenerator {
 
 	private List<Decider<Player>> purchaseDeciders, unusedPurchaseDeciders, actionDeciders, unusedActionDeciders;
 	protected BigMoneyDecider bigMoney;
+	protected DominionDeciderContainer completeHeuristic;
+	protected HardCodedActionDecider hardCodedActionDecider;
 	protected ChrisPethersDecider chrisPethers;
 	private GameSetup gamesetup;
 	private List<Integer> purchaseVictories, lastPVictories;
@@ -49,14 +51,17 @@ public class DeciderGenerator {
 		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
 
 		actionsToUse = gamesetup.getCardTypes();
-
+		hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUseForActions);
+		hardCodedActionDecider.setName("DEFAULT");
 		bigMoney = new BigMoneyDecider(HopshackleUtilities.convertList(actionsToUse), HopshackleUtilities.convertList(variablesToUseForPurchase));
+		completeHeuristic = new DominionDeciderContainer(bigMoney, hardCodedActionDecider);
 		chrisPethers = new ChrisPethersDecider(HopshackleUtilities.convertList(actionsToUse), HopshackleUtilities.convertList(variablesToUseForPurchase));
-		mctsDecider = new MCTSMasterDominion(actionsToUse, variablesToUseForPurchase, bigMoney, bigMoney);
+		mctsDecider = new MCTSMasterDominion(actionsToUse, variablesToUseForPurchase, completeHeuristic, completeHeuristic);
 		mctsDecider.setName("MCTS");
 		int numberMCTS = (int) (numberToMaintain * percentageMCTSToUse);
 		for (int i = 0; i < numberMCTS; i++) {
 			purchaseDeciders.add(mctsDecider);
+			if (!useHardCodedAction) actionDeciders.add(mctsDecider);
 		}
 
 		FilenameFilter nameFilter = new HopshackleFilter("", "brain");
@@ -95,30 +100,30 @@ public class DeciderGenerator {
 			// TODO: We have duplicate code here for variable selection (albeit not a highly used option)
 			// TODO: Some of the Purchase variables will also be useful for action selection (re: End Game changes)
 			if (useHardCodedAction) {
-				HardCodedActionDecider ad = new HardCodedActionDecider(actionsToUse, variablesToUseForActions);
-				ad.setName("DEFAULT");
-				actionDeciders.add(ad);
+				actionDeciders.add(hardCodedActionDecider);
 			} else {
-				LookaheadDecider<Player> ad = null;
-				if (startingInputs < 99) {
-					List<CardValuationVariables> varsToUse = new ArrayList<CardValuationVariables>();
-					for (int i = 0; i < startingInputs; i++) {
-						boolean choiceMade = false;
-						do {
-							int roll = Dice.roll(1, variablesToUseForActions.size()) - 1;
-							CardValuationVariables choice = variablesToUseForActions.get(roll);
-							if (!varsToUse.contains(choice)) {
-								choiceMade = true;
-								varsToUse.add(choice);
-							}
-						} while (!choiceMade);
+				if (actionDeciders.size() <= n){
+					LookaheadDecider<Player> ad = null;
+					if (startingInputs < 99) {
+						List<CardValuationVariables> varsToUse = new ArrayList<CardValuationVariables>();
+						for (int i = 0; i < startingInputs; i++) {
+							boolean choiceMade = false;
+							do {
+								int roll = Dice.roll(1, variablesToUseForActions.size()) - 1;
+								CardValuationVariables choice = variablesToUseForActions.get(roll);
+								if (!varsToUse.contains(choice)) {
+									choiceMade = true;
+									varsToUse.add(choice);
+								}
+							} while (!choiceMade);
+						}
+						ad = new DominionNeuralDecider(actionsToUse, varsToUse);
+					} else {
+						ad = new DominionNeuralDecider(actionsToUse, variablesToUseForActions);
 					}
-					ad = new DominionNeuralDecider(actionsToUse, varsToUse);
-				} else {
-					ad = new DominionNeuralDecider(actionsToUse, variablesToUseForActions);
+					ad.setName("A"+String.format("%03d", decideNameCount));
+					actionDeciders.add(ad);
 				}
-				ad.setName("A"+String.format("%03d", decideNameCount));
-				actionDeciders.add(ad);
 			}
 
 			decideNameCount++;
@@ -296,7 +301,7 @@ public class DeciderGenerator {
 		int index = purchaseVictories.indexOf(bestScore);
 		return purchaseDeciders.get(index);
 	}
-	
+
 	public List<Decider<Player>> getTopPercentageOfPurchaseBrains(double percentile) {
 		int criticalScore = this.getScore(percentile);
 		List<Decider<Player>> retValue = new ArrayList<Decider<Player>>();
@@ -364,7 +369,7 @@ public class DeciderGenerator {
 	public List<Decider<Player>> getAllActionDeciders() {
 		return HopshackleUtilities.cloneList(actionDeciders);
 	}
-	
+
 	public void useDecidersEvenly(boolean var) {
 		evenUseOfDeciders = var;
 	}

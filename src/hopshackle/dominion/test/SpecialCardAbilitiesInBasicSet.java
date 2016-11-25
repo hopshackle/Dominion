@@ -23,9 +23,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	public DominionGame game;
 	public Player p1, p2, p3, p4;
 	private TestDominionDecider remodelDecider, defaultPurchaseDecider, thiefPurchaseDecider;
-	private HardCodedDiscardDecider discardDecider;
 	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
-	private DominionStateFactory stateFactory = new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse));
 	private ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
 	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUse);
 
@@ -41,15 +39,6 @@ public class SpecialCardAbilitiesInBasicSet {
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
-		discardDecider = new HardCodedDiscardDecider(stateFactory, actionsToUse);
-		p1.setDecider(discardDecider);
-		p2.setDecider(discardDecider);
-		p3.setDecider(discardDecider);
-		p4.setDecider(discardDecider);
-		p1.setActionDecider(hardCodedActionDecider);
-		p2.setActionDecider(hardCodedActionDecider);
-		p3.setActionDecider(hardCodedActionDecider);
-		p4.setActionDecider(hardCodedActionDecider);
 
 		HashMap<CardType, Double> purchasePreferences = new HashMap<CardType, Double>();
 		purchasePreferences.put(CardType.COPPER, 0.10);
@@ -61,11 +50,12 @@ public class SpecialCardAbilitiesInBasicSet {
 		purchasePreferences.put(CardType.MOAT, -0.25);
 		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
 		thiefPurchaseDecider = new TestThiefDominionDecider(purchasePreferences);
-		
-		p1.setDecider(defaultPurchaseDecider);
-		p2.setDecider(defaultPurchaseDecider);
-		p3.setDecider(defaultPurchaseDecider);
-		p4.setDecider(defaultPurchaseDecider);
+
+		DominionDeciderContainer ddc = new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider);
+		p1.setDecider(ddc);
+		p2.setDecider(ddc);
+		p3.setDecider(ddc);
+		p4.setDecider(ddc);
 	}
 
 	@Test
@@ -248,7 +238,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.totalVictoryValue(), 3);
 
 		// Following on from above test, we should now Remodel a SMITHY into a GOLD
-		p3.setActionDecider(remodelDecider);
+		p3.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, remodelDecider));
 		p3.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
 		p3.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
 		p3.insertCardDirectlyIntoHand(new Card(CardType.SMITHY));
@@ -508,7 +498,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void thiefTakesHighestValueTreasureCardIfNotCopper() {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.THIEF));
-		p2.setDecider(thiefPurchaseDecider);
+		p2.setDecider(new DominionDeciderContainer(thiefPurchaseDecider, hardCodedActionDecider));
 
 		p1.putCardOnTopOfDeck(CardType.SILVER);
 		p1.putCardOnTopOfDeck(CardType.COPPER);
@@ -621,7 +611,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		purchasePreferences.put(CardType.MOAT, -0.25);
 		purchasePreferences.put(CardType.MINE, 0.40);
 		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
-		p2.setDecider(defaultPurchaseDecider);
+		p2.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));
 		p2.insertCardDirectlyIntoHand(new Feast());
 		assertEquals(p2.getNumberOfTypeTotal(CardType.FEAST), 1);
 		

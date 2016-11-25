@@ -24,14 +24,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 		p1 = game.getCurrentPlayer();
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
-		villageDecider = TestDominionDecider.getExample(CardType.VILLAGE);
-		marketDecider =  TestDominionDecider.getExample(CardType.MARKET);
-		smithyDecider =  TestDominionDecider.getExample(CardType.SMITHY);
-		woodcutterDecider =  TestDominionDecider.getExample(CardType.WOODCUTTER);
-		copperDecider =  TestDominionDecider.getExample(CardType.COPPER);
-		silverDecider =  TestDominionDecider.getExample(CardType.SILVER);
-		provinceDecider =  TestDominionDecider.getExample(CardType.PROVINCE);
-
+		
 		HashMap<CardType, Double> values = new HashMap<CardType, Double>();
 		values.put(CardType.COPPER, 0.5);
 		values.put(CardType.SILVER, 1.5);
@@ -39,12 +32,19 @@ public class BuysActionsAndPurchasePowerFromCards {
 		values.put(CardType.SMITHY, 4.0);
 		values.put(CardType.CURSE, -1.0);
 		generalPurchaseDecider = new TestDominionDecider(values);
+		
+		villageDecider = TestDominionDecider.getExample(CardType.VILLAGE);
+		marketDecider =  TestDominionDecider.getExample(CardType.MARKET);
+		smithyDecider =  TestDominionDecider.getExample(CardType.SMITHY);
+		woodcutterDecider =  TestDominionDecider.getExample(CardType.WOODCUTTER);
+		copperDecider =  TestDominionDecider.getExample(CardType.COPPER);
+		silverDecider =  TestDominionDecider.getExample(CardType.SILVER);
+		provinceDecider =  TestDominionDecider.getExample(CardType.PROVINCE);
 	}
 
 	@Test
 	public void normallyOnlyOneCardIsPurchasable() {
-		p1.setDecider(copperDecider);
-		p1.setActionDecider(villageDecider);
+		p1.setDecider(new DominionDeciderContainer(copperDecider, villageDecider));
 		assertEquals(p1.totalTreasureValue(), 7);
 		p1.insertCardDirectlyIntoHand(new Card(CardType.VILLAGE));
 		p1.takeActions();
@@ -73,8 +73,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void actionWithAdditionalPurchasePowerIsUsedInPurchase() {
-		p1.setDecider(provinceDecider);
-		p1.setActionDecider(woodcutterDecider);
+		p1.setDecider(new DominionDeciderContainer(provinceDecider, woodcutterDecider));
 		assertEquals(p1.totalTreasureValue(), 7);
 		assertEquals(p1.totalVictoryValue(), 3);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
@@ -88,8 +87,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void actionWithAdditionalPurchasePowerThatIsNotPlayedCannotBeUsedInPurchase() {
-		p1.setDecider(provinceDecider);
-		p1.setActionDecider(villageDecider);
+		p1.setDecider(new DominionDeciderContainer(provinceDecider, villageDecider));
 		assertEquals(p1.totalTreasureValue(), 7);
 		assertEquals(p1.totalVictoryValue(), 3);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
@@ -103,8 +101,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void actionWithAdditionalBuyIsUsedInPurchase() {
-		p1.setDecider(silverDecider);
-		p1.setActionDecider(marketDecider);
+		p1.setDecider(new DominionDeciderContainer(silverDecider, marketDecider));
 		assertEquals(p1.totalTreasureValue(), 7);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
 		p1.takeActions();
@@ -117,8 +114,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void actionsWithAdditionalBuyNotUsedIfNothingAvailable() {
-		p1.setDecider(silverDecider);
-		p1.setActionDecider(villageDecider);
+		p1.setDecider(new DominionDeciderContainer(silverDecider, villageDecider));
 		assertEquals(p1.totalTreasureValue(), 7);
 		assertEquals(p1.getBudget(), 7);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
@@ -132,8 +128,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void cardsAreDrawnCorrectlyWhenActionPlayed() {
-		p1.setDecider(silverDecider);
-		p1.setActionDecider(smithyDecider);
+		p1.setDecider(new DominionDeciderContainer(silverDecider, smithyDecider));
 		for (int n=0; n<5; n++)
 			p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.SMITHY));
@@ -145,8 +140,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void multipleActionsAreTakenWhereAllowed() {
-		p1.setDecider(silverDecider);
-		p1.setActionDecider(villageDecider);
+		p1.setDecider(new DominionDeciderContainer(silverDecider, villageDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
 		p1.takeCardFromSupplyIntoDiscard(CardType.VILLAGE);
 		p1.takeCardFromSupplyIntoDiscard(CardType.VILLAGE);
@@ -159,8 +153,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void surplusActionsAreWasted() {
-		p1.setDecider(silverDecider);
-		p1.setActionDecider(villageDecider);
+		p1.setDecider(new DominionDeciderContainer(silverDecider, villageDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
 		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
 		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
@@ -173,8 +166,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void actionCardsInHandAreNotUsedIfNoActionsLeft() {
-		p1.setDecider(silverDecider);
-		p1.setActionDecider(smithyDecider);
+		p1.setDecider(new DominionDeciderContainer(silverDecider, smithyDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.SMITHY));
 		p1.takeCardFromSupplyIntoDiscard(CardType.SMITHY);
 		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
@@ -188,8 +180,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void twoBuysAreProcessedAsExpectedI() {
-		p1.setDecider(generalPurchaseDecider);
-		p1.setActionDecider(woodcutterDecider);
+		p1.setDecider(new DominionDeciderContainer(generalPurchaseDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
 		p1.discard(CardType.COPPER); // leaves six left
 		p1.discard(CardType.COPPER); // leaves five left
@@ -206,8 +197,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 
 	@Test
 	public void twoBuysAreProcessedAsExpectedII() {
-		p1.setDecider(generalPurchaseDecider);
-		p1.setActionDecider(woodcutterDecider);
+		p1.setDecider(new DominionDeciderContainer(generalPurchaseDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
 		p1.discard(CardType.COPPER); // leaves six left
 		p1.takeActions();

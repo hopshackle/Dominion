@@ -9,16 +9,17 @@ import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
 
-import com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState;
-
 public class BasicGameMechanics {
 
 	public DominionGame game;
+	TestDominionDecider copperDecider, woodcutterDecider;
 
 	@Before
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
+		copperDecider = TestDominionDecider.getExample(CardType.COPPER);
+		woodcutterDecider = TestDominionDecider.getExample(CardType.WOODCUTTER);
 	}
 
 	@Test
@@ -142,16 +143,7 @@ public class BasicGameMechanics {
 		players.get(0).buyCards();
 		assertTrue(players.get(0).isTakingActions());
 	}
-	
-	@Test
-	public void correctDeciderIsReturnedBasedOnPhase() {
-		Player firstPlayer = game.getCurrentPlayer();
-		firstPlayer.setState(Player.State.PURCHASING);
-		assertFalse(firstPlayer.getDecider() instanceof HardCodedActionDecider);
-		firstPlayer.setState(Player.State.PLAYING);
-		assertTrue(firstPlayer.getDecider() instanceof HardCodedActionDecider);
-	}
-	
+
 	@Test
 	public void cloneGame() {
 		// I want to clone a game, and then run the game through to completion, and confirm the original is unaffected
@@ -285,9 +277,8 @@ public class BasicGameMechanics {
 	
 	@Test
 	public void nextActionTakesIntoAccountCurrentState() {
-		TestDominionDecider copperDecider = TestDominionDecider.getExample(CardType.COPPER);
 		Player p1 = game.getCurrentPlayer();
-		p1.setDecider(copperDecider);
+		p1.setDecider(new DominionDeciderContainer(copperDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
 		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
 		assertEquals(p1.getCopyOfHand().size(), 7);
@@ -299,9 +290,8 @@ public class BasicGameMechanics {
 	
 	@Test
 	public void nextActionTakesIntoAccountCurrentStateAfterCloning() {
-		TestDominionDecider copperDecider = TestDominionDecider.getExample(CardType.COPPER);
 		Player p1 = game.getCurrentPlayer();
-		p1.setDecider(copperDecider);
+		p1.setDecider(new DominionDeciderContainer(copperDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
 		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
 		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
@@ -320,9 +310,8 @@ public class BasicGameMechanics {
 	
 	@Test
 	public void nextActionTakesIntoAccountCurrentStateAfterCloningWithMCTSLikeBehaviour() {
-		TestDominionDecider copperDecider = TestDominionDecider.getExample(CardType.COPPER);
 		Player p1 = game.getCurrentPlayer();
-		p1.setDecider(copperDecider);
+		p1.setDecider(new DominionDeciderContainer(copperDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
 		p1.insertCardDirectlyIntoHand(new Card(CardType.WOODCUTTER));
 		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);

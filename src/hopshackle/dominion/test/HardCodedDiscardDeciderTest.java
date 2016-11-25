@@ -35,7 +35,7 @@ public class HardCodedDiscardDeciderTest {
 	
 	@Test
 	public void hardCodedDiscardDeciderDiscardsVictoryCardsBeforeCopperBeforeActionCards() {
-		p1.setActionDecider(militiaDecider);
+		p1.setDecider(militiaDecider);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MILITIA));
 		for (int i = 0; i<5; i++) {
 			p2.discard(CardType.COPPER);

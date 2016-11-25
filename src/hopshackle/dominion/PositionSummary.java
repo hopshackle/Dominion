@@ -374,6 +374,10 @@ public class PositionSummary implements State<Player> {
 	public void setVariables(List<CardValuationVariables> var) {
 		variables = var;
 	}
+	
+	public Player.State getPlayerState() {
+		return positionState;
+	}
 	@Override
 	public double[] getAsArray() {
 		if (variables == null) {
