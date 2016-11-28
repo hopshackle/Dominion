@@ -57,6 +57,21 @@ public class SpecialCardAbilitiesInBasicSet {
 		p3.setDecider(ddc);
 		p4.setDecider(ddc);
 	}
+	
+	@Test
+	public void cellarUpdatesDiscardPile() {
+		p2.insertCardDirectlyIntoHand(new Cellar());
+		p2.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
+		int estatesInHand = p2.getNumberOfTypeInHand(CardType.ESTATE);
+		
+		p2.takeActions();
+		assertEquals(p2.getHandSize(), 6);
+		assertEquals(p2.getDiscardSize(), estatesInHand);	// CELLAR is still in revealed cards
+		assertEquals(p2.getDeckSize(), 5 - estatesInHand);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p2), (estatesInHand)/12.0, 0.001);
+		p2.tidyUp();		// will exhaust deck
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p2), 0.0, 0.001);
+	}
 
 	@Test
 	public void cellarDiscardsAllVictoryCards() {
@@ -64,9 +79,11 @@ public class SpecialCardAbilitiesInBasicSet {
 			p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
 		p1.insertCardDirectlyIntoHand(new Cellar());
 		p1.takeActions();
+		// We should discard 3 estate, and then reshuffle discard pile to create new Deck
 		assertEquals(p1.getHandSize(), 10);
 		assertEquals(p1.getDiscardSize(), 0);
 		assertEquals(p1.getDeckSize(), 5);
+		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1), 0.0, 0.001);
 	}
 
 	@Test

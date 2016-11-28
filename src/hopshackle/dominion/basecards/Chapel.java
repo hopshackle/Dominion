@@ -2,6 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.Player;
 import hopshackle.dominion.PositionSummary;
 import hopshackle.simulation.LookaheadDecider;
@@ -28,9 +29,9 @@ public class Chapel extends Card {
 		double bestGain = 0.0;
 		CardType cardToTrash = CardType.NONE;
 		for (CardType ct : hand) {
-			ps.trashCard(ct);
+			ps.trashCard(ct, CardSink.HAND);
 			double newValue = dpd.value(ps);
-			ps.addCard(ct);
+			ps.addCard(ct, CardSink.DISCARD);
 
 			if (newValue - startingValue > bestGain) {
 				bestGain = newValue - startingValue;

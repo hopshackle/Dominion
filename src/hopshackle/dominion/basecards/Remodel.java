@@ -2,6 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.DominionBuyingDecision;
 import hopshackle.dominion.Player;
 import hopshackle.dominion.PositionSummary;
@@ -25,10 +26,6 @@ public class Remodel extends Card {
 		 *  - This does not currently specify an ActionEnum. I can have an ActionEnum that is a set of acquired cards,
 		 *  but not one that is a combination of acquiring and losing. This is therefore what I need first.
 		 *  - That would give the ActionEnum list that I simply feed to the Decider. 
-		 *  - OK, it' slightly more complicated in that the Trashed card comes out of hand! This needs to be factored in.
-		 *  - So in the ActionEnum that defines a change to the cards possessed, each element also needs to specify whether the
-		 *  loss/gain occurs from/to Hand/Discard/Deck. I think I can skip Revealed cards as an option, as that occurs when
-		 *  a card is played rather then acquired. (Although there is bound to be a card out there that affects this...)
 		 */
 		
 		LookaheadDecider<Player> purchaseDecider = player.getLookaheadDecider();
@@ -44,7 +41,7 @@ public class Remodel extends Card {
 		List<CardType> purchaseBeforeRemodel = nextBuy.getBestPurchase();
 		PositionSummary basePS = (PositionSummary) purchaseDecider.getCurrentState(player);
 		for (CardType ct : purchaseBeforeRemodel)
-			basePS.addCard(ct);
+			basePS.addCard(ct, CardSink.DISCARD);
 		double startValue = purchaseDecider.value(basePS);
 
 		player.setState(Player.State.PURCHASING);
@@ -55,7 +52,7 @@ public class Remodel extends Card {
 			if (optionsAlreadyExamined.contains(possibleCardToRemodel)) continue;
 			optionsAlreadyExamined.add(possibleCardToRemodel);
 			PositionSummary withoutCard = (PositionSummary) purchaseDecider.getCurrentState(player);
-			withoutCard.trashCard(possibleCardToRemodel);
+			withoutCard.trashCard(possibleCardToRemodel, CardSink.HAND);
 			int budget = possibleCardToRemodel.getCost() + 2;
 			DominionBuyingDecision dpd = new DominionBuyingDecision(player, budget, 1);
 			dpd.setPositionSummaryOverride(withoutCard);
@@ -67,7 +64,7 @@ public class Remodel extends Card {
 			DominionBuyingDecision nextBuyWithoutRemodeledCard = new DominionBuyingDecision(player, treasureInHand - possibleCardToRemodel.getTreasure(), buys);
 			List<CardType> purchaseAfterRemodel = nextBuyWithoutRemodeledCard.getBestPurchase();
 			for (CardType ct : purchaseAfterRemodel)
-				withoutCard.addCard(ct);
+				withoutCard.addCard(ct, CardSink.DISCARD);
 
 			double value = purchaseDecider.value(withoutCard) - startValue;
 			if (value > bestValue) {

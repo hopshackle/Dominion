@@ -1,6 +1,7 @@
 package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.*;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public class Moneylender extends Card {
 		
 		double valueOfNotTrashing = value(player, treasure, null);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(player);
-		ps.trashCard(CardType.COPPER);
+		ps.trashCard(CardType.COPPER, CardSink.HAND);
 		double valueOfTrashing = value(player, treasure+2, ps);	// only +2 as we have to remove the Copper that was just trashed
 		
 		if (valueOfTrashing > valueOfNotTrashing) {
@@ -67,7 +68,7 @@ public class Moneylender extends Card {
 		decision.setPositionSummaryOverride(ps);
 		List<CardType> purchase = decision.getBestPurchase();
 		for (CardType cardBought : purchase) {
-			ps.addCard(cardBought);
+			ps.addCard(cardBought, CardSink.DISCARD);
 		}
 		LookaheadDecider<Player> decider = player.getLookaheadDecider();
 		return decider.value(ps);

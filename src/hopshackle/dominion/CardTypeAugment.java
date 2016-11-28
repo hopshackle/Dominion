@@ -10,6 +10,16 @@ public class CardTypeAugment {
 	public CardType card;
 	public CardSink dest;
 	public ChangeType type;
+	
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof CardTypeAugment) {
+			CardTypeAugment otherCTA = (CardTypeAugment) other;
+			if (otherCTA.card == this.card && otherCTA.dest == this.dest && otherCTA.type == this.type)
+				return true;
+		} 
+		return false;
+	}
 
 	@Override
 	public String toString() {
