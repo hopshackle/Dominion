@@ -3,6 +3,7 @@ package hopshackle.dominion.test;
 import static org.junit.Assert.assertEquals;
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
@@ -68,21 +69,21 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), 0.0, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), 0.0, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), 0.0, 0.0001);
-		game.getAllPlayers().get(0).takeCardFromSupplyIntoDiscard(CardType.ESTATE);
+		game.getAllPlayers().get(0).takeCardFromSupply(CardType.ESTATE, CardSink.DISCARD);
 		recalculate();
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), -.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), -.1, 0.0001);
 		
-		game.getAllPlayers().get(1).takeCardFromSupplyIntoDiscard(CardType.CURSE);
+		game.getAllPlayers().get(1).takeCardFromSupply(CardType.CURSE, CardSink.DISCARD);
 		recalculate();
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), 0.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -0.20, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p3), -.1, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p4), -.1, 0.0001);
 		
-		game.getPlayer(3).takeCardFromSupplyIntoDiscard(CardType.PROVINCE);
+		game.getPlayer(3).takeCardFromSupply(CardType.PROVINCE, CardSink.DISCARD);
 		recalculate();
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p1), -.5, 0.0001);
 		assertEquals(CardValuationVariables.VICTORY_MARGIN.getValue(p2), -.7, 0.0001);
@@ -187,7 +188,7 @@ public class CardValuationVariablesTest {
 		game.addCardType(CardType.REMODEL, 12);
 		game.addCardType(CardType.MINE, 12);
 		game.addCardType(CardType.MARKET, 12);
-		player.takeCardFromSupplyIntoDiscard(CardType.REMODEL);
+		player.takeCardFromSupply(CardType.REMODEL, CardSink.DISCARD);
 		p1 = player.getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (1.0/11.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), 0.0, 0.001);
@@ -197,17 +198,17 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (1.0/12.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), (1.0/12.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
-		player.takeCardFromSupplyIntoDiscard(CardType.REMODEL);
+		player.takeCardFromSupply(CardType.REMODEL, CardSink.DISCARD);
 		p1 = player.getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/13.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), (1.0/13.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
-		player.trashCardFromHand(CardType.MINE);
+		player.trashCard(CardType.MINE, CardSink.HAND);
 		p1 = player.getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/12.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), 0.0, 0.001);
 		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
-		player.takeCardFromSupplyIntoDiscard(CardType.MARKET);
+		player.takeCardFromSupply(CardType.MARKET, CardSink.DISCARD);
 		p1 = player.getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/13.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), 0.0, 0.001);
@@ -310,7 +311,7 @@ public class CardValuationVariablesTest {
 		Player player = game.getCurrentPlayer();
 		player.tidyUp();	// So that they now have all ten cards in discard, and reshuffle to draw 5
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), 0.0, 0.0001);
-		player.takeCardFromSupplyIntoDiscard(CardType.MILITIA);
+		player.takeCardFromSupply(CardType.MILITIA, CardSink.DISCARD);
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (1.0/11.0), 0.0001);
 		player.discard(CardType.COPPER);
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (2.0/11.0), 0.0001);
@@ -344,7 +345,7 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_IN_HAND.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.WORKSHOPS_PLAYED.getValue(p1), 0, 0.001);
-		p1 = p1.apply(CardType.MILITIA);	// This is just a lookahead and does not update the game
+		p1 = p1.apply(new CardTypeAugment(CardType.MILITIA, CardSink.DISCARD, ChangeType.PLAY));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0.25, 0.001);
@@ -366,13 +367,13 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0.2, 0.001);
-		p1 = p1.apply(CardType.VILLAGE);	// This is just a lookahead and does not update the game
+		p1 = p1.apply(new CardTypeAugment(CardType.VILLAGE, CardSink.HAND, ChangeType.PLAY));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0.2, 0.001);
-		p1 = p1.apply(CardType.WOODCUTTER);	// This is just a lookahead and does not update the game
+		p1 = p1.apply(new CardTypeAugment(CardType.WOODCUTTER, CardSink.HAND, ChangeType.PLAY));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.66666666, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0.25, 0.001);

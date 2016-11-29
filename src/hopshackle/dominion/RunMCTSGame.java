@@ -1,7 +1,6 @@
 package hopshackle.dominion;
 
 import java.util.List;
-
 import hopshackle.simulation.*;
 
 public class RunMCTSGame {
@@ -16,7 +15,8 @@ public class RunMCTSGame {
 		DominionGame game = new DominionGame(dg, "MCTSSingleGame", true);
 		Player firstPlayer = game.getPlayer(1);
 		List<CardValuationVariables> varList = gamesetup.getDeckVariables();
-		List<CardType> actionsToUse = gamesetup.getCardTypes();
+		List<CardType> cardsAvailable = gamesetup.getCardTypes();
+		List<ActionEnum<Player>> actionsToUse = CardType.toActionEnum(cardsAvailable);
 		MCTSMasterDecider<Player> mctsDecider = new MCTSMasterDominion(actionsToUse, varList, dg.completeHeuristic, dg.completeHeuristic);
 		firstPlayer.setDecider(mctsDecider);
 //		do {

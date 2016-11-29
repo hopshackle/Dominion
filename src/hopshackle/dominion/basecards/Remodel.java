@@ -75,8 +75,8 @@ public class Remodel extends Card {
 		}
 
 		if (cardToRemodel != CardType.NONE && cardToPurchase != CardType.NONE) {
-			player.trashCardFromHand(cardToRemodel);
-			player.takeCardFromSupplyIntoDiscard(cardToPurchase);
+			player.trashCard(cardToRemodel, CardSink.HAND);
+			player.takeCardFromSupply(cardToPurchase, CardSink.DISCARD);
 			player.log("Trashes a " + cardToRemodel + " for a " + cardToPurchase);
 		}
 

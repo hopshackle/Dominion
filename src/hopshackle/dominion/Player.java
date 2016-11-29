@@ -1,6 +1,7 @@
 package hopshackle.dominion;
 
 import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -110,7 +111,7 @@ public class Player extends Agent {
 		if (playerState != State.PURCHASING) 
 			throw new AssertionError("Incorrect state for Purchasing " + playerState);
 		refreshPositionSummary();
-		DominionBuyAction decision = (DominionBuyAction) getDecider().decide(this);
+		DominionAction decision = (DominionAction) getDecider().decide(this);
 		decision.start();
 		decision.run();
 		setState(State.PLAYING);
@@ -118,13 +119,10 @@ public class Player extends Agent {
 
 	public void takeActions() {
 		if (playerState != State.PLAYING) 
-			throw new AssertionError("Incorrect state for Purchasing " + playerState);
+			throw new AssertionError("Incorrect state for taking actions " + playerState);
 		while (actionsLeft > 0) {
 			refreshPositionSummary();
 			Action<Player> action = getDecider().decide(this);
-			if (!(action instanceof DominionPlayAction)) {
-				throw new AssertionError("Incorrect Action type in Player.takeActions(): " + action );
-			}
 			action.start();
 			action.run();
 			decrementActionsLeft();
@@ -207,13 +205,17 @@ public class Player extends Agent {
 		return new Card(CardType.NONE);
 	}
 
-	public void takeCardFromSupplyIntoDiscard(CardType type) {
-		if (type.equals(CardType.NONE)) return;
-		if (game.drawCard(type)) {
-			discard.addCard(CardFactory.instantiateCard(type));
-			summary.drawCard(type);
+	public void takeCardFromSupply(CardType card, CardSink dest) {
+		Deck destination = discard;
+		if (dest == CardSink.HAND) destination = hand;
+		if (dest == CardSink.REVEALED) destination = revealedCards;
+		if (dest == CardSink.DECK) destination = deck;
+		if (card.equals(CardType.NONE)) return;
+		if (game.drawCard(card)) {
+			destination.addCard(CardFactory.instantiateCard(card));
+			summary.drawCard(card, dest);
 		} else {
-			throw new AssertionError("Card Type " + type + " not available." );
+			throw new AssertionError("Card Type " + card + " not available." );
 		}
 	}
 
@@ -304,19 +306,24 @@ public class Player extends Agent {
 		return false;
 	}
 
-	public void trashCardFromHand(CardType cardTypeToTrash) {
-		hand.removeSpecificCard(cardTypeToTrash);
-		summary.trashCard(cardTypeToTrash, CardSink.HAND);
+	public void trashCard(CardType card, CardSink dest) {
+		switch (dest) {
+		case HAND:
+			hand.removeSpecificCard(card);
+			break;
+		case REVEALED:
+			revealedCards.removeSpecificCard(card);
+			break;
+		case DISCARD:
+			discard.removeSpecificCard(card);
+			break;
+		case DECK:
+			deck.removeSpecificCard(card);
+			break;
+		}
+		summary.trashCard(card, dest);
 	}
-	public void trashCardFromRevealed(CardType cardTypeToTrash) {
-		revealedCards.removeSpecificCard(cardTypeToTrash);
-		summary.trashCard(cardTypeToTrash, CardSink.REVEALED);
-	}
-	public void trashCardFromDiscard(CardType cardTypeToTrash) {
-		discard.removeSpecificCard(cardTypeToTrash);
-		summary.trashCard(cardTypeToTrash, CardSink.DISCARD);
-	}
-
+	
 	/**
 	 * Indicates whether we are taking Actions (true), or making a purchase (false).
 	 * This is a bit of a hack to cater for Purchase decisions made during the
@@ -403,7 +410,7 @@ public class Player extends Agent {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (CardType card : hand.getAllCards()) {
 			if (card.isAction())
-				retValue.add(card);
+				retValue.add(new CardTypeAugment(card, CardSink.HAND, ChangeType.PLAY));
 		}
 		return retValue;
 	}
@@ -414,5 +421,4 @@ public class Player extends Agent {
 	public void refreshPositionSummary() {
 		summary = new PositionSummary(this, null);
 	}
-
 }

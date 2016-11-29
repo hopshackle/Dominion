@@ -1,6 +1,7 @@
 package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 
 public class Workshop extends Card {
 
@@ -14,7 +15,7 @@ public class Workshop extends Card {
 		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, 4, 1);
 		CardType cardPurchased = nextBuy.getBestPurchase().get(0);
 		player.setState(Player.State.PLAYING);
-		player.takeCardFromSupplyIntoDiscard(cardPurchased);
+		player.takeCardFromSupply(cardPurchased, CardSink.DISCARD);
 		player.log("Gains " + cardPurchased);
 	}
 }

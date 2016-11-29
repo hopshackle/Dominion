@@ -12,7 +12,7 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 
 	@Override
 	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
-		CardType cardType = (CardType) option;
+		CardType cardType = ((CardTypeAugment) option).card;
 		Player p = (Player) decidingAgent;
 		List<CardType> hand = null;
 		int actionsLeft = p.getActionsLeft();

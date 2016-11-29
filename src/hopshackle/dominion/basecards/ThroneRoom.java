@@ -1,9 +1,6 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.Player;
-
+import hopshackle.dominion.*;
 public class ThroneRoom extends Card {
 
 	private CardType enthronedCard;
@@ -14,7 +11,7 @@ public class ThroneRoom extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
-		enthronedCard = (CardType) player.getDecider().makeDecision(player);
+		enthronedCard = ((CardTypeAugment) player.getDecider().makeDecision(player)).card;
 		player.log("Uses Throne Room to play " + enthronedCard);
 		Card card = player.playFromHandToRevealedCards(enthronedCard);
 		card.takeAction(player);

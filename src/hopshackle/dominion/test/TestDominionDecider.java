@@ -1,7 +1,6 @@
 package hopshackle.dominion.test;
 
 import hopshackle.dominion.*;
-import hopshackle.dominion.CardTypeAugment.*;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -9,12 +8,13 @@ import java.util.*;
 public class TestDominionDecider extends LookaheadDecider<Player> {
 
 	private HashMap<CardType, Double> values;
-	private static ArrayList<CardType> actionsToUse;
-	private static ArrayList<CardValuationVariables> variablesToUse;
+	private static List<ActionEnum<Player>> actionsToUse;
+	private static List<CardValuationVariables> variablesToUse;
 
 	static {
 		variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
-		actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
+		List<CardType> allCards = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
+		actionsToUse = CardType.toActionEnum(allCards);
 	}
 
 	public TestDominionDecider(HashMap<CardType, Double> values) {
@@ -32,7 +32,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 			CardTypeList ctl = (CardTypeList) input;
 			cards = ctl.cards;
 		} else {
-			cards.add(new CardTypeAugment((CardType)input, CardSink.DISCARD, ChangeType.GAIN));
+			cards.add((CardTypeAugment) input);
 		}
 		for (CardTypeAugment option : cards) {
 			retValue -= 0.05;
@@ -54,11 +54,6 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
 		double retValue = 0.0;
-		//		for (CardType ct : ps.getHand()) {
-		//			if (ct.isTreasure())
-		//				retValue = retValue + (double)ct.getTreasure() * 0.05;
-		//		}
-		//		retValue = retValue + ps.totalNumberOfCards() * ps.getWealthDensity() * 0.05;
 
 		for (CardType card : values.keySet()) {
 			retValue += ps.getNumberOfCardsTotal(card) * values.get(card);

@@ -4,7 +4,7 @@ import hopshackle.simulation.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DominionGame extends World implements Persistent, Game<Player, CardType> {
+public class DominionGame extends World implements Persistent, Game<Player, CardTypeAugment> {
 
 	private Player[] players;
 	private HashMap<CardType, Integer> cardsOnTable;

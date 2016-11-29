@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -132,12 +134,12 @@ public class DominionBuyingDecision {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (final List<CardType> purc : temp) {
 			if (purc.size() == 1) {
-				retValue.add(purc.get(0));
+				retValue.add(new CardTypeAugment(purc.get(0), CardSink.DISCARD, ChangeType.GAIN));
 			} else {
 				retValue.add(new CardTypeList(purc));
 			}
 		}
-		retValue.add(CardType.NONE);
+		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN));
 		return retValue;
 	}
 }

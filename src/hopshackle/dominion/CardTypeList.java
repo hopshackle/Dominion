@@ -10,17 +10,21 @@ public class CardTypeList implements ActionEnum<Player> {
 	private static final long serialVersionUID = 1L;
 	public List<CardTypeAugment> cards;
 
+	/* 
+	 * This base constructor assumes that the list of cards are all to be purchased
+	 * and put into the player's discard pile
+	 */
 	public CardTypeList(List<CardType> purc) {
 		cards = new ArrayList<CardTypeAugment>(purc.size());
 		for (CardType p : purc) {
 			cards.add(new CardTypeAugment(p, CardSink.DISCARD, ChangeType.GAIN));
 		}
 	}
-	
+
 	public CardTypeList(List<CardTypeAugment> augments, boolean flag) {
 		cards = augments;
 	}
-	
+
 	public List<CardType> getCards() {
 		List<CardType> retValue = new ArrayList<CardType>(cards.size());
 		for (CardTypeAugment cta : cards) {
@@ -37,7 +41,7 @@ public class CardTypeList implements ActionEnum<Player> {
 
 	@Override
 	public String getChromosomeDesc() {return "NONE";}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof CardTypeList) {
@@ -54,10 +58,12 @@ public class CardTypeList implements ActionEnum<Player> {
 		}
 		return false;
 	}
-	
+
 	@Override
-	public DominionBuyAction getAction(Player a) {return new DominionBuyAction((Player)a, this);}
-	
+	public DominionAction getAction(Player a) {
+		return new DominionAction((Player)a, this);
+	}
+
 	@Override
 	public String toString() {
 		StringBuffer retValue = new StringBuffer();

@@ -3,9 +3,11 @@ package hopshackle.dominion;
 import java.util.ArrayList;
 import java.util.List;
 
+import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
-public enum CardType implements ActionEnum<Player> {
+public enum CardType {
 
 	NONE		(0, 0, 0, 0, 0, 0, 0, 0),
 	UNKNOWN		(0, 0, 0, 0, 0, 0, 0, 0),
@@ -106,45 +108,17 @@ public enum CardType implements ActionEnum<Player> {
 		return (!isTreasure() && !isVictory());
 	}
 
-	@Override
-	public boolean isChooseable(Player p) {
-		if (p.isTakingActions()) {
-			// hack to distinguish between chooseability at purchase and use
-			if (this == CardType.NONE) return true;
-			if (p.getNumberOfTypeInHand(this) > 0 && isAction())
-				return true;
-			else
-				return false;
-		} else {
-			if (!p.getGame().availableCardsToPurchase().contains(this))
-				return false;
-			return true;
-		}
-	}
-
-	@Override
-	public Action<Player> getAction(Player p) {
-		switch (p.getPlayerState()) {
-		case PLAYING:
-			return new DominionPlayAction(p, this);
-		case PURCHASING:
-		case WAITING:
-		}
-		return new DominionBuyAction(p, this);
-	}
-	
-	@Override
-	public String getChromosomeDesc() {return "DOM1";}
-
-	@Override
-	public Enum<CardType> getEnum() {
-		return this;
-	}
-
+	/* 
+	 * Really want to use this as little as possible, as the list of chooseable options should be defined
+	 * when the decider is called, rather than being held in the Decider. But for backwards compatibility
+	 * this is currently needed.
+	 */
 	public static List<ActionEnum<Player>> toActionEnum(List<CardType> actionsToUse) {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (CardType ct : actionsToUse) {
-			retValue.add((ActionEnum<Player>) ct);
+			retValue.add(new CardTypeAugment(ct, CardSink.DISCARD, ChangeType.GAIN));
+			if (ct.isAction())
+				retValue.add(new CardTypeAugment(ct, CardSink.HAND, ChangeType.PLAY));
 		}
 		return retValue;
 	}

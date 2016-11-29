@@ -1,6 +1,7 @@
 package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 
 public class Feast extends Card {
 
@@ -10,10 +11,10 @@ public class Feast extends Card {
 
 	@Override
 	public void takeAction(Player player) {
-		player.trashCardFromRevealed(CardType.FEAST);
+		player.trashCard(CardType.FEAST, CardSink.REVEALED);
 		player.setState(Player.State.PURCHASING);
 		CardType gainedCard = (new DominionBuyingDecision(player, 5, 1)).getBestMandatoryPurchase().get(0);
-		player.takeCardFromSupplyIntoDiscard(gainedCard);
+		player.takeCardFromSupply(gainedCard, CardSink.DISCARD);
 		player.setState(Player.State.PLAYING);
 		player.log("Gains " + gainedCard);
 	}

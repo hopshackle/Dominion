@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.*;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
@@ -130,7 +131,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void cardsAreDrawnCorrectlyWhenActionPlayed() {
 		p1.setDecider(new DominionDeciderContainer(silverDecider, smithyDecider));
 		for (int n=0; n<5; n++)
-			p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+			p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.SMITHY));
 		p1.takeActions();
 		p1.buyCards();
@@ -142,8 +143,8 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void multipleActionsAreTakenWhereAllowed() {
 		p1.setDecider(new DominionDeciderContainer(silverDecider, villageDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
-		p1.takeCardFromSupplyIntoDiscard(CardType.VILLAGE);
-		p1.takeCardFromSupplyIntoDiscard(CardType.VILLAGE);
+		p1.takeCardFromSupply(CardType.VILLAGE, CardSink.DISCARD);
+		p1.takeCardFromSupply(CardType.VILLAGE, CardSink.DISCARD);
 		p1.takeActions();
 		p1.buyCards();
 		assertEquals(p1.getHandSize(), 10);
@@ -155,8 +156,8 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void surplusActionsAreWasted() {
 		p1.setDecider(new DominionDeciderContainer(silverDecider, villageDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
-		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
-		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+		p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
+		p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		p1.takeActions();
 		p1.buyCards();
 		assertEquals(p1.getHandSize(), 11);
@@ -168,9 +169,9 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void actionCardsInHandAreNotUsedIfNoActionsLeft() {
 		p1.setDecider(new DominionDeciderContainer(silverDecider, smithyDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.SMITHY));
-		p1.takeCardFromSupplyIntoDiscard(CardType.SMITHY);
-		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
-		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+		p1.takeCardFromSupply(CardType.SMITHY, CardSink.DISCARD);
+		p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
+		p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		p1.takeActions();
 		p1.buyCards();
 		assertEquals(p1.getHandSize(), 13);
@@ -217,7 +218,6 @@ public class BuysActionsAndPurchasePowerFromCards {
 		p1.takeActions();
 		DominionBuyingDecision dpd = new DominionBuyingDecision(p1, 12, 3);
 		List<CardType> purchase = dpd.getBestPurchase();
-		System.out.println(purchase);
 		assertEquals(purchase.size(), 3);
 		int gold = 0;
 		int smithy = 0;
@@ -244,7 +244,6 @@ public class BuysActionsAndPurchasePowerFromCards {
 		assertEquals(game.getNumberOfCardsRemaining(CardType.SMITHY), 1);
 		DominionBuyingDecision dpd = new DominionBuyingDecision(p1, 12, 3);
 		List<CardType> purchase = dpd.getBestPurchase();
-		System.out.println(purchase);
 		assertEquals(purchase.size(), 3);
 		int gold = 0;
 		int smithy = 0;

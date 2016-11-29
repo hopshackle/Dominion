@@ -64,32 +64,28 @@ public class PositionSummary implements State<Player> {
 	@Override
 	public PositionSummary apply(ActionEnum<Player> ae) {
 		PositionSummary retValue = this.clone();
-		if (ae == null || ae == CardType.NONE) return retValue;
-		switch (positionState) {
-		case PLAYING:
-			retValue.playCardFromHand((CardType) ae);
-			break;
-		case PURCHASING:
-			if (ae instanceof CardType){
-				retValue.drawCard((CardType) ae);
-			} else if (ae instanceof CardTypeList) {
-				CardTypeList ctl = (CardTypeList) ae;
-				for (CardTypeAugment cta : ctl.cards) {
-					switch (cta.type) {
-					case GAIN:
-						retValue.drawCard(cta.card, cta.dest);
-						break;
-					case LOSS:
-						retValue.trashCard(cta.card, cta.dest);
-						break;
-					}
-				}
-			}
-			break;
-		default:
-			throw new AssertionError("Invalid PlayerState in PositionSummary: " + positionState);
+		if (ae == null) return retValue;
+		List<CardTypeAugment> components = new ArrayList<CardTypeAugment>();
+		if (ae instanceof CardTypeList) {
+			components = ((CardTypeList) ae).cards;
+		} else {
+			components.add((CardTypeAugment) ae);
 		}
-
+		for (CardTypeAugment componentAction : components) {
+			switch (componentAction.type) {
+			case PLAY:
+				if (positionState != Player.State.PLAYING)
+					throw new AssertionError("Should not PLAY card unless PLAYING");
+				retValue.playCardFromHand(componentAction.card);
+				break;
+			case GAIN:
+				retValue.drawCard(componentAction.card, componentAction.dest);
+				break;
+			case LOSS:
+				retValue.trashCard(componentAction.card, componentAction.dest);
+				break;
+			}
+		}
 		return retValue;
 	}
 	
@@ -307,6 +303,8 @@ public class PositionSummary implements State<Player> {
 	}
 	
 	private void playCardFromHand(CardType type) {
+		if (type == CardType.NONE)
+			return;
 		if (getNumberInHand(type) > 0) {
 			hand.remove(type);
 			actions--;

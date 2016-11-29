@@ -41,7 +41,7 @@ public class Chapel extends Card {
 
 		if (cardToTrash != CardType.NONE) {
 			player.log("Trashes " + cardToTrash);
-			player.trashCardFromHand(cardToTrash);
+			player.trashCard(cardToTrash, CardSink.HAND);
 		}
 	}
 }

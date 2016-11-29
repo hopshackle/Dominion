@@ -2,6 +2,8 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -20,7 +22,7 @@ public class MonteCarloTreeUpdates {
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		SimProperties.setProperty("DominionHardCodedActionDecider", "true");
-		DominionPlayAction.refresh();
+		DominionAction.refresh();
 		dg = new DeciderGenerator(new GameSetup(), 1, 1, 0, 0);
 		game = new DominionGame(dg, "Test", false);
 		tree = new MonteCarloTree<Player>();
@@ -32,8 +34,9 @@ public class MonteCarloTreeUpdates {
 		copperMarket.add(CardType.COPPER);
 		copperMarket.add(CardType.MARKET);
 		actionList.add(new CardTypeList(copperMarket));
-		actionList.add(CardType.ADVENTURER);
-		actionList.add(CardType.COPPER);
+		actionList.add(new CardTypeAugment(CardType.ADVENTURER, CardSink.DISCARD, ChangeType.GAIN));
+		actionList.add(new CardTypeAugment(CardType.COPPER, CardSink.DISCARD, ChangeType.GAIN));
+
 	}
 	
 	@Test
@@ -51,7 +54,7 @@ public class MonteCarloTreeUpdates {
 		Action<Player> cmAction = cmActionEnum.getAction(game.getCurrentPlayer());
 		assertTrue(cmActionEnum.toString().equals("COPPER MARKET "));
 		assertTrue(cmAction.getType().equals(cmActionEnum));
-		assertTrue(cmAction.toString().equals("Buy COPPER MARKET "));
+		assertTrue(cmAction.toString().equals("COPPER MARKET "));
 	}
 	
 	@Test
@@ -59,10 +62,10 @@ public class MonteCarloTreeUpdates {
 		Player p1 = game.getCurrentPlayer();
 		p1.takeActions();
 		Decider<Player> p1Decider = p1.getDecider();
-		Game<Player, CardType> clonedGame = game.clone(p1);
+		Game<Player, CardTypeAugment> clonedGame = game.clone(p1);
 		Player p2 = clonedGame.getCurrentPlayer();
 		assertTrue(p2.getDecider() == p1.getDecider());
-		p2.setDecider(new HardCodedDecider<Player>(CardType.ADVENTURER));
+		p2.setDecider(new HardCodedDecider<Player>(new CardTypeAugment(CardType.ADVENTURER, CardSink.DISCARD, ChangeType.GAIN)));
 		assertFalse(p2.getDecider() == p1.getDecider());
 		assertTrue(p1.getDecider() == p1Decider);
 	}

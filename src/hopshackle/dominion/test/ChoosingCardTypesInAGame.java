@@ -2,6 +2,8 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
@@ -56,12 +58,12 @@ public class ChoosingCardTypesInAGame {
 		assertEquals(firstPlayer.getNumberOfTypeInHand(CardType.COPPER), 7);
 		game.removeCardType(CardType.DUCHY);
 		game.addCardType(CardType.VILLAGE, 10);
-		assertTrue(CardType.VILLAGE.isChooseable(firstPlayer));
-		assertFalse(CardType.DUCHY.isChooseable(firstPlayer));
-		assertTrue(CardType.COPPER.isChooseable(firstPlayer));
-		assertTrue(CardType.PROVINCE.isChooseable(firstPlayer));
-		assertTrue(CardType.ESTATE.isChooseable(firstPlayer));
-		assertTrue(CardType.SILVER.isChooseable(firstPlayer));
+		assertTrue(new CardTypeAugment(CardType.VILLAGE, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
+		assertFalse(new CardTypeAugment(CardType.DUCHY, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
+		assertTrue(new CardTypeAugment(CardType.COPPER, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
+		assertTrue(new CardTypeAugment(CardType.PROVINCE, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
+		assertTrue(new CardTypeAugment(CardType.ESTATE, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
+		assertTrue(new CardTypeAugment(CardType.SILVER, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
 	}
 
 	@Test
@@ -69,20 +71,23 @@ public class ChoosingCardTypesInAGame {
 		for (int loop = 0; loop < 5; loop++)
 			firstPlayer.drawTopCardFromDeckIntoHand();
 		assertEquals(firstPlayer.getNumberOfTypeInHand(CardType.COPPER), 7);
+		assertEquals(game.getNumberOfCardsRemaining(CardType.ESTATE), 12);
 		for (int loop = 0; loop < 12; loop++) {
-			assertTrue(CardType.ESTATE.isChooseable(firstPlayer));
-			firstPlayer.takeCardFromSupplyIntoDiscard(CardType.ESTATE);
+			System.out.println(loop);
+			assertTrue(new CardTypeAugment(CardType.ESTATE, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
+			firstPlayer.takeCardFromSupply(CardType.ESTATE, CardSink.DISCARD);
 		}
 		assertEquals(game.getNumberOfCardsRemaining(CardType.ESTATE), 0);
-		assertFalse(CardType.ESTATE.isChooseable(firstPlayer));
+		assertFalse(new CardTypeAugment(CardType.ESTATE, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
+
 	}
 	
 	@Test
 	public void possibleToNotBuyACard() {
-		assertTrue(CardType.NONE.isChooseable(firstPlayer));
+		assertTrue(new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN).isChooseable(firstPlayer));
 		assertEquals(firstPlayer.totalNumberOfCards(), 10);
-		firstPlayer.takeCardFromSupplyIntoDiscard(CardType.NONE);
-		firstPlayer.takeCardFromSupplyIntoDiscard(CardType.NONE);
+		firstPlayer.takeCardFromSupply(CardType.NONE, CardSink.DISCARD);
+		firstPlayer.takeCardFromSupply(CardType.NONE, CardSink.HAND);
 		assertEquals(firstPlayer.totalNumberOfCards(), 10);
 		assertTrue(game.availableCardsToPurchase().contains(CardType.NONE));
 	}

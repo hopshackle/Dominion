@@ -61,8 +61,8 @@ public class RunGame {
 		EventFilter purchaseEventFilter = new EventFilter() {
 			@Override
 			public boolean ignore(AgentEvent event) {
-				Action<?> action = event.getAction();
-				if (action == null || action instanceof DominionBuyAction)
+				DominionAction action = (DominionAction) event.getAction();
+				if (action == null || !action.isAction())
 					return false;
 				return true;
 			}
@@ -70,8 +70,8 @@ public class RunGame {
 		EventFilter actionEventFilter = new EventFilter() {
 			@Override
 			public boolean ignore(AgentEvent event) {
-				Action<?> action = event.getAction();
-				if (action == null || action instanceof DominionPlayAction)
+				DominionAction action = (DominionAction) event.getAction();
+				if (action == null || action.isAction())
 					return false;
 				return true;
 			}

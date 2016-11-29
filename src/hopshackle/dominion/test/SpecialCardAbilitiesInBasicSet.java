@@ -2,16 +2,8 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
-import hopshackle.dominion.basecards.Adventurer;
-import hopshackle.dominion.basecards.Bureaucrat;
-import hopshackle.dominion.basecards.Cellar;
-import hopshackle.dominion.basecards.Chapel;
-import hopshackle.dominion.basecards.Feast;
-import hopshackle.dominion.basecards.Library;
-import hopshackle.dominion.basecards.Moat;
-import hopshackle.dominion.basecards.Moneylender;
-import hopshackle.dominion.basecards.ThroneRoom;
-import hopshackle.dominion.basecards.Witch;
+import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.basecards.*;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -76,7 +68,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void cellarDiscardsAllVictoryCards() {
 		for (int n=0; n<5; n++)
-			p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+			p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		p1.insertCardDirectlyIntoHand(new Cellar());
 		p1.takeActions();
 		// We should discard 3 estate, and then reshuffle discard pile to create new Deck
@@ -89,7 +81,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void cellarDiscardsNothingIfNoVictoryCards() {
 		for (int n=0; n<5; n++)
-			p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+			p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		for (int n=0; n<3; n++)
 			p1.discard(CardType.ESTATE);
 		p1.insertCardDirectlyIntoHand(new Cellar());
@@ -204,7 +196,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MINE));
 		int copperBefore = p2.getNumberOfTypeInHand(CardType.COPPER);
 		for (int n=0; n<copperBefore; n++)
-			p2.trashCardFromHand(CardType.COPPER);
+			p2.trashCard(CardType.COPPER, CardSink.HAND);
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 5 - copperBefore);
 		assertEquals(p2.getDiscardSize(), 0);
@@ -564,8 +556,8 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void adventurerStopsWhenAllCardsDrawn() {
 		p1.insertCardDirectlyIntoHand(new Adventurer());
-		p1.takeCardFromSupplyIntoDiscard(CardType.VILLAGE);
-		p1.takeCardFromSupplyIntoDiscard(CardType.SILVER);
+		p1.takeCardFromSupply(CardType.VILLAGE, CardSink.DISCARD);
+		p1.takeCardFromSupply(CardType.SILVER, CardSink.DISCARD);
 		p1.takeActions();
 		assertEquals(p1.getHandSize(), 11);	// minus Adventurer, plus one Silver
 		assertEquals(p1.getBudget(), 9);	// silver, plius starting copper

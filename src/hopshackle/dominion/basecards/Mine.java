@@ -2,6 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.Player;
 
@@ -26,14 +27,14 @@ public class Mine extends Card {
 				hasSilver = true;
 		}
 		if (hasSilver) {
-			player.trashCardFromHand(CardType.SILVER);
+			player.trashCard(CardType.SILVER, CardSink.HAND);
 			player.insertCardDirectlyIntoHand(new Card(CardType.GOLD));
 			game.drawCard(CardType.GOLD);
 			player.log("Trashes SILVER to gain GOLD");
 			return;
 		}
 		if (hasCopper) {
-			player.trashCardFromHand(CardType.COPPER);
+			player.trashCard(CardType.COPPER, CardSink.HAND);
 			player.insertCardDirectlyIntoHand(new Card(CardType.SILVER));
 			game.drawCard(CardType.SILVER);
 			player.log("Trashes COPPER to gain SILVER");

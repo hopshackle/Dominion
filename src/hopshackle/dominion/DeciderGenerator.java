@@ -33,7 +33,8 @@ public class DeciderGenerator {
 	private boolean replaceDecidersDeterministically = false;
 	private int totalWinners, baseDeciders;
 	protected MCTSMasterDecider<Player> mctsDecider;
-	private List<CardType> actionsToUse;
+	private List<ActionEnum<Player>> actionsToUse;
+	private List<CardType> cardTypes;
 
 	public DeciderGenerator(GameSetup gameDetails, int numberToMaintain, int roundsPerRemoval, int decidersToRemovePerRound, int decidersToAddPerRound) {
 		baseDeciders = numberToMaintain;
@@ -50,12 +51,13 @@ public class DeciderGenerator {
 		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
 		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
 
-		actionsToUse = gamesetup.getCardTypes();
-		hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUseForActions);
+		cardTypes = gamesetup.getCardTypes();
+		actionsToUse = CardType.toActionEnum(cardTypes);
+		hardCodedActionDecider = new HardCodedActionDecider(cardTypes, variablesToUseForActions);
 		hardCodedActionDecider.setName("DEFAULT");
-		bigMoney = new BigMoneyDecider(HopshackleUtilities.convertList(actionsToUse), HopshackleUtilities.convertList(variablesToUseForPurchase));
+		bigMoney = new BigMoneyDecider(actionsToUse, HopshackleUtilities.convertList(variablesToUseForPurchase));
 		completeHeuristic = new DominionDeciderContainer(bigMoney, hardCodedActionDecider);
-		chrisPethers = new ChrisPethersDecider(HopshackleUtilities.convertList(actionsToUse), HopshackleUtilities.convertList(variablesToUseForPurchase));
+		chrisPethers = new ChrisPethersDecider(actionsToUse, HopshackleUtilities.convertList(variablesToUseForPurchase));
 		mctsDecider = new MCTSMasterDominion(actionsToUse, variablesToUseForPurchase, completeHeuristic, completeHeuristic);
 		mctsDecider.setName("MCTS");
 		int numberMCTS = (int) (numberToMaintain * percentageMCTSToUse);

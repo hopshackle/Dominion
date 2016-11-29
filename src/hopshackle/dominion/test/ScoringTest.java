@@ -2,6 +2,7 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 
 import java.util.HashMap;
 
@@ -25,11 +26,11 @@ public class ScoringTest {
 	@Test
 	public void basicVictoryCards() {
 		assertEquals(p1.getScore(), 3, 0.001);
-		p1.takeCardFromSupplyIntoDiscard(CardType.DUCHY);
+		p1.takeCardFromSupply(CardType.DUCHY, CardSink.DISCARD);
 		assertEquals(p1.getScore(), 6, 0.001);
-		p1.takeCardFromSupplyIntoDiscard(CardType.PROVINCE);
+		p1.takeCardFromSupply(CardType.PROVINCE, CardSink.DISCARD);
 		assertEquals(p1.getScore(), 12, 0.001);
-		p1.takeCardFromSupplyIntoDiscard(CardType.CURSE);
+		p1.takeCardFromSupply(CardType.CURSE, CardSink.DISCARD);
 		assertEquals(p1.getScore(), 11, 0.001);
 	}
 
@@ -69,8 +70,8 @@ public class ScoringTest {
 	@Test
 	public void winningPlayersDecidedCorrectlyInDraw() {
 		for (int i = 0; i < 6; i++) {
-			p2.takeCardFromSupplyIntoDiscard(CardType.PROVINCE);
-			p3.takeCardFromSupplyIntoDiscard(CardType.PROVINCE);
+			p2.takeCardFromSupply(CardType.PROVINCE, CardSink.DISCARD);
+			p3.takeCardFromSupply(CardType.PROVINCE, CardSink.DISCARD);
 		}
 		game.playGame();
 		assertEquals(game.getWinningPlayers().length, 2);
@@ -84,14 +85,14 @@ public class ScoringTest {
 		p4.insertCardDirectlyIntoHand(new Card(CardType.GARDENS));
 		assertEquals(p4.getScore(), 4.0, 0.1);
 		for (int i = 0; i < 8; i++) {
-			p4.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+			p4.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 			assertEquals(p4.getScore(), 4.0, 0.1);
 		}
 		for (int i = 0; i < 4; i++) {
-			p4.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+			p4.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 			assertEquals(p4.getScore(), 5.0, 0.1);
 		}
-		p4.takeCardFromSupplyIntoDiscard(CardType.GARDENS);
+		p4.takeCardFromSupply(CardType.GARDENS, CardSink.DISCARD);
 		assertEquals(p4.getScore(), 7.0, 0.1);
 	}
 }

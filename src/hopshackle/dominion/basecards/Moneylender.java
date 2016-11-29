@@ -43,7 +43,7 @@ public class Moneylender extends Card {
 		double valueOfTrashing = value(player, treasure+2, ps);	// only +2 as we have to remove the Copper that was just trashed
 		
 		if (valueOfTrashing > valueOfNotTrashing) {
-			player.trashCardFromHand(CardType.COPPER);
+			player.trashCard(CardType.COPPER, CardSink.HAND);
 			player.log("Trashes COPPER");
 			treasureValue += 3;		// to cope with Throne Rooms, which might trash a copper twice (or more)
 		}

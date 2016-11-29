@@ -8,14 +8,14 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 	protected Decider<Player> purchase, action;
 	private String name;
-	
+
 	public DominionDeciderContainer(Decider<Player> purchase, Decider<Player> action) {
 		this.purchase = purchase;
 		this.action = action;
 		if (action == null || purchase == null)
 			throw new AssertionError("Both Purchase and Action deciders must be specified");
 	}
-	
+
 	public Decider<Player> getDecider(Player player) {
 		switch (player.getPlayerState()) {
 		case PURCHASING:
@@ -35,13 +35,13 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {
-		ActionEnum<Player> a = exp.getActionTaken().getType();
-		if (a instanceof DominionBuyAction) {
-			purchase.learnFrom(exp, maxResult);
-			return;
-		}
-		if (a instanceof DominionPlayAction) {
-			action.learnFrom(exp, maxResult);
+		Action<Player> a = exp.getActionTaken();
+		if (a instanceof DominionAction) {
+			if (((DominionAction)a).isAction()) {
+				action.learnFrom(exp, maxResult);
+			} else {
+				purchase.learnFrom(exp, maxResult);
+			}
 			return;
 		}
 		throw new AssertionError("Unknown action type " + a);
@@ -51,13 +51,13 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public void learnFromBatch(List<ExperienceRecord<Player>> exp, double maxResult) {
 		if (exp.isEmpty())
 			return;
-		ActionEnum<Player> a = exp.get(0).getActionTaken().getType();
-		if (a instanceof DominionBuyAction) {
-			purchase.learnFromBatch(exp, maxResult);
-			return;
-		}
-		if (a instanceof DominionPlayAction) {
-			action.learnFromBatch(exp, maxResult);
+		Action<Player> a = exp.get(0).getActionTaken();
+		if (a instanceof DominionAction) {
+			if (((DominionAction)a).isAction()) {
+				action.learnFromBatch(exp, maxResult);
+			} else {
+				purchase.learnFromBatch(exp, maxResult);
+			}
 			return;
 		}
 		throw new AssertionError("Unknown action type " + a);
@@ -67,13 +67,13 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public void learnFromBatch(ExperienceRecord<Player>[] exp, double maxResult) {
 		if (exp.length == 0)
 			return;
-		ActionEnum<Player> a = exp[0].getActionTaken().getType();
-		if (a instanceof DominionBuyAction) {
-			purchase.learnFromBatch(exp, maxResult);
-			return;
-		}
-		if (a instanceof DominionPlayAction) {
-			action.learnFromBatch(exp, maxResult);
+		Action<Player> a = exp[0].getActionTaken();
+		if (a instanceof DominionAction) {
+			if (((DominionAction)a).isAction()) {
+				action.learnFromBatch(exp, maxResult);
+			} else {
+				purchase.learnFromBatch(exp, maxResult);
+			}
 			return;
 		}
 		throw new AssertionError("Unknown action type " + a);
@@ -139,7 +139,7 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public Action<Player> decide(Player decidingAgent, List<ActionEnum<Player>> possibleActions) {
 		return getDecider(decidingAgent).decide(decidingAgent, possibleActions);
 	}
-	
+
 	@Override
 	public String toString() {
 		return name;

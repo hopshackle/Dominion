@@ -2,6 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.AttackCard;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.Player;
 
@@ -17,7 +18,7 @@ public class Witch extends AttackCard {
 	
 		if (game.getNumberOfCardsRemaining(CardType.CURSE) > 0) {
 			target.log("Attacked by WITCH and draws CURSE");
-			target.takeCardFromSupplyIntoDiscard(CardType.CURSE);
+			target.takeCardFromSupply(CardType.CURSE, CardSink.DISCARD);
 		}
 	}
 

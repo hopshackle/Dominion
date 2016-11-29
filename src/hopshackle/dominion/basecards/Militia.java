@@ -30,7 +30,7 @@ public class Militia extends AttackCard {
 		CardType[] bestCombination = new CardType[3];
 		LookaheadDecider<Player> victimDecider = new HardCodedDiscardDecider(
 				new DominionStateFactory(HopshackleUtilities.convertList(victim.getDecider().getVariables())), 
-				HopshackleUtilities.convertList(victim.getDecider().getActions()));
+				hand);
 		double bestValue = -1.0;
 		for (int loop=0; loop<cardsInHand.length; loop++) {
 			possibleCombination[0] = cardsInHand[loop];

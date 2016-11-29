@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -8,10 +10,10 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 
 	private boolean ableToLearn = true;
 
-	public DominionNeuralDecider(List<CardType> actions, List<CardValuationVariables> variables) {
+	public DominionNeuralDecider(List<ActionEnum<Player>> actions, List<CardValuationVariables> variables) {
 		super(
 				new DominionStateFactory(HopshackleUtilities.convertList(variables)), 
-				HopshackleUtilities.convertList(actions), 100.0
+				actions, 100.0
 			);
 	}
 
@@ -36,7 +38,7 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 	public static List<ActionEnum<Player>> dominionPlayOptions(Player player) {
 		List<ActionEnum<Player>> retValue = null;
 		retValue = player.getActionsInHand();
-		retValue.add(CardType.NONE);
+		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, ChangeType.PLAY));
 		return retValue;
 	}
 

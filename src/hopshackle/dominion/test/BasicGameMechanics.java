@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
@@ -122,7 +123,7 @@ public class BasicGameMechanics {
 		assertEquals(p1.getDeckSize(), 0);
 		assertEquals(p1.getDiscardSize(), 5);
 		assertEquals(p1.getHandSize(), 5);
-		p1.takeCardFromSupplyIntoDiscard(CardType.COPPER);
+		p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		assertEquals(p1.getDeckSize(), 0);
 		assertEquals(p1.getDiscardSize(), 6);
 		assertEquals(p1.getHandSize(), 5);

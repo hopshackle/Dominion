@@ -6,10 +6,10 @@ import hopshackle.simulation.*;
 
 public class MCTSMasterDominion extends MCTSMasterDecider<Player> {
 
-	public MCTSMasterDominion(List<CardType> actions, List<CardValuationVariables> variables, Decider<Player> rolloutDecider, Decider<Player> opponentModel) {
+	public MCTSMasterDominion(List<ActionEnum<Player>> actions, List<CardValuationVariables> variables, Decider<Player> rolloutDecider, Decider<Player> opponentModel) {
 		super(
 				new DominionStateFactory(HopshackleUtilities.convertList(variables)), 
-				HopshackleUtilities.convertList(actions),
+				actions,
 				rolloutDecider, opponentModel
 			);
 	}
