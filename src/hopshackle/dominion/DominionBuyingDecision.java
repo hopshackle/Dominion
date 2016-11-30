@@ -12,15 +12,12 @@ public class DominionBuyingDecision {
 	private int totalBudget;
 	private int totalBuys;
 	private Map<CardType, Integer> limitedCards;
-	private PositionSummary overridePS = null;
-	private DominionStateFactory stateFactory;
 
 	public DominionBuyingDecision(Player player, int budget, int buys) {
 		if (buys > 3) buys = 3;		// for performance reasons to avoid combinatorial explosion
 		this.player = player;
 		totalBudget = budget;
 		totalBuys = buys;
-		stateFactory = new DominionStateFactory(player.getDecider().getVariables());
 		DominionGame game = player.getGame();
 		limitedCards = new HashMap<CardType, Integer>();
 		for (CardType card : game.availableCardsToPurchase()) {
@@ -29,14 +26,7 @@ public class DominionBuyingDecision {
 		}
 	}
 
-	public void setPositionSummaryOverride(PositionSummary ps) {
-		if (ps != null)
-			overridePS = ps.clone();
-		else
-			overridePS = null;
-	}
-
-	public List<CardType> getBestPurchase() {
+	public DominionAction getBestPurchase() {
 		List<List<CardType>> possiblePurchases = getPossibleBuys(totalBuys, 20, totalBudget);
 		List<CardType> noPurchases = new ArrayList<CardType>();
 		noPurchases.add(CardType.NONE);
@@ -44,33 +34,18 @@ public class DominionBuyingDecision {
 		return chooseBestOption(possiblePurchases);
 	}
 
-	public List<CardType> getBestMandatoryPurchase() {
+	public DominionAction getBestMandatoryPurchase() {
 		// in this case, CardType.NONE is not permitted. We must buy something.
 		List<List<CardType>> possiblePurchases = getPossibleBuys(totalBuys, 20, totalBudget);
 		return chooseBestOption(possiblePurchases);
 	}
 
-	private List<CardType> chooseBestOption(List<List<CardType>> allOptions) {
-		double bestValue = Double.NEGATIVE_INFINITY;
-		List<CardType> bestPurchase = null;
-		PositionSummary ps, startingPS = null;
-		if (overridePS == null) 
-			startingPS = (PositionSummary) stateFactory.getCurrentState(player);
-		else
-			startingPS = overridePS.clone();
-
-		for (List<CardType> purchase : allOptions) {
-			ps = startingPS.clone();
-			for (CardType card : purchase) 
-				ps.drawCard(card);
-			LookaheadDecider<Player> decider = player.getLookaheadDecider();
-			double value = decider.value(ps);
-			if (value > bestValue) {
-				bestValue = value;
-				bestPurchase = purchase;
-			}
+	private DominionAction chooseBestOption(List<List<CardType>> optionList) {
+		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
+		for (List<CardType> option : optionList) {
+			allOptions.add(convertCardListToActionEnum(option));
 		}
-		return bestPurchase;
+		return (DominionAction) player.getDecider().decide(player, allOptions);
 	}
 
 	private boolean breaksCardLimit(List<CardType> purchase) {
@@ -133,13 +108,17 @@ public class DominionBuyingDecision {
 		List<List<CardType>> temp = getPossibleBuys(totalBuys, totalBudget, totalBudget);
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (final List<CardType> purc : temp) {
-			if (purc.size() == 1) {
-				retValue.add(new CardTypeAugment(purc.get(0), CardSink.DISCARD, ChangeType.GAIN));
-			} else {
-				retValue.add(new CardTypeList(purc));
-			}
+			retValue.add(convertCardListToActionEnum(purc));
 		}
 		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN));
 		return retValue;
+	}
+	
+	private ActionEnum<Player> convertCardListToActionEnum(List<CardType> cardList) {
+		if (cardList.size() == 1) {
+			return new CardTypeAugment(cardList.get(0), CardSink.DISCARD, ChangeType.GAIN);
+		} else {
+			return new CardTypeList(cardList);
+		}
 	}
 }

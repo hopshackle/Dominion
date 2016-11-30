@@ -120,6 +120,7 @@ public enum CardType {
 			if (ct.isAction())
 				retValue.add(new CardTypeAugment(ct, CardSink.HAND, ChangeType.PLAY));
 		}
+		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, ChangeType.PLAY));
 		return retValue;
 	}
 }

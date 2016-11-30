@@ -6,6 +6,7 @@ import java.util.*;
 
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.simulation.ActionEnum;
 import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
@@ -217,7 +218,8 @@ public class BuysActionsAndPurchasePowerFromCards {
 		p1.setDecider(generalPurchaseDecider);
 		p1.takeActions();
 		DominionBuyingDecision dpd = new DominionBuyingDecision(p1, 12, 3);
-		List<CardType> purchase = dpd.getBestPurchase();
+		ActionEnum<Player> action = dpd.getBestPurchase().getType();
+		List<CardType> purchase = ((CardTypeList)action).getCards();
 		assertEquals(purchase.size(), 3);
 		int gold = 0;
 		int smithy = 0;
@@ -242,8 +244,9 @@ public class BuysActionsAndPurchasePowerFromCards {
 		for (int i = 0; i < 9; i++)
 			game.drawCard(CardType.SMITHY);
 		assertEquals(game.getNumberOfCardsRemaining(CardType.SMITHY), 1);
-		DominionBuyingDecision dpd = new DominionBuyingDecision(p1, 12, 3);
-		List<CardType> purchase = dpd.getBestPurchase();
+		DominionBuyingDecision dpd= new DominionBuyingDecision(p1, 12, 3);
+		ActionEnum<Player> action = dpd.getBestPurchase().getType();
+		List<CardType> purchase = ((CardTypeList)action).getCards();
 		assertEquals(purchase.size(), 3);
 		int gold = 0;
 		int smithy = 0;

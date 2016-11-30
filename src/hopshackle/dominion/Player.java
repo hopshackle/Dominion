@@ -111,6 +111,9 @@ public class Player extends Agent {
 		if (playerState != State.PURCHASING) 
 			throw new AssertionError("Incorrect state for Purchasing " + playerState);
 		refreshPositionSummary();
+		String buys = " buys";
+		if (getBuys() == 1) buys = " buy";
+		log("Has budget of " + getBudget() + " with " + getBuys() + buys);
 		DominionAction decision = (DominionAction) getDecider().decide(this);
 		decision.start();
 		decision.run();
@@ -247,31 +250,6 @@ public class Player extends Agent {
 		retValue.addAll(discard.getAllCards());
 		retValue.addAll(revealedCards.getAllCards());
 		return retValue;
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	/* horribly messy kludge. This is purely temporary while I test MCTS framework
-	 * for Card Buying. This will then be removed once a generalised decision stream is implemented.
-	 */
-	public LookaheadDecider<Player> getLookaheadDecider() {
-		Decider<Player> d = decider;
-		if (decider instanceof DominionDeciderContainer) {
-			d = ((DominionDeciderContainer)decider).purchase;
-		}
-		if (d instanceof LookaheadDecider) {
-			return (LookaheadDecider) d;
-		} else if (d instanceof MCTSMasterDecider) {
-			d =  ((MCTSMasterDecider) d).getRolloutDecider();
-			if (d instanceof DominionDeciderContainer)
-				d = ((DominionDeciderContainer)d).purchase;
-			return (LookaheadDecider<Player>) d;
-		} else if (d instanceof MCTSChildDecider) {
-			d =  ((MCTSChildDecider) d).getRolloutDecider();
-			if (d instanceof DominionDeciderContainer)
-				d = ((DominionDeciderContainer)d).purchase;
-			return (LookaheadDecider<Player>) d;
-		}
-		throw new AssertionError("No LookaheadDecider available");
 	}
 
 	@SuppressWarnings("unchecked")

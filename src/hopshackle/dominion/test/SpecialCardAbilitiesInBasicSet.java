@@ -18,6 +18,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
 	private ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
 	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUse);
+	private HashMap<CardType, Double> purchasePreferences  = new HashMap<CardType, Double>();
 
 	@Before
 	public void setup() {
@@ -32,7 +33,6 @@ public class SpecialCardAbilitiesInBasicSet {
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
 
-		HashMap<CardType, Double> purchasePreferences = new HashMap<CardType, Double>();
 		purchasePreferences.put(CardType.COPPER, 0.10);
 		purchasePreferences.put(CardType.ESTATE, 0.09);
 		purchasePreferences.put(CardType.SILVER, 0.30);
@@ -260,35 +260,6 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertFalse(p3.getCopyOfHand().contains(CardType.SMITHY));
 	}
 
-	@Test
-	public void remodelDoesntTurnGoldIntoProvinceIfItStopsItBuyingAProvince() {
-		for (CardType ct : p2.getCopyOfHand())
-			p2.discard(ct);
-		for (int i = 0; i < 3; i++)
-			p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
-		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
-		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
-		assertEquals(p2.totalTreasureValue(), 16);	// starting 7, plus 3 gold
-
-		p2.takeActions();
-		assertEquals(p2.getHandSize(), 3);	// Remodel played, Estate Remodeled to silver
-		assertEquals(p2.getDiscardSize(), 6);	// Silver remodeled from Estate
-		assertEquals(p2.totalTreasureValue(), 18);	// starting 7, plus Silver, plus 3 gold
-		assertEquals(p2.totalVictoryValue(), 3); //minus Estate (starts with 3, one inserted into hand, one remodeled)
-
-		for (CardType ct : p3.getCopyOfHand())
-			p3.discard(ct);
-		for (int i = 0; i < 4; i++)
-			p3.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));	// one extra Gold compared to above
-		p3.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
-		p3.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
-
-		p3.takeActions();
-		assertEquals(p3.getHandSize(), 4);	// Remodel played, Gold Remodeled to Province
-		assertEquals(p3.getDiscardSize(), 6);	// Province remodeled from Gold
-		assertEquals(p3.totalTreasureValue(), 16);	// starting 7, plus 4 gold, minus the remodeled gold
-		assertEquals(p3.totalVictoryValue(), 10); // 3 starting estates, plus one inserted into hand, plus province
-	}
 
 	@Test
 	public void workshopBuysUpToCostOfFour() {
@@ -300,6 +271,23 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.totalTreasureValue(), 9); // buys silver given budget of four
 		p2.buyCards();
 		assertEquals(p2.getHandSize(), 5);
+		assertEquals(p2.getDiscardSize(), 2);
+	}
+	
+	@Test
+	public void workshopDoesNotUseTreasureInHand() {
+		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WORKSHOP));
+		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
+		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
+		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
+		assertEquals(p2.getNumberOfTypeTotal(CardType.SILVER), 0);
+		p2.takeActions();
+		assertEquals(p2.getHandSize(), 8);
+		assertTrue(p2.getAllCards().contains(CardType.WORKSHOP));
+		assertEquals(p2.getDiscardSize(), 1);
+		assertEquals(p2.getNumberOfTypeTotal(CardType.SILVER), 1); // buys silver given budget of four
+		p2.buyCards();
+		assertEquals(p2.getHandSize(), 8);
 		assertEquals(p2.getDiscardSize(), 2);
 	}
 
@@ -587,6 +575,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.insertCardDirectlyIntoHand(new Moat());
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CURSE));
 		assertEquals(p2.getNumberOfTypeTotal(CardType.CURSE), 1);
+		assertEquals(p2.getHandSize(), 8);
 		p2.takeActions();
 		assertEquals(p2.getNumberOfTypeInHand(CardType.MOAT), 0);
 		assertEquals(p2.getNumberOfTypeInHand(CardType.CURSE), 0);
@@ -647,13 +636,11 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void moneylenderTrashesACopperWhenAdvantageous() {
 		Moneylender moneylender = new Moneylender();
+		purchasePreferences.put(CardType.COPPER, -0.05);
 		p2.insertCardDirectlyIntoHand(moneylender);
 		int copper = p2.getNumberOfTypeInHand(CardType.COPPER);
 		assertEquals(p2.getNumberOfTypeTotal(CardType.COPPER), 7);
-		if (copper == 3) {
-			p2.discard(CardType.COPPER);
-			copper--;		// as three Copper means it's better not to trash Copper with Moneylender
-		}
+
 		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
 		p2.takeActions();
 		assertEquals(moneylender.getAdditionalPurchasePower(), 3);
@@ -669,6 +656,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void moneylenderDoesNotTrashACopperWhenAdvantageous() {
 		Moneylender moneylender = new Moneylender();
+		purchasePreferences.put(CardType.COPPER, 0.05);
 		p2.insertCardDirectlyIntoHand(moneylender);
 		int copper = p2.getNumberOfTypeInHand(CardType.COPPER);
 		assertEquals(p2.getNumberOfTypeTotal(CardType.COPPER), 7);

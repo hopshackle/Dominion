@@ -1,6 +1,7 @@
 package hopshackle.dominion.test;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -35,9 +36,12 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 			cards.add((CardTypeAugment) input);
 		}
 		for (CardTypeAugment option : cards) {
-			retValue -= 0.05;
+			double sign = 1.0;
+			if (option.type == ChangeType.LOSS)
+				sign = -1.0;
+			retValue -= 0.05 * sign;
 			if (values.containsKey(option.card))
-				retValue += values.get(option.card);
+				retValue += values.get(option.card) * sign;
 			if (option.card == CardType.NONE)
 				retValue = 0.05;
 		}

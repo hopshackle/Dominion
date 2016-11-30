@@ -1,7 +1,11 @@
 package hopshackle.dominion.basecards;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 public class Thief extends AttackCard {
@@ -13,23 +17,23 @@ public class Thief extends AttackCard {
 	@Override
 	public void executeAttackOnPlayer(Player target, Player attacker) {
 		target.log("Is target of THIEF");
+		// always trash the highest value treasure card drawn
 		Card[] topTwoCards = discardTopTwoCards(target);
 		Card cardToTrash = getHighestTreasureCard(topTwoCards);
 		if (cardToTrash.getType() == CardType.NONE)
 			return;
 		target.trashCard(cardToTrash.getType(), CardSink.DISCARD);
-		LookaheadDecider<Player> decider = attacker.getLookaheadDecider();
-		PositionSummary ps = (PositionSummary) decider.getCurrentState(attacker);
-		double baseValue = decider.value(ps);
-		ps.addCard(cardToTrash.getType(), CardSink.DISCARD);
-		double newValue = decider.value(ps);
-		if (newValue > baseValue) {
-			attacker.putCardOnDiscard(cardToTrash);
-			attacker.log("Keeps " + cardToTrash);
-			target.log(cardToTrash + " is taken by THIEF");
-		} else {
-			target.log("THIEF Trashes " + cardToTrash);
-		}
+
+		// then decide whether to keep the trashed card
+		CardTypeAugment doNothing = new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN);
+		CardTypeAugment gainCard = new CardTypeAugment(cardToTrash.getType(), CardSink.DISCARD, ChangeType.GAIN);
+		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
+		allOptions.add(doNothing);
+		allOptions.add(gainCard);
+		
+		DominionAction decision = (DominionAction) attacker.getDecider().decide(attacker, allOptions);
+		decision.start();
+		decision.run();
 	}
 
 	private Card[] discardTopTwoCards(Player target) {

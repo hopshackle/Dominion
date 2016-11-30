@@ -1,12 +1,8 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.DominionBuyingDecision;
-import hopshackle.dominion.Player;
-import hopshackle.dominion.PositionSummary;
-import hopshackle.simulation.LookaheadDecider;
+import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.*;
+import hopshackle.simulation.*;
 
 import java.util.*;
 
@@ -18,68 +14,35 @@ public class Remodel extends Card {
 
 	public void takeAction(Player player) {
 		super.takeAction(player);
-		
-		/*
-		 * Now I want to:
-		 * 	- Compile a list of all possible actions, which is simply every distinct card in hand, and every
-		 *  card it could be remodelled to. 
-		 *  - This does not currently specify an ActionEnum. I can have an ActionEnum that is a set of acquired cards,
-		 *  but not one that is a combination of acquiring and losing. This is therefore what I need first.
-		 *  - That would give the ActionEnum list that I simply feed to the Decider. 
-		 */
-		
-		LookaheadDecider<Player> purchaseDecider = player.getLookaheadDecider();
-		List<CardType> hand = player.getCopyOfHand();
-		CardType[] cardsInHand = hand.toArray(new CardType[1]);
-		if (cardsInHand[0] == null) return;
-		CardType cardToRemodel = CardType.NONE;
-		CardType cardToPurchase = CardType.NONE;
 
-		int treasureInHand = player.getBudget();		// doesn't take account of unrevealed purchase power...but still better
-		int buys = player.getBuys();
-		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, treasureInHand, buys);
-		List<CardType> purchaseBeforeRemodel = nextBuy.getBestPurchase();
-		PositionSummary basePS = (PositionSummary) purchaseDecider.getCurrentState(player);
-		for (CardType ct : purchaseBeforeRemodel)
-			basePS.addCard(ct, CardSink.DISCARD);
-		double startValue = purchaseDecider.value(basePS);
+		List<CardType> hand = new ArrayList<CardType>();
+		for (CardType card : player.getCopyOfHand()) {
+			if (!hand.contains(card))
+				hand.add(card);
+		}
 
-		player.setState(Player.State.PURCHASING);
-		double bestValue = 0.0;
-		Set<CardType> optionsAlreadyExamined = new HashSet<CardType>();
-		for (int loop=0; loop<cardsInHand.length; loop++) {
-			CardType possibleCardToRemodel = cardsInHand[loop];
-			if (optionsAlreadyExamined.contains(possibleCardToRemodel)) continue;
-			optionsAlreadyExamined.add(possibleCardToRemodel);
-			PositionSummary withoutCard = (PositionSummary) purchaseDecider.getCurrentState(player);
-			withoutCard.trashCard(possibleCardToRemodel, CardSink.HAND);
-			int budget = possibleCardToRemodel.getCost() + 2;
-			DominionBuyingDecision dpd = new DominionBuyingDecision(player, budget, 1);
-			dpd.setPositionSummaryOverride(withoutCard);
-			CardType replacementCard = dpd.getBestMandatoryPurchase().get(0);
-			withoutCard.drawCard(replacementCard);
-
-			// but we also need to take into account the upcoming purchase, as we don't want to trash a Treasure card if it stops us buying what we want immediately afterwards
-			// if it is not a treasure card, then this should result in the same purchase as included in basePS above
-			DominionBuyingDecision nextBuyWithoutRemodeledCard = new DominionBuyingDecision(player, treasureInHand - possibleCardToRemodel.getTreasure(), buys);
-			List<CardType> purchaseAfterRemodel = nextBuyWithoutRemodeledCard.getBestPurchase();
-			for (CardType ct : purchaseAfterRemodel)
-				withoutCard.addCard(ct, CardSink.DISCARD);
-
-			double value = purchaseDecider.value(withoutCard) - startValue;
-			if (value > bestValue) {
-				bestValue = value;
-				cardToRemodel = possibleCardToRemodel;
-				cardToPurchase = replacementCard;
+		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
+		for (CardType cardToTrash : hand) {
+			List<CardType> targets = new ArrayList<CardType>();
+			for (CardType t : player.getGame().availableCardsToPurchase()) {
+				if (t != CardType.NONE && t.getCost() <= cardToTrash.getCost() + 2)
+					targets.add(t);
+			}
+			for (CardType cardToAcquire : targets) {
+				CardTypeAugment trashAction = new CardTypeAugment(cardToTrash, CardSink.HAND, ChangeType.LOSS);
+				CardTypeAugment gainAction = new CardTypeAugment(cardToAcquire, CardSink.DISCARD, ChangeType.GAIN);
+				List<CardTypeAugment> compositeAction = new ArrayList<CardTypeAugment>();
+				compositeAction.add(trashAction);
+				compositeAction.add(gainAction);
+				allOptions.add(new CardTypeList(compositeAction, true));
 			}
 		}
-
-		if (cardToRemodel != CardType.NONE && cardToPurchase != CardType.NONE) {
-			player.trashCard(cardToRemodel, CardSink.HAND);
-			player.takeCardFromSupply(cardToPurchase, CardSink.DISCARD);
-			player.log("Trashes a " + cardToRemodel + " for a " + cardToPurchase);
-		}
-
+		allOptions.add(new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN));
+		// choose best option, and execute it
+		player.setState(Player.State.PURCHASING);
+		DominionAction actionChosen = (DominionAction) player.getDecider().decide(player, allOptions);
+		actionChosen.start();
+		actionChosen.run();
 		player.setState(Player.State.PLAYING);
 	}
 

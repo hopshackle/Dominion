@@ -21,6 +21,10 @@ public class CardTypeList implements ActionEnum<Player> {
 		}
 	}
 
+	/*
+	 * flag is simply to provide a different signature to get around java erasure
+	 * (otherwise there is no difference between this constructor and the one above)
+	 */
 	public CardTypeList(List<CardTypeAugment> augments, boolean flag) {
 		cards = augments;
 	}

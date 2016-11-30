@@ -13,7 +13,7 @@ public class DominionAction extends Action<Player> {
 	private boolean isAction;
 
 	public DominionAction(Player p, CardTypeAugment actionEnum) {
-		super(actionEnum, p, false);
+		super(actionEnum, p, 0l, false);
 		this.cardType = new ArrayList<CardTypeAugment>();
 		this.cardType.add(actionEnum);
 		player = p;
@@ -21,7 +21,7 @@ public class DominionAction extends Action<Player> {
 	}
 
 	public DominionAction(Player player, CardTypeList aeList) {
-		super(aeList, player, false);
+		super(aeList, player, 0l, false);
 		this.cardType = aeList.cards;
 		this.player = player;
 	}

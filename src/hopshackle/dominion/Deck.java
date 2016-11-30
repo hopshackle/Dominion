@@ -57,6 +57,7 @@ public class Deck {
 	}
 
 	public int getNumberOfType(CardType type) {
+		if (type == CardType.NONE) return 1;
 		int counter = 0;
 		for (Card c : cards) {
 			if (c.getType() == type) 

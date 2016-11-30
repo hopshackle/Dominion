@@ -55,7 +55,6 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	
 	@Override
 	public boolean isChooseable(Player p) {
-		if (this.card == CardType.NONE) return true;
 		if (p.isTakingActions()) {
 			// distinguish between chooseability at purchase and use
 			if (p.getNumberOfTypeInHand(this.card) > 0 && this.type == ChangeType.PLAY)

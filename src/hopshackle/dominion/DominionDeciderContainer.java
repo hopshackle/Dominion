@@ -134,6 +134,11 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public ActionEnum<Player> makeDecision(Player decidingAgent) {
 		return getDecider(decidingAgent).makeDecision(decidingAgent);
 	}
+	@Override
+	public ActionEnum<Player> makeDecision(Player decidingAgent, List<ActionEnum<Player>> possibleActions) {
+		return getDecider(decidingAgent).makeDecision(decidingAgent, possibleActions);
+	}
+
 
 	@Override
 	public Action<Player> decide(Player decidingAgent, List<ActionEnum<Player>> possibleActions) {
