@@ -6,14 +6,14 @@ import java.util.*;
 
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.simulation.SimProperties;
+import hopshackle.simulation.*;
 
 import org.junit.*;
 
 public class BasicGameMechanics {
 
 	public DominionGame game;
-	TestDominionDecider copperDecider, woodcutterDecider;
+	TestDominionDecider copperDecider, woodcutterDecider, workshopDecider;
 
 	@Before
 	public void setUp() throws Exception {
@@ -21,6 +21,7 @@ public class BasicGameMechanics {
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		copperDecider = TestDominionDecider.getExample(CardType.COPPER);
 		woodcutterDecider = TestDominionDecider.getExample(CardType.WOODCUTTER);
+		workshopDecider = TestDominionDecider.getExample(CardType.WORKSHOP);
 	}
 
 	@Test
@@ -274,6 +275,28 @@ public class BasicGameMechanics {
 		assertEquals(newPlayer1.getBudget(), oldBudget+2);
 		assertEquals(newPlayer1.getBuys(), 2);
 		assertEquals(newPlayer1.getCopyOfHand().size(), 5);
+	}
+	
+	@Test
+	public void cloneGameWhilePlaying() {
+		Player p1 = game.getCurrentPlayer();
+		p1.setDecider(workshopDecider);
+		p1.insertCardDirectlyIntoHand(new Card(CardType.WORKSHOP));
+		p1.decide();
+		DominionAction nextAction = (DominionAction) p1.getNextAction();
+		assertTrue(nextAction.getType().getEnum() == CardType.WORKSHOP);
+		
+		nextAction.start();
+		
+		DominionGame clonedGame = game.clone(p1);
+		assertEquals(clonedGame.getCurrentPlayerNumber(), 1);
+		
+		Player newPlayer1 = clonedGame.getPlayer(1);
+		DominionAction nextClonedAction = (DominionAction) newPlayer1.getNextAction();
+		assertTrue(nextClonedAction != null);
+		assertTrue(nextAction.getType().getEnum() == CardType.WORKSHOP);
+		assertTrue(nextClonedAction != nextAction);
+		
 	}
 	
 	@Test

@@ -5,6 +5,7 @@ import hopshackle.dominion.CardType;
 import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.Player;
+import hopshackle.simulation.ActionEnum;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class Mine extends Card {
 		super(CardType.MINE);
 	}
 
-	public void takeAction(Player player) {		
+	public List<ActionEnum<Player>> takeAction(Player player) {		
 		super.takeAction(player);
 		DominionGame game = player.getGame();
 		List<CardType> hand = player.getCopyOfHand();
@@ -31,15 +32,16 @@ public class Mine extends Card {
 			player.insertCardDirectlyIntoHand(new Card(CardType.GOLD));
 			game.drawCard(CardType.GOLD);
 			player.log("Trashes SILVER to gain GOLD");
-			return;
+			return emptyList;
 		}
 		if (hasCopper) {
 			player.trashCard(CardType.COPPER, CardSink.HAND);
 			player.insertCardDirectlyIntoHand(new Card(CardType.SILVER));
 			game.drawCard(CardType.SILVER);
 			player.log("Trashes COPPER to gain SILVER");
-			return;
+			return emptyList;
 		}
+		return emptyList;
 	}
 
 }

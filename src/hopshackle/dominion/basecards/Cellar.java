@@ -3,6 +3,7 @@ package hopshackle.dominion.basecards;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.Player;
+import hopshackle.simulation.ActionEnum;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class Cellar extends Card{
 
 	// Initially just discard all victory cards
 	// TODO: also discard any action cards if no actions left
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		List<CardType> hand = player.getCopyOfHand();
 		int cardsToDraw = 0;
@@ -27,5 +28,6 @@ public class Cellar extends Card{
 		for (int loop=0; loop<cardsToDraw; loop++) {
 			player.drawTopCardFromDeckIntoHand();
 		}
+		return emptyList;
 	}
 }

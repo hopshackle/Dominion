@@ -1,8 +1,12 @@
 package hopshackle.dominion;
 
+import hopshackle.simulation.*;
+import java.util.*;
+
 public class Card {
 
 	private CardType type;
+	protected static List<ActionEnum<Player>> emptyList = new ArrayList<ActionEnum<Player>>();
 	
 	public Card(CardType type) {
 		this.type = type;
@@ -47,11 +51,11 @@ public class Card {
 		return type.getAdditionalPurchasePower();
 	}
 	
-	public void takeAction (Player player) {
+	public List<ActionEnum<Player>> takeAction (Player player) {
 		for (int n=0; n < type.getDraw(); n++) {
 			player.drawTopCardFromDeckIntoHand();
 		}
-		return;
+		return emptyList;
 	}
 
 	public boolean executeReactionAgainst(AttackCard attackCard, Player attacker, Player victim) {
@@ -59,5 +63,9 @@ public class Card {
 	}
 	
 	public void reset() {
+	}
+	
+	public DominionAction followUpAction() {
+		return null;
 	}
 }

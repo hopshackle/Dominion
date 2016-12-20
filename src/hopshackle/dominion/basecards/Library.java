@@ -3,6 +3,7 @@ package hopshackle.dominion.basecards;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.Player;
+import hopshackle.simulation.ActionEnum;
 
 import java.util.*;
 
@@ -12,11 +13,11 @@ public class Library extends Card {
 		super(CardType.LIBRARY);
 	}
 
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		int numberOfActionsOutstanding = player.getActionsLeft() - 1;	// as this otherwise includes the Library action itself
 		List<Card> setAsideCards = new ArrayList<Card>();
-		if (player.getHandSize() > 6) return;
+		if (player.getHandSize() > 6) return emptyList;;
 		do {
 			Card nextCard = player.drawTopCardFromDeckButNotIntoHand();
 			if (nextCard.getType() == CardType.NONE) {
@@ -35,6 +36,7 @@ public class Library extends Card {
 		} while (player.getHandSize() < 7);
 		for (Card c : setAsideCards)
 			player.putCardOnDiscard(c);
+		return emptyList;
 	}
 
 }

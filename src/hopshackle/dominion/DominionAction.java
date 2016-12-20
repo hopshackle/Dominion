@@ -4,6 +4,7 @@ import java.util.*;
 
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
+import hopshackle.simulation.Action.State;
 
 public class DominionAction extends Action<Player> {
 	
@@ -11,6 +12,9 @@ public class DominionAction extends Action<Player> {
 	private List<CardTypeAugment> cardType;
 	private Player player;
 	private boolean isAction;
+	
+	protected DominionAction followUpAction;
+	protected List<ActionEnum<Player>> possibleOptions = new ArrayList<ActionEnum<Player>>();
 
 	public DominionAction(Player p, CardTypeAugment actionEnum) {
 		super(actionEnum, p, 0l, false);
@@ -26,6 +30,15 @@ public class DominionAction extends Action<Player> {
 		this.player = player;
 	}
 
+	public DominionAction(DominionAction master, Player newPlayer) {
+		super(master.actionType, newPlayer, 0l, false);
+		player = newPlayer;
+		cardType = master.cardType;
+		isAction = master.isAction();
+		followUpAction = (followUpAction == null) ? null : master.followUpAction.clone(newPlayer);
+		possibleOptions = master.possibleOptions;
+	}
+
 	public String toString() {
 		StringBuffer retValue = new StringBuffer();
 		for (CardTypeAugment c : cardType) {
@@ -33,7 +46,7 @@ public class DominionAction extends Action<Player> {
 		}
 		return retValue.toString();
 	}
-	
+
 	@Override
 	protected void doStuff() {
 		for (CardTypeAugment component : cardType) {
@@ -45,7 +58,9 @@ public class DominionAction extends Action<Player> {
 						player.log("Chooses not to play an Action card.");
 					} else {
 						player.log("Plays " + cardToPlay.toString());
-						cardToPlay.takeAction(player);
+						possibleOptions = cardToPlay.takeAction(player);
+						followUpAction = cardToPlay.followUpAction();
+						
 						for (int i = 0; i < cardToPlay.getAdditionalActions(); i++)
 							player.incrementActionsLeft();
 					}
@@ -85,5 +100,9 @@ public class DominionAction extends Action<Player> {
 
 	public boolean isAction() {
 		return isAction;
+	}
+	
+	public DominionAction clone(Player newPlayer) {
+		return new DominionAction(this, newPlayer);
 	}
 }

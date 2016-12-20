@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.simulation.ActionEnum;
+
 import java.util.List;
 
 public abstract class AttackCard extends Card {
@@ -11,9 +13,10 @@ public abstract class AttackCard extends Card {
 	public abstract void executeAttackOnPlayer(Player target, Player attacker);
 	
 	@Override
-	public void takeAction(Player player) {
-		super.takeAction(player);
+	public List<ActionEnum<Player>> takeAction(Player player) {
+		List<ActionEnum<Player>> retValue = super.takeAction(player);
 		executeAttack(player);
+		return retValue;
 	}
 
 	public void executeAttack(Player attacker) {

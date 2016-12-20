@@ -3,6 +3,7 @@ package hopshackle.dominion.basecards;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.Player;
+import hopshackle.simulation.ActionEnum;
 
 import java.util.*;
 
@@ -13,7 +14,7 @@ public class Adventurer extends Card {
 	}
 
 	@Override
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		int treasureCardsDrawn = 0;
 		boolean exhaustedDeckAndDiscard = false;
 		List<Card> revealedCards = new ArrayList<Card>();
@@ -32,5 +33,8 @@ public class Adventurer extends Card {
 
 		for (Card card : revealedCards)
 			player.discard(card.getType());
+		
+		return emptyList;
 	}
+
 }

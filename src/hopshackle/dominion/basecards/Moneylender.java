@@ -17,7 +17,7 @@ public class Moneylender extends Card {
 	}
 
 	@Override
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 
 		boolean hasCopper = false;
 		for (CardType ct : player.getCopyOfHand()) {
@@ -26,7 +26,7 @@ public class Moneylender extends Card {
 		}
 
 		if (!hasCopper) 
-			return;
+			return emptyList;;
 
 		// There are two actions to be evaluated:
 		// - Do Nothing
@@ -46,6 +46,7 @@ public class Moneylender extends Card {
 		if (chosenAction.getType().equals(trashCopper)) {
 			treasureValue += 3;		// to cope with Throne Rooms, which might trash a copper twice (or more)
 		}
+		return emptyList;
 	}
 
 	@Override

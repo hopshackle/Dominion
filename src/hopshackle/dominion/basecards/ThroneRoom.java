@@ -1,6 +1,9 @@
 package hopshackle.dominion.basecards;
 
+import java.util.List;
+
 import hopshackle.dominion.*;
+import hopshackle.simulation.ActionEnum;
 public class ThroneRoom extends Card {
 
 	private CardType enthronedCard;
@@ -9,13 +12,15 @@ public class ThroneRoom extends Card {
 		super(CardType.THRONE_ROOM);
 	}
 
-	public void takeAction(Player player) {
+	@Override
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		enthronedCard = ((CardTypeAugment) player.getDecider().makeDecision(player)).card;
 		player.log("Uses Throne Room to play " + enthronedCard);
 		Card card = player.playFromHandToRevealedCards(enthronedCard);
 		card.takeAction(player);
 		card.takeAction(player);
+		return emptyList;
 	}
 
 	@Override

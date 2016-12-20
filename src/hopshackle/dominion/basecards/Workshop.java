@@ -1,14 +1,17 @@
 package hopshackle.dominion.basecards;
 
+import java.util.List;
+
 import hopshackle.dominion.*;
+import hopshackle.simulation.ActionEnum;
 
 public class Workshop extends Card {
-
+	
 	public Workshop() {
 		super(CardType.WORKSHOP);
 	}
 
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		player.setState(Player.State.PURCHASING);
 		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, 4, 1);
@@ -17,5 +20,7 @@ public class Workshop extends Card {
 		action.start();
 		action.run();
 		player.setState(Player.State.PLAYING);
+		return emptyList;
 	}
+
 }

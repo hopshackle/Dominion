@@ -5,6 +5,7 @@ import java.util.List;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.Player;
+import hopshackle.simulation.ActionEnum;
 
 public class CouncilRoom extends Card {
 	
@@ -13,7 +14,7 @@ public class CouncilRoom extends Card {
 	}
 	
 	@Override
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		List<Player> otherPlayers = player.getGame().getAllPlayers();
 		for (Player other : otherPlayers) {
@@ -21,6 +22,7 @@ public class CouncilRoom extends Card {
 			other.log("Draws Card due to COUNCIL_ROOM");
 			other.drawTopCardFromDeckIntoHand();
 		}
+		return emptyList;
 	}
 
 }

@@ -19,6 +19,7 @@ public class PositionSummaryTest {
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		game.getCurrentPlayer().takeCardFromSupply(CardType.VILLAGE, CardSink.DISCARD);
 		game.getCurrentPlayer().takeCardFromSupply(CardType.GOLD, CardSink.DISCARD);
+		game.getCurrentPlayer().setState(Player.State.PLAYING);
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 	}
 
@@ -167,7 +168,7 @@ public class PositionSummaryTest {
 	public void applicationOfCardPlayFromInvalidState() {
 		game.getCurrentPlayer().takeActions();
 		p1 = game.getCurrentPlayer().getPositionSummaryCopy();
-		assertTrue(p1.getPlayerState() == Player.State.PURCHASING);
+		assertTrue(p1.getPlayerState() == Player.State.PRE_PURCHASE);
 		p1.drawCard(CardType.WOODCUTTER, CardSink.HAND);
 		ActionEnum<Player> testAction = new CardTypeAugment(CardType.WOODCUTTER, CardSink.HAND, ChangeType.PLAY);
 		try {

@@ -12,7 +12,7 @@ public class Remodel extends Card {
 		super(CardType.REMODEL);
 	}
 
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 
 		List<CardType> hand = new ArrayList<CardType>();
@@ -44,6 +44,7 @@ public class Remodel extends Card {
 		actionChosen.start();
 		actionChosen.run();
 		player.setState(Player.State.PLAYING);
+		return emptyList;
 	}
 
 }

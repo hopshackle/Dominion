@@ -1,10 +1,13 @@
 package hopshackle.dominion.basecards;
 
+import java.util.List;
+
 import hopshackle.dominion.AttackCard;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.DominionGame;
 import hopshackle.dominion.Player;
+import hopshackle.simulation.ActionEnum;
 
 public class Bureaucrat extends AttackCard {
 
@@ -12,13 +15,14 @@ public class Bureaucrat extends AttackCard {
 		super(CardType.BUREAUCRAT);
 	}
 
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		DominionGame game = player.getGame();
 		if (game.drawCard(CardType.SILVER)) {
 			player.insertCardDirectlyIntoHand(new Card(CardType.SILVER));
 			player.putCardFromHandOnTopOfDeck(CardType.SILVER);
 		}
+		return emptyList;
 	}
 
 	@Override

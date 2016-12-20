@@ -1,9 +1,12 @@
 package hopshackle.dominion.basecards;
 
+import java.util.List;
+
 import hopshackle.dominion.AttackCard;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
 import hopshackle.dominion.Player;
+import hopshackle.simulation.ActionEnum;
 
 public class Spy extends AttackCard {
 
@@ -13,9 +16,10 @@ public class Spy extends AttackCard {
 
 
 	@Override
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		spyOnPlayer(player, false);
+		return emptyList;
 	}
 
 

@@ -13,9 +13,10 @@ public class Chapel extends Card {
 	}
 
 	@Override
-	public void takeAction(Player player) {
+	public List<ActionEnum<Player>> takeAction(Player player) {
 		for (int loop = 0; loop < 4; loop ++)
 			trashCard(player);
+		return emptyList;
 	}
 
 	private void trashCard(Player player) {

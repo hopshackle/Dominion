@@ -9,7 +9,7 @@ import java.util.*;
 public class Player extends Agent {
 
 	public enum State {
-		PLAYING, PURCHASING, WAITING;
+		PRE_PLAY, PLAYING, PRE_PURCHASE, PURCHASING;
 	}
 
 	private State playerState;
@@ -25,16 +25,15 @@ public class Player extends Agent {
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
-		playerState = State.WAITING;
 		playerNumber = number;
 		this.game = game;
 		deck = new Deck();
 		discard = new Deck();
 		hand = new Deck();
 		revealedCards = new Deck();
-		refreshPositionSummary();
+		actionsLeft = 1;
+		setState(State.PRE_PLAY);
 		dealFreshHand();
-		setState(State.PLAYING);
 		log("Player #" + number + " in Game " + game.getUniqueId());
 	}
 
@@ -45,11 +44,16 @@ public class Player extends Agent {
 		actionsLeft = player.actionsLeft;
 		game = newGame;
 		// Responsibility for taking into account the information set resides in the caller
+		// as that has the information from whose perspective the clone is taking place
 		deck = player.deck.copy();
 		discard = player.discard.copy();
 		hand = player.hand.copy();
 		revealedCards = player.revealedCards.copy();
 		decider = player.decider;
+		if (player.getNextAction() != null) {
+			DominionAction da = (DominionAction) player.getNextAction();
+			this.actionPlan.addAction(da.clone(this));
+		}
 	}
 
 	private void dealFreshHand() {
@@ -108,8 +112,9 @@ public class Player extends Agent {
 	}
 
 	public void buyCards() {
-		if (playerState != State.PURCHASING) 
+		if (playerState != State.PURCHASING && playerState != State.PRE_PURCHASE) 
 			throw new AssertionError("Incorrect state for Purchasing " + playerState);
+		setState(State.PURCHASING);
 		refreshPositionSummary();
 		String buys = " buys";
 		if (getBuys() == 1) buys = " buy";
@@ -117,12 +122,16 @@ public class Player extends Agent {
 		DominionAction decision = (DominionAction) getDecider().decide(this);
 		decision.start();
 		decision.run();
-		setState(State.PLAYING);
+		setState(State.PRE_PLAY);
 	}
 
 	public void takeActions() {
-		if (playerState != State.PLAYING) 
+		if (playerState != State.PLAYING && playerState != State.PRE_PLAY) 
 			throw new AssertionError("Incorrect state for taking actions " + playerState);
+		if (playerState == State.PRE_PLAY)
+			actionsLeft = 1;
+		setState(State.PLAYING);
+	
 		while (actionsLeft > 0) {
 			refreshPositionSummary();
 			Action<Player> action = getDecider().decide(this);
@@ -130,7 +139,7 @@ public class Player extends Agent {
 			action.run();
 			decrementActionsLeft();
 		}
-		setState(State.PURCHASING);
+		setState(State.PRE_PURCHASE);
 	}
 	public void incrementActionsLeft() {
 		actionsLeft++;
@@ -309,16 +318,11 @@ public class Player extends Agent {
 	 * If it is not the player's turn, then the default is false.
 	 */
 	public boolean isTakingActions() {
-		return playerState == State.PLAYING;
+		return playerState == State.PLAYING || playerState == State.PRE_PLAY;
 	}
 
 	public void setState(Player.State newState) {
 		playerState = newState;
-		switch (newState) {
-		case PLAYING: 
-			actionsLeft = 1;
-		default: 
-		}
 		refreshPositionSummary();
 	}
 	public Player.State getPlayerState() {
@@ -375,11 +379,12 @@ public class Player extends Agent {
 
 	public void takeTurn() {
 		switch (playerState) {
+		case PRE_PLAY:
 		case PLAYING:
 			takeActions();
+		case PRE_PURCHASE:
 		case PURCHASING:
 			buyCards();
-		case WAITING:
 		}
 		tidyUp();
 	}

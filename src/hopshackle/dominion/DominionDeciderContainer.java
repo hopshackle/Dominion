@@ -18,12 +18,12 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 	public Decider<Player> getDecider(Player player) {
 		switch (player.getPlayerState()) {
+		case PRE_PURCHASE:
 		case PURCHASING:
 			return purchase;
+		case PRE_PLAY:
 		case PLAYING:
 			return action;
-		case WAITING:
-			return purchase;
 		}
 		return purchase;
 	}
