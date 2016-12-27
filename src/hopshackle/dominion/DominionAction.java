@@ -4,24 +4,30 @@ import java.util.*;
 
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
-import hopshackle.simulation.Action.State;
 
 public class DominionAction extends Action<Player> {
-	
+
 	private static boolean hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	private List<CardTypeAugment> cardType;
 	private Player player;
 	private boolean isAction;
-	
+
 	protected DominionAction followUpAction;
 	protected List<ActionEnum<Player>> possibleOptions = new ArrayList<ActionEnum<Player>>();
 
+	public static DominionAction doNothing(Player p) {
+		DominionAction retValue = new DominionAction(p, (CardTypeAugment) null);
+		return retValue;
+	}
+
 	public DominionAction(Player p, CardTypeAugment actionEnum) {
 		super(actionEnum, p, 0l, false);
-		this.cardType = new ArrayList<CardTypeAugment>();
-		this.cardType.add(actionEnum);
 		player = p;
-		if (actionEnum.type == ChangeType.PLAY) isAction = true;
+		this.cardType = new ArrayList<CardTypeAugment>();
+		if (actionEnum != null) {
+			this.cardType.add(actionEnum);
+			if (actionEnum.type == ChangeType.PLAY) isAction = true;
+		}
 	}
 
 	public DominionAction(Player player, CardTypeList aeList) {
@@ -60,7 +66,7 @@ public class DominionAction extends Action<Player> {
 						player.log("Plays " + cardToPlay.toString());
 						possibleOptions = cardToPlay.takeAction(player);
 						followUpAction = cardToPlay.followUpAction();
-						
+
 						for (int i = 0; i < cardToPlay.getAdditionalActions(); i++)
 							player.incrementActionsLeft();
 					}
@@ -93,7 +99,7 @@ public class DominionAction extends Action<Player> {
 		}
 		super.eventDispatch(learningEvent);
 	}
-	
+
 	public static void refresh() {
 		hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	}
@@ -101,8 +107,15 @@ public class DominionAction extends Action<Player> {
 	public boolean isAction() {
 		return isAction;
 	}
-	
+
 	public DominionAction clone(Player newPlayer) {
 		return new DominionAction(this, newPlayer);
+	}
+
+	public List<ActionEnum<Player>> getNextOptions() {
+		return possibleOptions;
+	}
+	public DominionAction getFollowOnAction() {
+		return followUpAction;
 	}
 }

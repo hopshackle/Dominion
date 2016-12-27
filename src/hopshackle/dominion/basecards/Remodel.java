@@ -39,12 +39,7 @@ public class Remodel extends Card {
 		}
 		allOptions.add(new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN));
 		// choose best option, and execute it
-		player.setState(Player.State.PURCHASING);
-		DominionAction actionChosen = (DominionAction) player.getDecider().decide(player, allOptions);
-		actionChosen.start();
-		actionChosen.run();
-		player.setState(Player.State.PLAYING);
-		return emptyList;
+		
+		return allOptions;
 	}
-
 }

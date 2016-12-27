@@ -58,6 +58,22 @@ public class BasicGameMechanics {
 			assertEquals(p.getNumberOfTypeTotal(CardType.ESTATE), 3);
 		}
 	}
+	
+	@Test
+	public void playerPlaysCardThenBuysOne() {
+		Player player1 = game.getCurrentPlayer();
+		player1.setDecider(new DominionDeciderContainer(copperDecider, workshopDecider));
+		player1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WORKSHOP));
+		player1.takeTurn();
+		Action<?> lastAction =  player1.getActionPlan().getLastAction();
+		assertTrue(lastAction != null);
+		assertEquals(player1.getAllCards().size(),13);
+
+		player1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WORKSHOP));
+		player1.takeTurn();
+		assertTrue(player1.getActionPlan().getLastAction() != lastAction);
+		assertEquals(player1.getAllCards().size(),16);
+	}
 
 	@Test
 	public void playersTakeTurnsInSequence() {
@@ -138,12 +154,12 @@ public class BasicGameMechanics {
 	public void phaseFlagIsSetCorrectlyAsPlayProceeds() {
 		List<Player> players = game.getAllPlayers();
 		for (int i = 0; i<4; i++) {
-		assertTrue(players.get(i).isTakingActions());
+		assertFalse(players.get(i).isTakingActions());
 		}
 		players.get(0).takeActions();
-		assertFalse(players.get(0).isTakingActions());
-		players.get(0).buyCards();
 		assertTrue(players.get(0).isTakingActions());
+		players.get(0).buyCards();
+		assertFalse(players.get(0).isTakingActions());
 	}
 
 	@Test
@@ -294,6 +310,16 @@ public class BasicGameMechanics {
 		Player newPlayer1 = clonedGame.getPlayer(1);
 		DominionAction nextClonedAction = (DominionAction) newPlayer1.getNextAction();
 		assertTrue(nextClonedAction != null);
+		assertTrue(nextClonedAction.getActor() == newPlayer1);
+		assertTrue(nextAction.getType().getEnum() == CardType.WORKSHOP);
+		assertTrue(nextClonedAction != nextAction);
+
+		// clone a second time
+		clonedGame = game.clone(p1);
+		newPlayer1 = clonedGame.getPlayer(1);
+		nextClonedAction = (DominionAction) newPlayer1.getNextAction();
+		assertTrue(nextClonedAction != null);
+		assertTrue(nextClonedAction.getActor() == newPlayer1);
 		assertTrue(nextAction.getType().getEnum() == CardType.WORKSHOP);
 		assertTrue(nextClonedAction != nextAction);
 		

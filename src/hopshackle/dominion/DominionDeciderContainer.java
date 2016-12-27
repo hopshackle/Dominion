@@ -2,6 +2,7 @@ package hopshackle.dominion;
 
 import java.util.List;
 
+import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 public class DominionDeciderContainer implements Decider<Player> {
@@ -16,18 +17,37 @@ public class DominionDeciderContainer implements Decider<Player> {
 			throw new AssertionError("Both Purchase and Action deciders must be specified");
 	}
 
-	public Decider<Player> getDecider(Player player) {
+	private Decider<Player> getDecider(Player player) {
 		switch (player.getPlayerState()) {
-		case PRE_PURCHASE:
 		case PURCHASING:
 			return purchase;
-		case PRE_PLAY:
 		case PLAYING:
+		case WAITING:
 			return action;
 		}
 		return purchase;
 	}
 
+	private Decider<Player> getDecider(Player decidingAgent, List<ActionEnum<Player>> possibleActions) {
+		if (useActionDeciderFor(possibleActions))
+			return action;
+		return purchase;
+	}
+
+	private boolean useActionDeciderFor(List<ActionEnum<Player>> options) {
+		for (ActionEnum<Player> o : options) {
+			if (o instanceof CardTypeList) {
+				return false;
+			} else if (o instanceof CardTypeAugment) {
+				CardTypeAugment cta = (CardTypeAugment) o;
+				if (cta.type == ChangeType.PLAY) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	@Override
 	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
 		return getDecider(decidingAgent).valueOption(option, decidingAgent);
@@ -136,14 +156,15 @@ public class DominionDeciderContainer implements Decider<Player> {
 	}
 	@Override
 	public ActionEnum<Player> makeDecision(Player decidingAgent, List<ActionEnum<Player>> possibleActions) {
-		return getDecider(decidingAgent).makeDecision(decidingAgent, possibleActions);
+		return getDecider(decidingAgent, possibleActions).makeDecision(decidingAgent, possibleActions);
 	}
 
 
 	@Override
 	public Action<Player> decide(Player decidingAgent, List<ActionEnum<Player>> possibleActions) {
-		return getDecider(decidingAgent).decide(decidingAgent, possibleActions);
+		return getDecider(decidingAgent, possibleActions).decide(decidingAgent, possibleActions);
 	}
+
 
 	@Override
 	public String toString() {

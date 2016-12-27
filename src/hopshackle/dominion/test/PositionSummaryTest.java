@@ -8,6 +8,8 @@ import hopshackle.simulation.*;
 
 import org.junit.*;
 
+import com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState;
+
 public class PositionSummaryTest {
 
 	DominionGame game;
@@ -167,8 +169,8 @@ public class PositionSummaryTest {
 	@Test
 	public void applicationOfCardPlayFromInvalidState() {
 		game.getCurrentPlayer().takeActions();
+		game.getCurrentPlayer().setState(Player.State.PURCHASING);
 		p1 = game.getCurrentPlayer().getPositionSummaryCopy();
-		assertTrue(p1.getPlayerState() == Player.State.PRE_PURCHASE);
 		p1.drawCard(CardType.WOODCUTTER, CardSink.HAND);
 		ActionEnum<Player> testAction = new CardTypeAugment(CardType.WOODCUTTER, CardSink.HAND, ChangeType.PLAY);
 		try {

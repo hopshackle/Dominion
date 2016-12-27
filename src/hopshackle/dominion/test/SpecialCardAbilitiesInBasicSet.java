@@ -509,13 +509,13 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p1.getDeckSize(), 0);
 		assertEquals(p1.getDiscardSize(), 1);
 		assertEquals(p2.getDeckSize(), 5);
-		assertEquals(p2.getDiscardSize(), 0);
+		assertEquals(p2.getDiscardSize(), 1);
 		assertEquals(p3.getDeckSize(), 5);
 		assertEquals(p3.getDiscardSize(), 1);
 		assertEquals(p4.getDeckSize(), 5);
 		assertEquals(p4.getDiscardSize(), 2);
 
-		assertEquals(p2.totalTreasureValue(), 7);
+		assertEquals(p2.totalTreasureValue(), 9);
 		assertEquals(p2.totalVictoryValue(), 3);
 		assertEquals(p1.totalTreasureValue(), 8);
 		assertEquals(p3.totalTreasureValue(), 8);

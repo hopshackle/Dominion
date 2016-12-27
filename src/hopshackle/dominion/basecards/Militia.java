@@ -6,6 +6,7 @@ import hopshackle.dominion.DominionStateFactory;
 import hopshackle.dominion.HardCodedDiscardDecider;
 import hopshackle.dominion.Player;
 import hopshackle.dominion.PositionSummary;
+import hopshackle.simulation.ActionEnum;
 import hopshackle.simulation.HopshackleUtilities;
 import hopshackle.simulation.LookaheadDecider;
 
@@ -18,12 +19,12 @@ public class Militia extends AttackCard {
 	}
 
 	@Override
-	public void executeAttackOnPlayer(Player victim, Player attacker) {
+	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player victim, Player attacker) {
 		List<CardType> hand = victim.getCopyOfHand();
 		CardType[] cardsInHand = hand.toArray(new CardType[1]);
 		if (cardsInHand.length < 4) {
 			victim.log("MILITIA has no effect given hand size of " + cardsInHand.length);
-			return;
+			return emptyList;
 		}
 		victim.log("Victim of MILITIA:");
 		CardType[] possibleCombination = new CardType[3];
@@ -61,6 +62,7 @@ public class Militia extends AttackCard {
 				victim.discard(cardInHand);
 			}
 		}
+		return emptyList;
 	}
 
 }

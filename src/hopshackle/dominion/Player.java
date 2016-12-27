@@ -9,7 +9,7 @@ import java.util.*;
 public class Player extends Agent {
 
 	public enum State {
-		PRE_PLAY, PLAYING, PRE_PURCHASE, PURCHASING;
+		WAITING, PLAYING, PURCHASING;
 	}
 
 	private State playerState;
@@ -22,6 +22,7 @@ public class Player extends Agent {
 	private int playerNumber;
 	private int actionsLeft;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
+	private Stack<DominionAction> actionStack = new Stack<DominionAction>();
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
@@ -32,7 +33,7 @@ public class Player extends Agent {
 		hand = new Deck();
 		revealedCards = new Deck();
 		actionsLeft = 1;
-		setState(State.PRE_PLAY);
+		setState(State.WAITING);
 		dealFreshHand();
 		log("Player #" + number + " in Game " + game.getUniqueId());
 	}
@@ -53,6 +54,9 @@ public class Player extends Agent {
 		if (player.getNextAction() != null) {
 			DominionAction da = (DominionAction) player.getNextAction();
 			this.actionPlan.addAction(da.clone(this));
+		}
+		for (int i = 0; i < player.actionStack.size(); i++) {
+			actionStack.push(player.actionStack.get(i).clone(this));
 		}
 	}
 
@@ -112,35 +116,58 @@ public class Player extends Agent {
 	}
 
 	public void buyCards() {
-		if (playerState != State.PURCHASING && playerState != State.PRE_PURCHASE) 
-			throw new AssertionError("Incorrect state for Purchasing " + playerState);
 		setState(State.PURCHASING);
-		refreshPositionSummary();
 		String buys = " buys";
 		if (getBuys() == 1) buys = " buy";
 		log("Has budget of " + getBudget() + " with " + getBuys() + buys);
 		DominionAction decision = (DominionAction) getDecider().decide(this);
 		decision.start();
 		decision.run();
-		setState(State.PRE_PLAY);
 	}
 
 	public void takeActions() {
-		if (playerState != State.PLAYING && playerState != State.PRE_PLAY) 
-			throw new AssertionError("Incorrect state for taking actions " + playerState);
-		if (playerState == State.PRE_PLAY)
+		if (playerState == State.PURCHASING || playerState == State.WAITING)
 			actionsLeft = 1;
 		setState(State.PLAYING);
-	
+
+		if (actionsLeft == 0 && !actionStack.isEmpty())
+			throw new AssertionError("Action Stack should always be emptied before actionsLeft is set to zero.");
+
 		while (actionsLeft > 0) {
 			refreshPositionSummary();
-			Action<Player> action = getDecider().decide(this);
-			action.start();
-			action.run();
+			DominionAction action = null;
+			List<ActionEnum<Player>> nextOptions = new ArrayList<ActionEnum<Player>>();
+			do {
+				if (action != null) {
+					// this occurs if we popped an action off the stack on the last iteration
+					// so we already have the action we wish to execute
+				} else {
+					// we have completed the last one, so pick a new action
+					if (!actionStack.isEmpty()) {
+						nextOptions = actionStack.peek().getNextOptions();
+						action = (DominionAction) getDecider().decide(this, nextOptions);
+					} else {
+						action = (DominionAction) getDecider().decide(this);
+					}
+				}
+				action.start();
+				action.run();
+				nextOptions = action.getNextOptions();
+				if (nextOptions.isEmpty()) {
+					if (actionStack.isEmpty()) {
+						action = null;
+					} else {
+						action = actionStack.pop().getFollowOnAction();
+					}
+				} else {
+					actionStack.push(action);
+					action = null;
+				}
+			} while (!actionStack.isEmpty());
 			decrementActionsLeft();
 		}
-		setState(State.PRE_PURCHASE);
 	}
+
 	public void incrementActionsLeft() {
 		actionsLeft++;
 	}
@@ -162,7 +189,7 @@ public class Player extends Agent {
 			}
 			drawTopCardFromDeckIntoHand();
 		}
-		refreshPositionSummary();
+		setState(State.WAITING);
 	}
 
 	public void shuffleDeckAndHandTogether() {
@@ -310,7 +337,7 @@ public class Player extends Agent {
 		}
 		summary.trashCard(card, dest);
 	}
-	
+
 	/**
 	 * Indicates whether we are taking Actions (true), or making a purchase (false).
 	 * This is a bit of a hack to cater for Purchase decisions made during the
@@ -318,7 +345,7 @@ public class Player extends Agent {
 	 * If it is not the player's turn, then the default is false.
 	 */
 	public boolean isTakingActions() {
-		return playerState == State.PLAYING || playerState == State.PRE_PLAY;
+		return playerState == State.PLAYING;
 	}
 
 	public void setState(Player.State newState) {
@@ -379,11 +406,12 @@ public class Player extends Agent {
 
 	public void takeTurn() {
 		switch (playerState) {
-		case PRE_PLAY:
+		case WAITING:
 		case PLAYING:
 			takeActions();
-		case PRE_PURCHASE:
 		case PURCHASING:
+			if (!actionStack.isEmpty())
+				takeActions();
 			buyCards();
 		}
 		tidyUp();
@@ -403,5 +431,8 @@ public class Player extends Agent {
 	}
 	public void refreshPositionSummary() {
 		summary = new PositionSummary(this, null);
+	}
+	public int actionStackSize() {
+		return actionStack.size();
 	}
 }

@@ -10,16 +10,16 @@ public abstract class AttackCard extends Card {
 		super(type);
 	}
 
-	public abstract void executeAttackOnPlayer(Player target, Player attacker);
+	public abstract List<ActionEnum<Player>>  executeAttackOnPlayer(Player target, Player attacker);
 	
 	@Override
 	public List<ActionEnum<Player>> takeAction(Player player) {
-		List<ActionEnum<Player>> retValue = super.takeAction(player);
-		executeAttack(player);
+		super.takeAction(player);
+		List<ActionEnum<Player>> retValue = executeAttack(player);
 		return retValue;
 	}
 
-	public void executeAttack(Player attacker) {
+	public List<ActionEnum<Player>> executeAttack(Player attacker) {
 		DominionGame game = attacker.getGame();
 		int attackingPlayerNumber = game.getPlayerNumber(attacker);
 		Player[] victims = new Player[3];
@@ -43,6 +43,8 @@ public abstract class AttackCard extends Card {
 			if (!defended) 
 				executeAttackOnPlayer(victim, attacker);
 		}
+		
+		return emptyList;
 	}
 
 }

@@ -15,13 +15,13 @@ public class Thief extends AttackCard {
 	}
 
 	@Override
-	public void executeAttackOnPlayer(Player target, Player attacker) {
+	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player target, Player attacker) {
 		target.log("Is target of THIEF");
 		// always trash the highest value treasure card drawn
 		Card[] topTwoCards = discardTopTwoCards(target);
 		Card cardToTrash = getHighestTreasureCard(topTwoCards);
 		if (cardToTrash.getType() == CardType.NONE)
-			return;
+			return emptyList;
 		target.trashCard(cardToTrash.getType(), CardSink.DISCARD);
 
 		// then decide whether to keep the trashed card
@@ -34,6 +34,7 @@ public class Thief extends AttackCard {
 		DominionAction decision = (DominionAction) attacker.getDecider().decide(attacker, allOptions);
 		decision.start();
 		decision.run();
+		return emptyList;
 	}
 
 	private Card[] discardTopTwoCards(Player target) {
