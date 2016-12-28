@@ -55,6 +55,8 @@ public class Card {
 		for (int n=0; n < type.getDraw(); n++) {
 			player.drawTopCardFromDeckIntoHand();
 		}
+		for (int i = 0; i < type.getAdditionalActions(); i++)
+			player.incrementActionsLeft();
 		return emptyList;
 	}
 

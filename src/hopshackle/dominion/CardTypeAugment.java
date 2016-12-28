@@ -7,38 +7,44 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	private static final long serialVersionUID = 1L;
 
 	public enum CardSink {
-		HAND, DISCARD, DECK, REVEALED;
+		HAND, DISCARD, DECK, REVEALED, SUPPLY, TRASH;
 	}
 	public enum ChangeType {
-		GAIN, LOSS, PLAY;
-		@Override
-		public String toString() {
-			switch (this) {
-			case GAIN:
-				return "+";
-			case LOSS:
-				return "-";
-			case PLAY:
-				return "Play from ";
-			}
-			return "X";
-		}
+		MOVE, PLAY;
 	}
-
-	public CardTypeAugment(CardType card, CardSink dest, ChangeType gainOrLoss) {
-		this.card = card;
-		this.dest = dest;
-		this.type = gainOrLoss;
-	}
+	
 	public CardType card;
-	public CardSink dest;
+	public CardSink from, to;
 	public ChangeType type;
 	
+	public static CardTypeAugment playCard(CardType card) {
+		return new CardTypeAugment(card, CardSink.HAND, CardSink.REVEALED, ChangeType.PLAY);
+	}
+	public static CardTypeAugment takeCard(CardType card) {
+		return new CardTypeAugment(card, CardSink.SUPPLY, CardSink.DISCARD, ChangeType.MOVE);
+	}
+	public static CardTypeAugment moveCard(CardType card, CardSink from, CardSink to) {
+		return new CardTypeAugment(card, from, to, ChangeType.MOVE);
+	}
+	public static CardTypeAugment trashCard(CardType card, CardSink from) {
+		return new CardTypeAugment(card, from, CardSink.TRASH, ChangeType.MOVE);
+	}
+	public static CardTypeAugment discardCard(CardType card) {
+		return new CardTypeAugment(card, CardSink.HAND, CardSink.DISCARD, ChangeType.MOVE);
+	}
+
+	public CardTypeAugment(CardType card, CardSink from, CardSink to, ChangeType type) {
+		this.card = card;
+		this.from = from;
+		this.to = to;
+		this.type = type;
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof CardTypeAugment) {
 			CardTypeAugment otherCTA = (CardTypeAugment) other;
-			if (otherCTA.card == this.card && otherCTA.dest == this.dest && otherCTA.type == this.type)
+			if (otherCTA.card == this.card && otherCTA.from == this.from && otherCTA.to == this.to && otherCTA.type == this.type)
 				return true;
 		} 
 		return false;
@@ -46,11 +52,15 @@ public class CardTypeAugment implements ActionEnum<Player> {
 
 	@Override
 	public String toString() {
-		String retValue = card.toString();
-		if (type != ChangeType.GAIN || dest != CardSink.DISCARD) {
-			retValue = retValue + "(" + type.toString() + dest.toString() + ")";
+		if (type == ChangeType.PLAY) {
+			return "Plays " + card.toString();
+		} else {
+			if (from == CardSink.HAND && to == CardSink.DISCARD)
+				return "Discards " + card.toString();
+			if (from == CardSink.SUPPLY && to == CardSink.DISCARD)
+				return "Gains " + card.toString();
+			return "Moves " + card.toString() + " from " + from.toString() + " to " + to.toString();
 		}
-		return retValue;
 	}
 	
 	@Override
@@ -62,9 +72,9 @@ public class CardTypeAugment implements ActionEnum<Player> {
 			else
 				return false;
 		} else {
-			if (this.type == ChangeType.GAIN && p.getGame().getNumberOfCardsRemaining(this.card) == 0)
+			if (this.type == ChangeType.MOVE && this.from == CardSink.SUPPLY && p.getGame().getNumberOfCardsRemaining(this.card) == 0)
 				return false;
-			if (this.type == ChangeType.LOSS && p.getNumberOfTypeInDeck(this.card) == 0)
+			if (this.type == ChangeType.MOVE && this.from != CardSink.SUPPLY && p.getNumberOfTypeInDeck(this.card) == 0)
 				return false;
 			return true;
 		}

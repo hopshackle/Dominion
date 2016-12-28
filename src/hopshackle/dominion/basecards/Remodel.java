@@ -29,15 +29,15 @@ public class Remodel extends Card {
 					targets.add(t);
 			}
 			for (CardType cardToAcquire : targets) {
-				CardTypeAugment trashAction = new CardTypeAugment(cardToTrash, CardSink.HAND, ChangeType.LOSS);
-				CardTypeAugment gainAction = new CardTypeAugment(cardToAcquire, CardSink.DISCARD, ChangeType.GAIN);
+				CardTypeAugment trashAction = CardTypeAugment.trashCard(cardToTrash, CardSink.HAND);
+				CardTypeAugment gainAction = CardTypeAugment.takeCard(cardToAcquire);
 				List<CardTypeAugment> compositeAction = new ArrayList<CardTypeAugment>();
 				compositeAction.add(trashAction);
 				compositeAction.add(gainAction);
 				allOptions.add(new CardTypeList(compositeAction, true));
 			}
 		}
-		allOptions.add(new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN));
+		allOptions.add(CardTypeAugment.takeCard(CardType.NONE));
 		// choose best option, and execute it
 		
 		return allOptions;

@@ -17,7 +17,7 @@ public class CardTypeList implements ActionEnum<Player> {
 	public CardTypeList(List<CardType> purc) {
 		cards = new ArrayList<CardTypeAugment>(purc.size());
 		for (CardType p : purc) {
-			cards.add(new CardTypeAugment(p, CardSink.DISCARD, ChangeType.GAIN));
+			cards.add(CardTypeAugment.takeCard(p));
 		}
 	}
 

@@ -377,5 +377,4 @@ public class BasicGameMechanics {
 		clonedGame.nextPlayersTurn();
 		assertEquals(newP1.getNumberOfTypeTotal(CardType.COPPER), 9);
 	}
-
 }

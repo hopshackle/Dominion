@@ -32,8 +32,8 @@ public class Moneylender extends Card {
 		// - Do Nothing
 		// - Trash Copper
 
-		CardTypeAugment doNothing = new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN);
-		CardTypeAugment trashCopper = new CardTypeAugment(CardType.COPPER, CardSink.HAND, ChangeType.LOSS);
+		CardTypeAugment doNothing = CardTypeAugment.trashCard(CardType.NONE, CardSink.HAND);
+		CardTypeAugment trashCopper = CardTypeAugment.trashCard(CardType.COPPER, CardSink.HAND);
 		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
 		allOptions.add(doNothing);
 		allOptions.add(trashCopper);

@@ -73,7 +73,7 @@ public class LearningAndExperience {
 		Player firstPlayer = game.getCurrentPlayer();
 		firstPlayer.setState(Player.State.PURCHASING);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(firstPlayer);
-		PositionSummary updatedps = ps.apply(new CardTypeAugment(CardType.MILITIA, CardSink.DISCARD, ChangeType.GAIN));
+		PositionSummary updatedps = ps.apply(CardTypeAugment.takeCard(CardType.MILITIA));
 		assertFalse(ps == updatedps);
 		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(ps), 0.0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(updatedps), 5.0/11.0 , 0.001);
@@ -92,7 +92,7 @@ public class LearningAndExperience {
 		Player firstPlayer = game.getCurrentPlayer();
 		firstPlayer.setState(Player.State.PURCHASING);
 		PositionSummary ps = (PositionSummary) stateFactory.getCurrentState(firstPlayer);
-		PositionSummary updatedps = ps.apply(new CardTypeAugment(CardType.MILITIA, CardSink.DISCARD, ChangeType.GAIN));
+		PositionSummary updatedps = ps.apply(CardTypeAugment.takeCard(CardType.MILITIA));
 		assertFalse(ps == updatedps);
 		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(ps), 0.0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_PERCENT.getValue(updatedps), 5.0/11.0 , 0.001);

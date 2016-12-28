@@ -345,7 +345,7 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_IN_HAND.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.WORKSHOPS_PLAYED.getValue(p1), 0, 0.001);
-		p1 = p1.apply(new CardTypeAugment(CardType.MILITIA, CardSink.DISCARD, ChangeType.PLAY));	// This is just a lookahead and does not update the game
+		p1 = p1.apply(CardTypeAugment.playCard(CardType.MILITIA));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0.25, 0.001);
@@ -367,13 +367,13 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0.2, 0.001);
-		p1 = p1.apply(new CardTypeAugment(CardType.VILLAGE, CardSink.HAND, ChangeType.PLAY));	// This is just a lookahead and does not update the game
+		p1 = p1.apply(CardTypeAugment.playCard(CardType.VILLAGE));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.4, 0.001);
 		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0.2, 0.001);
-		p1 = p1.apply(new CardTypeAugment(CardType.WOODCUTTER, CardSink.HAND, ChangeType.PLAY));	// This is just a lookahead and does not update the game
+		p1 = p1.apply(CardTypeAugment.playCard(CardType.WOODCUTTER));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.66666666, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0.25, 0.001);

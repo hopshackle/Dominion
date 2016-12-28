@@ -14,11 +14,12 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	public DominionGame game;
 	public Player p1, p2, p3, p4;
-	private TestDominionDecider remodelDecider, defaultPurchaseDecider, thiefPurchaseDecider;
+	private TestDominionDecider remodelDecider, defaultPurchaseDecider;
 	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
 	private ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
 	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUse);
-	private HashMap<CardType, Double> purchasePreferences  = new HashMap<CardType, Double>();
+	private HashMap<CardType, Double> purchasePreferences = new HashMap<CardType, Double>();
+	private HashMap<CardType, Double> handPreferences = new HashMap<CardType, Double>();
 
 	@Before
 	public void setup() {
@@ -33,15 +34,19 @@ public class SpecialCardAbilitiesInBasicSet {
 			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
 
-		purchasePreferences.put(CardType.COPPER, 0.10);
+		purchasePreferences.put(CardType.COPPER, 0.09);
 		purchasePreferences.put(CardType.ESTATE, 0.09);
 		purchasePreferences.put(CardType.SILVER, 0.30);
 		purchasePreferences.put(CardType.GOLD, 0.50);
 		purchasePreferences.put(CardType.PROVINCE, 2.0);
 		purchasePreferences.put(CardType.CURSE, -1.0);
 		purchasePreferences.put(CardType.MOAT, -0.25);
-		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
-		thiefPurchaseDecider = new TestThiefDominionDecider(purchasePreferences);
+		
+		handPreferences.put(CardType.ESTATE, -0.05);
+		handPreferences.put(CardType.PROVINCE, -0.05);
+		handPreferences.put(CardType.COPPER, 0.01);
+		
+		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences, handPreferences);
 
 		DominionDeciderContainer ddc = new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider);
 		p1.setDecider(ddc);
@@ -495,7 +500,8 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void thiefTakesHighestValueTreasureCardIfNotCopper() {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.THIEF));
-		p2.setDecider(new DominionDeciderContainer(thiefPurchaseDecider, hardCodedActionDecider));
+		purchasePreferences.put(CardType.COPPER, -0.06);
+		p2.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));
 
 		p1.putCardOnTopOfDeck(CardType.SILVER);
 		p1.putCardOnTopOfDeck(CardType.COPPER);
@@ -608,7 +614,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		purchasePreferences.put(CardType.CURSE, -1.0);
 		purchasePreferences.put(CardType.MOAT, -0.25);
 		purchasePreferences.put(CardType.MINE, 0.40);
-		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences);
+		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences, handPreferences);
 		p2.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));
 		p2.insertCardDirectlyIntoHand(new Feast());
 		assertEquals(p2.getNumberOfTypeTotal(CardType.FEAST), 1);
@@ -636,16 +642,16 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void moneylenderTrashesACopperWhenAdvantageous() {
 		Moneylender moneylender = new Moneylender();
-		purchasePreferences.put(CardType.COPPER, -0.05);
+		purchasePreferences.put(CardType.COPPER, -0.50);
 		p2.insertCardDirectlyIntoHand(moneylender);
 		int copper = p2.getNumberOfTypeInHand(CardType.COPPER);
 		assertEquals(p2.getNumberOfTypeTotal(CardType.COPPER), 7);
 
 		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
 		p2.takeActions();
+		assertEquals(p2.getNumberOfTypeTotal(CardType.COPPER), 6);
 		assertEquals(moneylender.getAdditionalPurchasePower(), 3);
 		assertEquals(p2.getBudget(), copper + 2);
-		assertEquals(p2.getNumberOfTypeTotal(CardType.COPPER), 6);
 		
 		p2.buyCards();
 		assertEquals(moneylender.getAdditionalPurchasePower(), 3);

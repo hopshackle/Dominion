@@ -2,6 +2,7 @@ package hopshackle.dominion;
 
 import java.util.*;
 
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
@@ -9,16 +10,11 @@ public class DominionAction extends Action<Player> {
 
 	private static boolean hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	private List<CardTypeAugment> cardType;
-	private Player player;
+	protected Player player;
 	private boolean isAction;
 
 	protected DominionAction followUpAction;
 	protected List<ActionEnum<Player>> possibleOptions = new ArrayList<ActionEnum<Player>>();
-
-	public static DominionAction doNothing(Player p) {
-		DominionAction retValue = new DominionAction(p, (CardTypeAugment) null);
-		return retValue;
-	}
 
 	public DominionAction(Player p, CardTypeAugment actionEnum) {
 		super(actionEnum, p, 0l, false);
@@ -56,6 +52,8 @@ public class DominionAction extends Action<Player> {
 	@Override
 	protected void doStuff() {
 		for (CardTypeAugment component : cardType) {
+			if (component.card == CardType.NONE)
+				continue;
 			switch (component.type) {
 			case PLAY:
 				Card cardToPlay = player.playFromHandToRevealedCards(component.card);
@@ -66,24 +64,39 @@ public class DominionAction extends Action<Player> {
 						player.log("Plays " + cardToPlay.toString());
 						possibleOptions = cardToPlay.takeAction(player);
 						followUpAction = cardToPlay.followUpAction();
-
-						for (int i = 0; i < cardToPlay.getAdditionalActions(); i++)
-							player.incrementActionsLeft();
 					}
 				} else {
 					logger.severe("No Actual card found in hand for type " + cardType);
 				}
 				break;
-			case GAIN:
-				player.log("Gains " + component.card.toString()); 
-				player.takeCardFromSupply(component.card, component.dest);
-				break;
-			case LOSS:
-				player.log("Trashes " + component.card.toString()); 
-				player.trashCard(component.card, component.dest);
-				break;
+			case MOVE:
+				player.log(component.toString()); 
+				switch (component.from) {
+				case SUPPLY:
+					player.takeCardFromSupply(component.card, component.to);
+					break;
+				case HAND:
+					if (component.to == CardSink.DISCARD) {
+						player.discard(component.card);
+						break;
+					} else if (component.to == CardSink.TRASH) {
+						player.trashCard(component.card, component.from);
+						break;
+					}
+				case TRASH:
+					if (component.to == CardSink.DISCARD) {
+						player.putCardOnDiscard(CardFactory.instantiateCard(component.card));
+						// TODO: currently game does not keep formal track of the contents of the trash pile
+						// so anything from trash has to be recreated.
+						// This will need to be updated once Trash is specifically tracked for a later expansion.
+						break;
+					}
+				case DISCARD:
+				case DECK:
+				case REVEALED:		
+					throw new AssertionError("Should not be possible: " + component.toString());
+				}
 			}
-
 		}
 	}
 	@Override 
@@ -94,7 +107,7 @@ public class DominionAction extends Action<Player> {
 	}
 	@Override
 	protected void eventDispatch(AgentEvent learningEvent) {
-		if (hardCodedActionDecider && cardType.get(0).type == ChangeType.PLAY) {
+		if (hardCodedActionDecider && (cardType.isEmpty() || cardType.get(0).type == ChangeType.PLAY)) {
 			return;	// override to turn off any ER stream
 		}
 		super.eventDispatch(learningEvent);

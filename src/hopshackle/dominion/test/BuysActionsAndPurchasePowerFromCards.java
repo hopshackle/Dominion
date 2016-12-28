@@ -33,7 +33,15 @@ public class BuysActionsAndPurchasePowerFromCards {
 		values.put(CardType.GOLD, 5.0);
 		values.put(CardType.SMITHY, 4.0);
 		values.put(CardType.CURSE, -1.0);
-		generalPurchaseDecider = new TestDominionDecider(values);
+		
+		HashMap<CardType, Double> provinceValues = new HashMap<CardType, Double>();
+		provinceValues.put(CardType.COPPER, -1.0);
+		provinceValues.put(CardType.SMITHY, 1.0);
+		provinceValues.put(CardType.PROVINCE, 10.0);
+		provinceValues.put(CardType.CURSE, -1.0);
+
+		generalPurchaseDecider = new TestDominionDecider(values, new HashMap<CardType, Double>());
+		provinceDecider =  new TestDominionDecider(provinceValues, new HashMap<CardType, Double>());
 		
 		villageDecider = TestDominionDecider.getExample(CardType.VILLAGE);
 		marketDecider =  TestDominionDecider.getExample(CardType.MARKET);
@@ -41,7 +49,6 @@ public class BuysActionsAndPurchasePowerFromCards {
 		woodcutterDecider =  TestDominionDecider.getExample(CardType.WOODCUTTER);
 		copperDecider =  TestDominionDecider.getExample(CardType.COPPER);
 		silverDecider =  TestDominionDecider.getExample(CardType.SILVER);
-		provinceDecider =  TestDominionDecider.getExample(CardType.PROVINCE);
 	}
 
 	@Test
@@ -96,7 +103,8 @@ public class BuysActionsAndPurchasePowerFromCards {
 		p1.takeActions();
 		p1.buyCards();
 		assertEquals(p1.getHandSize(), 11);
-		assertEquals(p1.getDiscardSize(), 0);
+		assertEquals(p1.getDiscardSize(), 1);
+		assertEquals(p1.getNumberOfTypeTotal(CardType.SMITHY), 1);
 		assertEquals(p1.totalTreasureValue(), 7);
 		assertEquals(p1.totalVictoryValue(), 3);
 	}

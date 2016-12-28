@@ -40,7 +40,7 @@ public class ScoringTest {
 		values.put(CardType.PROVINCE, 1.0);
 		values.put(CardType.GOLD, 0.75);
 		values.put(CardType.SILVER, 0.50);
-		TestDominionDecider newDecider = new TestDominionDecider(values);
+		TestDominionDecider newDecider = new TestDominionDecider(values, new HashMap<CardType, Double>());
 		for (int p=0; p<4; p++) {
 			game.getAllPlayers().get(p).setDecider(newDecider);
 		}

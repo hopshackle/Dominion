@@ -1,6 +1,7 @@
 package hopshackle.dominion.test;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
@@ -9,6 +10,7 @@ import java.util.*;
 public class TestDominionDecider extends LookaheadDecider<Player> {
 
 	private HashMap<CardType, Double> values;
+	private HashMap<CardType, Double> handValues;
 	private static List<ActionEnum<Player>> actionsToUse;
 	private static List<CardValuationVariables> variablesToUse;
 
@@ -18,9 +20,10 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 		actionsToUse = CardType.toActionEnum(allCards);
 	}
 
-	public TestDominionDecider(HashMap<CardType, Double> values) {
+	public TestDominionDecider(HashMap<CardType, Double> values, HashMap<CardType, Double> handValues) {
 		super(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse)),  HopshackleUtilities.convertList(actionsToUse));
 		this.values = values;
+		this.handValues = handValues;
 		if (this.values == null)
 			this.values = new HashMap<CardType, Double>();
 	}
@@ -36,14 +39,34 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 			cards.add((CardTypeAugment) input);
 		}
 		for (CardTypeAugment option : cards) {
-			double sign = 1.0;
-			if (option.type == ChangeType.LOSS)
-				sign = -1.0;
-			retValue -= 0.05 * sign;
-			if (values.containsKey(option.card))
-				retValue += values.get(option.card) * sign;
+			if (option.type == ChangeType.PLAY) {
+				if (values.containsKey(option.card)) {
+					retValue += values.get(option.card);
+				}
+			} else {
+				if (option.from == CardSink.SUPPLY || option.from == CardSink.TRASH) {
+					retValue += 0.05;
+					if (values.containsKey(option.card)) {
+						retValue += values.get(option.card);
+					}
+				}
+				if (option.to == CardSink.TRASH) {
+					retValue -= 0.05;
+					if (values.containsKey(option.card)) {
+						retValue -= values.get(option.card);
+					}
+				}
+
+				if (option.to == CardSink.HAND && handValues.containsKey(option.card)) {
+					retValue += handValues.get(option.card);
+				}
+				if (option.from == CardSink.HAND && handValues.containsKey(option.card)) {
+					retValue -= handValues.get(option.card);
+				}
+			}
 			if (option.card == CardType.NONE)
 				retValue = 0.05;
+
 		}
 		return retValue;
 	}
@@ -51,7 +74,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 	public static TestDominionDecider getExample(CardType preferredCard) {
 		HashMap<CardType, Double> map = new HashMap<CardType, Double>();
 		map.put(preferredCard, 1.0);
-		return new TestDominionDecider(map);
+		return new TestDominionDecider(map, new HashMap<CardType, Double>());
 	}
 
 	@Override
@@ -61,6 +84,9 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 
 		for (CardType card : values.keySet()) {
 			retValue += ps.getNumberOfCardsTotal(card) * values.get(card);
+		}
+		for (CardType card : handValues.keySet()) {
+			retValue += ps.getNumberInHand(card) * handValues.get(card);
 		}
 		retValue -= ps.totalNumberOfCards() * 0.05;
 		return retValue;
@@ -81,24 +107,4 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
-}
-
-class TestThiefDominionDecider extends TestDominionDecider {
-
-	public TestThiefDominionDecider(HashMap<CardType, Double> values) {
-		super(values);
-	}
-
-	@Override
-	public double value(State<Player> state) {
-		PositionSummary ps = (PositionSummary) state;
-		double retValue = 0.0;
-		for (CardType ct : ps.getHand()) {
-			if (ct.isTreasure())
-				retValue = retValue + (double)ct.getTreasure() * 0.05;
-		}
-		retValue = retValue - ps.totalNumberOfCards() * 0.06;
-
-		return retValue;
-	}
 }

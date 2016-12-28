@@ -106,7 +106,7 @@ public class PositionSummaryTest {
 		assertEquals(p1.getNumberOfCardsTotal(CardType.CURSE), 0);
 		assertEquals(p1.getPercentageInDiscard(), 2.0/12.0, 0.001);
 		assertEquals(p1.getVictoryDensity(), 3.0/12.0, 0.001);
-		ActionEnum<Player> testAction = new CardTypeAugment(CardType.CURSE, CardSink.DISCARD, ChangeType.GAIN);
+		ActionEnum<Player> testAction = CardTypeAugment.takeCard(CardType.CURSE);
 		PositionSummary updated = p1.apply(testAction);
 		assertEquals(updated.getNumberOfCardsTotal(CardType.CURSE), 1);
 		assertEquals(updated.getPercentageInDiscard(), 3.0/13.0, 0.001);
@@ -121,7 +121,7 @@ public class PositionSummaryTest {
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 7);
 		assertEquals(p1.getPercentageInDiscard(), 2.0/12.0, 0.001);
 		assertEquals(p1.getWealthDensity(), 10.0/12.0, 0.001);
-		ActionEnum<Player> testAction = new CardTypeAugment(CardType.COPPER, CardSink.HAND, ChangeType.LOSS);
+		ActionEnum<Player> testAction = CardTypeAugment.trashCard(CardType.COPPER, CardSink.HAND);
 		PositionSummary updated = p1.apply(testAction);
 		assertEquals(updated.getNumberOfCardsTotal(CardType.COPPER), 6);
 		assertEquals(updated.getNumberInHand(CardType.COPPER), initial-1);
@@ -140,7 +140,7 @@ public class PositionSummaryTest {
 		assertEquals(p1.getNumberInHand(CardType.WOODCUTTER), 1);
 		assertEquals(p1.getNumberPlayed(CardType.WOODCUTTER), 0);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.WOODCUTTER), 1);
-		ActionEnum<Player> testAction = new CardTypeAugment(CardType.WOODCUTTER, CardSink.HAND, ChangeType.PLAY);
+		ActionEnum<Player> testAction = CardTypeAugment.playCard(CardType.WOODCUTTER);
 		PositionSummary updated = p1.apply(testAction);
 		assertEquals(updated.getActions(), 0);
 		assertEquals(updated.getAdditionalPurchasePower(), 2);
@@ -158,7 +158,7 @@ public class PositionSummaryTest {
 	}
 	@Test
 	public void applicationOfCardPlayWithoutCard() {
-		ActionEnum<Player> testAction = new CardTypeAugment(CardType.WOODCUTTER, CardSink.HAND, ChangeType.PLAY);
+		ActionEnum<Player> testAction = CardTypeAugment.playCard(CardType.WOODCUTTER);
 		try {
 			p1.apply(testAction);
 			assertTrue(false);
@@ -172,12 +172,25 @@ public class PositionSummaryTest {
 		game.getCurrentPlayer().setState(Player.State.PURCHASING);
 		p1 = game.getCurrentPlayer().getPositionSummaryCopy();
 		p1.drawCard(CardType.WOODCUTTER, CardSink.HAND);
-		ActionEnum<Player> testAction = new CardTypeAugment(CardType.WOODCUTTER, CardSink.HAND, ChangeType.PLAY);
+		ActionEnum<Player> testAction = CardTypeAugment.playCard(CardType.WOODCUTTER);
 		try {
 			p1.apply(testAction);
 			assertTrue(false);
 		} catch (AssertionError err) {
 			// Hurrah
 		}
+	}
+	
+	@Test
+	public void runningAnActionIncreasesActionsLeftInPositionSummary() {
+		Player player = game.getCurrentPlayer();
+		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CELLAR));
+		DominionAction da = new DominionAction(player, CardTypeAugment.playCard(CardType.CELLAR));
+
+		da.addToAllPlans();
+		da.start();
+		da.run();
+		assertEquals(player.getActionsLeft(), 2);	// as we have not yet completed the action...we have to discard first
+		assertEquals(player.getPositionSummaryCopy().getActions(), 2);
 	}
 }

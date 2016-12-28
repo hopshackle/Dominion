@@ -78,17 +78,21 @@ public class PositionSummary implements State<Player> {
 					throw new AssertionError("Should not PLAY card unless PLAYING");
 				retValue.playCardFromHand(componentAction.card);
 				break;
-			case GAIN:
-				retValue.drawCard(componentAction.card, componentAction.dest);
-				break;
-			case LOSS:
-				retValue.trashCard(componentAction.card, componentAction.dest);
-				break;
+			case MOVE:
+				if (componentAction.from == CardSink.SUPPLY) {
+					retValue.drawCard(componentAction.card, componentAction.to);
+				} else if (componentAction.to == CardSink.TRASH) {
+					retValue.trashCard(componentAction.card, componentAction.from);
+				} else if (componentAction.to == CardSink.DISCARD && componentAction.from == CardSink.HAND) {
+					retValue.discardCard(1);
+				} else {
+					throw new AssertionError("Unsupported action " + componentAction);
+				}
 			}
 		}
 		return retValue;
 	}
-	
+
 	public void drawCard(CardType drawnCard) {
 		drawCard(drawnCard, CardSink.DISCARD);
 	}
@@ -99,7 +103,7 @@ public class PositionSummary implements State<Player> {
 			addCard(drawnCard, to);
 		}
 	}
-	
+
 	public void addCard(CardType newCard, CardSink to) {
 		if (newCard != CardType.NONE) {
 			totalCards++;
@@ -151,7 +155,7 @@ public class PositionSummary implements State<Player> {
 			case DECK:
 			case REVEALED:
 			}
-			
+
 			recalculateVictoryPoints();
 			updateDerivedVariables();
 		}
@@ -260,12 +264,12 @@ public class PositionSummary implements State<Player> {
 	public double totalNumberOfCards() {
 		return totalCards;
 	}
-	
+
 	@Override
 	public PositionSummary clone() {
 		return new PositionSummary(this);
 	}
-	
+
 	public List<CardType> getHand() {
 		return HopshackleUtilities.cloneList(hand);
 	}
@@ -301,7 +305,7 @@ public class PositionSummary implements State<Player> {
 		hand = player.getCopyOfHand();
 		cardsPlayed = player.getCopyOfPlayedCards();
 	}
-	
+
 	private void playCardFromHand(CardType type) {
 		if (type == CardType.NONE)
 			return;
@@ -330,32 +334,32 @@ public class PositionSummary implements State<Player> {
 	}
 
 	public double[] getPercentageDepleted() {
-			int lowest = 10;
-			int nextLowest = 10;
-			int thirdLowest = 10;
-			for (CardType ct : cardsOnTable.keySet()) {
-				if (ct == CardType.NONE) continue;
-				int cardsLeft = cardsOnTable.get(ct);
-				if (cardsRemovedFromTable.containsKey(ct)) {
-					cardsLeft = cardsLeft - cardsRemovedFromTable.get(ct);
-				}
-				if (cardsLeft > 10) cardsLeft = 10;
-				if (cardsLeft < lowest) {
-					thirdLowest = nextLowest;
-					nextLowest = lowest;
-					lowest = cardsLeft;
-				} else if (cardsLeft < nextLowest) {
-					thirdLowest = nextLowest;
-					nextLowest = cardsLeft;
-				} else if (cardsLeft < thirdLowest) {
-					thirdLowest = cardsLeft;
-				}
+		int lowest = 10;
+		int nextLowest = 10;
+		int thirdLowest = 10;
+		for (CardType ct : cardsOnTable.keySet()) {
+			if (ct == CardType.NONE) continue;
+			int cardsLeft = cardsOnTable.get(ct);
+			if (cardsRemovedFromTable.containsKey(ct)) {
+				cardsLeft = cardsLeft - cardsRemovedFromTable.get(ct);
 			}
-			double[] retValue = new double[3];
-			retValue[0] = 1.0 - ((double) lowest / 10.0);
-			retValue[1] = 1.0 - ((double) nextLowest / 10.0);
-			retValue[2] = 1.0 - ((double) thirdLowest / 10.0);
-			return retValue;
+			if (cardsLeft > 10) cardsLeft = 10;
+			if (cardsLeft < lowest) {
+				thirdLowest = nextLowest;
+				nextLowest = lowest;
+				lowest = cardsLeft;
+			} else if (cardsLeft < nextLowest) {
+				thirdLowest = nextLowest;
+				nextLowest = cardsLeft;
+			} else if (cardsLeft < thirdLowest) {
+				thirdLowest = cardsLeft;
+			}
+		}
+		double[] retValue = new double[3];
+		retValue[0] = 1.0 - ((double) lowest / 10.0);
+		retValue[1] = 1.0 - ((double) nextLowest / 10.0);
+		retValue[2] = 1.0 - ((double) thirdLowest / 10.0);
+		return retValue;
 	}
 
 	public int getNumberOfCardsTotal(CardType card) {
@@ -385,7 +389,7 @@ public class PositionSummary implements State<Player> {
 	public void setVariables(List<CardValuationVariables> var) {
 		variables = var;
 	}
-	
+
 	public Player.State getPlayerState() {
 		return positionState;
 	}
@@ -410,6 +414,10 @@ public class PositionSummary implements State<Player> {
 			retValue.append(String.format("%.2f|", d));
 		}
 		return retValue.toString();
+	}
+
+	public void setActions(int actionsLeft) {
+		actions = actionsLeft;
 	}
 
 }

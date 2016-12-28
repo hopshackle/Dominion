@@ -38,7 +38,7 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 	public static List<ActionEnum<Player>> dominionPlayOptions(Player player) {
 		List<ActionEnum<Player>> retValue = null;
 		retValue = player.getActionsInHand();
-		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, ChangeType.PLAY));
+		retValue.add(CardTypeAugment.playCard(CardType.NONE));
 		return retValue;
 	}
 

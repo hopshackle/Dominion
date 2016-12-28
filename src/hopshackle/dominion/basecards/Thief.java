@@ -25,8 +25,8 @@ public class Thief extends AttackCard {
 		target.trashCard(cardToTrash.getType(), CardSink.DISCARD);
 
 		// then decide whether to keep the trashed card
-		CardTypeAugment doNothing = new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN);
-		CardTypeAugment gainCard = new CardTypeAugment(cardToTrash.getType(), CardSink.DISCARD, ChangeType.GAIN);
+		CardTypeAugment doNothing = CardTypeAugment.takeCard(CardType.NONE);
+		CardTypeAugment gainCard = CardTypeAugment.moveCard(cardToTrash.getType(), CardSink.TRASH, CardSink.DISCARD);
 		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
 		allOptions.add(doNothing);
 		allOptions.add(gainCard);

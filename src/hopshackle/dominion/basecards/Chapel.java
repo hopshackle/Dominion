@@ -27,9 +27,9 @@ public class Chapel extends Card {
 		}
 		List<ActionEnum<Player>> options = new ArrayList<ActionEnum<Player>>();
 		for (CardType card : hand) {
-			options.add(new CardTypeAugment(card, CardSink.HAND, ChangeType.LOSS));
+			options.add(CardTypeAugment.trashCard(card, CardSink.HAND));
 		}
-		options.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, ChangeType.LOSS));
+		options.add(CardTypeAugment.trashCard(CardType.NONE, CardSink.HAND));
 
 		player.setState(Player.State.PURCHASING);
 		DominionAction choice = (DominionAction) player.getDecider().decide(player, options);

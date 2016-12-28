@@ -34,8 +34,8 @@ public class MonteCarloTreeUpdates {
 		copperMarket.add(CardType.COPPER);
 		copperMarket.add(CardType.MARKET);
 		actionList.add(new CardTypeList(copperMarket));
-		actionList.add(new CardTypeAugment(CardType.ADVENTURER, CardSink.DISCARD, ChangeType.GAIN));
-		actionList.add(new CardTypeAugment(CardType.COPPER, CardSink.DISCARD, ChangeType.GAIN));
+		actionList.add(CardTypeAugment.takeCard(CardType.ADVENTURER));
+		actionList.add(CardTypeAugment.takeCard(CardType.COPPER));
 
 	}
 	
@@ -52,9 +52,9 @@ public class MonteCarloTreeUpdates {
 	public void cardTypeListActionsReturnCorrectActionEnum() {
 		ActionEnum<Player> cmActionEnum = new CardTypeList(copperMarket);
 		Action<Player> cmAction = cmActionEnum.getAction(game.getCurrentPlayer());
-		assertTrue(cmActionEnum.toString().equals("COPPER MARKET "));
+		assertTrue(cmActionEnum.toString().equals("Gains COPPER Gains MARKET "));
 		assertTrue(cmAction.getType().equals(cmActionEnum));
-		assertTrue(cmAction.toString().equals("COPPER MARKET "));
+		assertTrue(cmAction.toString().equals("Gains COPPER Gains MARKET "));
 	}
 	
 	@Test
@@ -65,7 +65,7 @@ public class MonteCarloTreeUpdates {
 		Game<Player, CardTypeAugment> clonedGame = game.clone(p1);
 		Player p2 = clonedGame.getCurrentPlayer();
 		assertTrue(p2.getDecider() == p1.getDecider());
-		p2.setDecider(new HardCodedDecider<Player>(new CardTypeAugment(CardType.ADVENTURER, CardSink.DISCARD, ChangeType.GAIN)));
+		p2.setDecider(new HardCodedDecider<Player>(CardTypeAugment.takeCard(CardType.ADVENTURER)));
 		assertFalse(p2.getDecider() == p1.getDecider());
 		assertTrue(p1.getDecider() == p1Decider);
 	}

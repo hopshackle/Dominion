@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DominionGame extends World implements Persistent, Game<Player, CardTypeAugment> {
 
-	private Player[] players;
+	protected Player[] players;
 	private HashMap<CardType, Integer> cardsOnTable;
 	private Set<CardType> allStartingCardTypes = new HashSet<CardType>();
 	private int currentPlayer;
@@ -18,7 +18,7 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 	private double highestScore, lowestScore;
 	private double score[] = new double[4];
 	private static DatabaseWriter<DominionGame> gameWriter = new DatabaseWriter<DominionGame>(new GameDAO());
-	private DeciderGenerator deciderGenerator;
+	protected DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	private boolean clonedGame = false;

@@ -110,13 +110,13 @@ public class DominionBuyingDecision {
 		for (final List<CardType> purc : temp) {
 			retValue.add(convertCardListToActionEnum(purc));
 		}
-		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.DISCARD, ChangeType.GAIN));
+		retValue.add(CardTypeAugment.takeCard(CardType.NONE));
 		return retValue;
 	}
 	
 	private ActionEnum<Player> convertCardListToActionEnum(List<CardType> cardList) {
 		if (cardList.size() == 1) {
-			return new CardTypeAugment(cardList.get(0), CardSink.DISCARD, ChangeType.GAIN);
+			return CardTypeAugment.takeCard(cardList.get(0));
 		} else {
 			return new CardTypeList(cardList);
 		}

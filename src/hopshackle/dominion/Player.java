@@ -1,7 +1,6 @@
 package hopshackle.dominion;
 
 import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -22,7 +21,7 @@ public class Player extends Agent {
 	private int playerNumber;
 	private int actionsLeft;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
-	private Stack<DominionAction> actionStack = new Stack<DominionAction>();
+	protected Stack<DominionAction> actionStack = new Stack<DominionAction>();
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
@@ -51,13 +50,20 @@ public class Player extends Agent {
 		hand = player.hand.copy();
 		revealedCards = player.revealedCards.copy();
 		decider = player.decider;
-		if (player.getNextAction() != null) {
-			DominionAction da = (DominionAction) player.getNextAction();
-			this.actionPlan.addAction(da.clone(this));
-		}
 		for (int i = 0; i < player.actionStack.size(); i++) {
 			actionStack.push(player.actionStack.get(i).clone(this));
 		}
+		if (player.getNextAction() != null) {
+			DominionAction da = (DominionAction) player.getNextAction();
+			DominionAction clonedAction = null;
+			if (player.actionStack.contains(da)) {
+				clonedAction = actionStack.get(player.actionStack.indexOf(da));
+			} else {
+				clonedAction = da.clone(this);
+			}
+			this.actionPlan.addAction(clonedAction);
+		}
+
 	}
 
 	private void dealFreshHand() {
@@ -124,7 +130,7 @@ public class Player extends Agent {
 		decision.start();
 		decision.run();
 	}
-
+	
 	public void takeActions() {
 		if (playerState == State.PURCHASING || playerState == State.WAITING)
 			actionsLeft = 1;
@@ -158,21 +164,24 @@ public class Player extends Agent {
 						action = null;
 					} else {
 						action = actionStack.pop().getFollowOnAction();
+						actionPlan.addAction(action);
 					}
 				} else {
 					actionStack.push(action);
 					action = null;
 				}
-			} while (!actionStack.isEmpty());
+			} while (action != null || !actionStack.isEmpty());
 			decrementActionsLeft();
 		}
 	}
 
 	public void incrementActionsLeft() {
 		actionsLeft++;
+		summary.setActions(actionsLeft);
 	}
 	public void decrementActionsLeft() {
 		actionsLeft--;
+		summary.setActions(actionsLeft);
 	}
 
 	public void tidyUp() {
@@ -334,6 +343,9 @@ public class Player extends Agent {
 		case DECK:
 			deck.removeSpecificCard(card);
 			break;
+		case SUPPLY:
+		case TRASH:
+			throw new AssertionError("Not valid");
 		}
 		summary.trashCard(card, dest);
 	}
@@ -373,7 +385,7 @@ public class Player extends Agent {
 		if (discarded.getType() != CardType.NONE) {
 			discard.addCard(discarded);
 			summary.discardCard(1);
-			log("Discards " + discarded.getType());
+	//		log("Discards " + discarded.getType());
 		}
 	}
 
@@ -421,7 +433,7 @@ public class Player extends Agent {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (CardType card : hand.getAllCards()) {
 			if (card.isAction())
-				retValue.add(new CardTypeAugment(card, CardSink.HAND, ChangeType.PLAY));
+				retValue.add(CardTypeAugment.playCard(card));
 		}
 		return retValue;
 	}

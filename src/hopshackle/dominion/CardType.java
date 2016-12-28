@@ -116,11 +116,11 @@ public enum CardType {
 	public static List<ActionEnum<Player>> toActionEnum(List<CardType> actionsToUse) {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (CardType ct : actionsToUse) {
-			retValue.add(new CardTypeAugment(ct, CardSink.DISCARD, ChangeType.GAIN));
+			retValue.add(CardTypeAugment.takeCard(ct));
 			if (ct.isAction())
-				retValue.add(new CardTypeAugment(ct, CardSink.HAND, ChangeType.PLAY));
+				retValue.add(CardTypeAugment.playCard(ct));
 		}
-		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, ChangeType.PLAY));
+		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, CardSink.DISCARD, ChangeType.PLAY));
 		return retValue;
 	}
 }
