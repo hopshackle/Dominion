@@ -36,35 +36,6 @@ public class Cellar extends Card {
 		return retValue;
 	}
 
-	class CellarFollowOnAction extends DominionAction {
-
-		private int startingHandSize = 0;
-		
-		public CellarFollowOnAction(Player player, int startingHand) {
-			super(player, new CardTypeList(new ArrayList<CardType>()));
-			startingHandSize = startingHand;
-		}
-		
-		@Override 
-		public CellarFollowOnAction clone(Player newPlayer) {
-			return new CellarFollowOnAction(newPlayer, this.startingHandSize);
-		}
-		
-		@Override
-		public void doStuff() {
-			int cardsToDraw = startingHandSize - player.getHandSize();
-			for (int i = 0; i < cardsToDraw; i++) {
-				player.drawTopCardFromDeckIntoHand();
-			}
-		}
-		
-		@Override
-		public void eventDispatch(AgentEvent learningEvent) {
-			// do nothing
-		}
-	}
-
-
 	private List<List<CardType>> getPossibleDiscards() {
 		Map<CardType, Integer> allCardTypesInHand = new HashMap<CardType, Integer>();
 		for (CardType ct : player.getCopyOfHand()) {
@@ -115,5 +86,38 @@ public class Cellar extends Card {
 			asCTA.add(CardTypeAugment.discardCard(ct));
 		}
 		return new CardTypeList(asCTA, false);
+	}
+}
+
+
+class CellarFollowOnAction extends DominionAction {
+
+	private int startingHandSize = 0;
+	
+	public CellarFollowOnAction(Player player, int startingHand) {
+		super(player, new CardTypeList(new ArrayList<CardType>()));
+		startingHandSize = startingHand;
+	}
+	
+	@Override 
+	public CellarFollowOnAction clone(Player newPlayer) {
+		return new CellarFollowOnAction(newPlayer, this.startingHandSize);
+	}
+	
+	@Override
+	public void doStuff() {
+		int cardsToDraw = startingHandSize - player.getHandSize();
+		for (int i = 0; i < cardsToDraw; i++) {
+			player.drawTopCardFromDeckIntoHand();
+		}
+	}
+	
+	@Override
+	public ActionEnum<Player> getType() {
+		List<CardTypeAugment> drawnCards = new ArrayList<CardTypeAugment>();
+		for (int i = 0; i < startingHandSize - player.getHandSize(); i++) {
+			drawnCards.add(CardTypeAugment.drawCard());
+		}
+		return new CardTypeList(drawnCards, false);
 	}
 }

@@ -32,6 +32,9 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	public static CardTypeAugment discardCard(CardType card) {
 		return new CardTypeAugment(card, CardSink.HAND, CardSink.DISCARD, ChangeType.MOVE);
 	}
+	public static CardTypeAugment drawCard() {
+		return new CardTypeAugment(CardType.UNKNOWN, CardSink.DECK, CardSink.HAND, ChangeType.MOVE);
+	}
 
 	public CardTypeAugment(CardType card, CardSink from, CardSink to, ChangeType type) {
 		this.card = card;
@@ -92,6 +95,7 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	public Enum<CardType> getEnum() {
 		return this.card;
 	}
+
 }
 
 

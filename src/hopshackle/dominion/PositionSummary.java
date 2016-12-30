@@ -120,6 +120,8 @@ public class PositionSummary implements State<Player> {
 				break;
 			case DECK:
 			case REVEALED:
+			case SUPPLY:
+			case TRASH:
 			}
 			Integer currentAmount = cardsInDeck.get(newCard);
 			if (currentAmount == null)
@@ -317,8 +319,6 @@ public class PositionSummary implements State<Player> {
 			money += type.getAdditionalPurchasePower();
 			for (int i = 0; i < type.getDraw(); i++)
 				hand.add(CardType.UNKNOWN); 
-			// TODO: This is the possible point to consider full MOnte Carlo rollouts..i.e. pick at random form the cards known to be in the deck
-			// For the moment, we just use a dummy card to keep track of hand size (as a variable).
 			cardsPlayed.add(type);
 		} else {
 			throw new AssertionError("Cannot play " + type + " as none in hand.");
