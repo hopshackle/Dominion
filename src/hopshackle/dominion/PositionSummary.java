@@ -279,6 +279,14 @@ public class PositionSummary implements State<Player> {
 		return hand.size();
 	}
 
+	public double getHandMoneyValue() {
+		double retValue = 0.0;
+		for (CardType ct : hand) {
+			retValue += ct.getTreasure();
+		}
+		return retValue;
+	}
+
 	public void changeHand(CardType[] newHand) {
 		hand = new ArrayList<CardType>();
 		for (CardType ct : newHand)
@@ -419,5 +427,4 @@ public class PositionSummary implements State<Player> {
 	public void setActions(int actionsLeft) {
 		actions = actionsLeft;
 	}
-
 }

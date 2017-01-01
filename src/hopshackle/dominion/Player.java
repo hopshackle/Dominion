@@ -130,7 +130,7 @@ public class Player extends Agent {
 		decision.start();
 		decision.run();
 	}
-	
+
 	public void takeActions() {
 		if (playerState == State.PURCHASING || playerState == State.WAITING)
 			actionsLeft = 1;
@@ -385,7 +385,7 @@ public class Player extends Agent {
 		if (discarded.getType() != CardType.NONE) {
 			discard.addCard(discarded);
 			summary.discardCard(1);
-	//		log("Discards " + discarded.getType());
+			//		log("Discards " + discarded.getType());
 		}
 	}
 
@@ -431,9 +431,12 @@ public class Player extends Agent {
 
 	public List<ActionEnum<Player>> getActionsInHand() {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
+		Set<CardType> cardsSeen = new HashSet<CardType>();
 		for (CardType card : hand.getAllCards()) {
-			if (card.isAction())
+			if (card.isAction() && !cardsSeen.contains(card)) {
 				retValue.add(CardTypeAugment.playCard(card));
+				cardsSeen.add(card);
+			}
 		}
 		return retValue;
 	}
