@@ -64,7 +64,7 @@ public class CardTypeList implements ActionEnum<Player> {
 	}
 
 	@Override
-	public DominionAction getAction(Player a) {
+	public Action<Player> getAction(Player a) {
 		return new DominionAction((Player)a, this);
 	}
 

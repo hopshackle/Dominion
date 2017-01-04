@@ -26,7 +26,7 @@ public class DominionBuyingDecision {
 		}
 	}
 
-	public DominionAction getBestPurchase() {
+	public Action<Player> getBestPurchase() {
 		List<List<CardType>> possiblePurchases = getPossibleBuys(totalBuys, 20, totalBudget);
 		List<CardType> noPurchases = new ArrayList<CardType>();
 		noPurchases.add(CardType.NONE);
@@ -34,18 +34,18 @@ public class DominionBuyingDecision {
 		return chooseBestOption(possiblePurchases);
 	}
 
-	public DominionAction getBestMandatoryPurchase() {
+	public Action<Player> getBestMandatoryPurchase() {
 		// in this case, CardType.NONE is not permitted. We must buy something.
 		List<List<CardType>> possiblePurchases = getPossibleBuys(totalBuys, 20, totalBudget);
 		return chooseBestOption(possiblePurchases);
 	}
 
-	private DominionAction chooseBestOption(List<List<CardType>> optionList) {
+	private Action<Player> chooseBestOption(List<List<CardType>> optionList) {
 		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
 		for (List<CardType> option : optionList) {
 			allOptions.add(convertCardListToActionEnum(option));
 		}
-		return (DominionAction) player.getDecider().decide(player, allOptions);
+		return (Action<Player>) player.getDecider().decide(player, allOptions);
 	}
 
 	private boolean breaksCardLimit(List<CardType> purchase) {

@@ -39,7 +39,7 @@ public class Moneylender extends Card {
 		allOptions.add(trashCopper);
 
 		player.setState(Player.State.PURCHASING);
-		DominionAction chosenAction = (DominionAction) player.getDecider().decide(player, allOptions);
+		Action<Player> chosenAction = (Action<Player>) player.getDecider().decide(player, allOptions);
 		chosenAction.start();
 		chosenAction.run();
 		player.setState(Player.State.PLAYING);

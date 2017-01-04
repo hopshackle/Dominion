@@ -4,7 +4,7 @@ import hopshackle.simulation.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DominionGame extends World implements Persistent, Game<Player, CardTypeAugment> {
+public class DominionGame extends Game<Player, CardTypeAugment> implements Persistent {
 
 	protected Player[] players;
 	private HashMap<CardType, Integer> cardsOnTable;
@@ -23,7 +23,9 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
 	private String tableSuffix;
-	
+	private FastCalendar calendar;
+	private World world = new World();
+
 	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, Decider<Player> deciderToUse) {
 		DominionGame retValue = new DominionGame(deciderGen, name, false);
 		int randomPlayer = Dice.roll(1, 4) - 1;
@@ -37,8 +39,7 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		turn = 1;
 		players = new Player[4];
 		boolean debugGame = false;
-		setCalendar(new FastCalendar(0l), 0);
-		setName(name);
+		calendar = new FastCalendar(0l);
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
 		if (Math.random() < debugGameProportion) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
@@ -57,13 +58,14 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		for (int n = 0; n < players.length; n++)
 			players[n].refreshPositionSummary();
 		currentPlayer = 0;
+		players[0].setState(Player.State.PLAYING);
 	}
 
-	private DominionGame(DominionGame master) {
+	protected DominionGame(DominionGame master) {
 		deciderGenerator = master.deciderGenerator;
 		players = new Player[4];
-		long currentTime = master.getCurrentTime();
-		setCalendar(new FastCalendar(currentTime));
+		long currentTime = master.calendar.getTime();
+		calendar = new FastCalendar(currentTime);
 		cardsOnTable = new HashMap<CardType, Integer>();
 		for (CardType ct : master.cardsOnTable.keySet()) {
 			cardsOnTable.put(ct, master.getNumberOfCardsRemaining(ct));
@@ -72,19 +74,83 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		allStartingCardTypes = master.allStartingCardTypes;
 		turn = master.turn;
 		clonedGame = true;
-		
+
 		for (int i = 0; i < 4; i++)
 			players[i] = master.players[i].clone(this);
+		for (int i = 0; i < master.actionStack.size(); i++) {
+			Player oldPlayer = master.actionStack.get(i).getActor();
+			int playerNumber = master.getPlayerNumber(oldPlayer) - 1;
+			actionStack.push(master.actionStack.get(i).clone(players[playerNumber]));
+		}
 		for (int n = 0; n < players.length; n++)
 			players[n].refreshPositionSummary();
 	}
 
 	@Override
-	public double[] playGame() {
-		do {
-			nextPlayersTurn();
-		} while (!gameOver());
+	public Player getCurrentPlayer() {
+		return players[currentPlayer];
+	}
 
+	@Override
+	public List<ActionEnum<Player>> getPossibleCurrentActions() {
+		return players[currentPlayer].getDecider().getChooseableOptions(players[currentPlayer]);
+	}
+
+	@Override
+	public void updateGameStatus() {
+		// We should only be here when we have finished a players last action
+		// If the current player is taking actions, we move to purchasing
+		// if the current player is purchasing, we move to the next player
+		Player p = players[currentPlayer];
+
+		switch(p.getPlayerState()) {
+		case WAITING:	
+			throw new AssertionError("Current Player State should never be WAITING");
+		case PLAYING:
+			if (p.getActionsLeft() < 0) 
+				throw new AssertionError("Actions Left should never be negative");
+			if (p.getActionsLeft() == 0) {
+				p.setState(Player.State.PURCHASING);
+				String buys = " buys";
+				if (p.getBuys() == 1) buys = " buy";
+				p.log("Has budget of " + p.getBudget() + " with " + p.getBuys() + buys);
+			} else {
+				// do nothing...we continue in the current state until all actions used
+			}
+			break;
+		case PURCHASING:
+			p.tidyUp();
+			p.setState(Player.State.WAITING);
+			if (currentPlayer == 3) turn++;
+			calendar.setTime((long) ((turn-1) * 4 + currentPlayer));
+			currentPlayer++;
+			if (currentPlayer == 4)
+				currentPlayer = 0;
+
+			players[currentPlayer].setState(Player.State.PLAYING);
+		}
+	}
+
+	public boolean gameOver() {
+		boolean retValue = false;
+		if (cardsOnTable.get(CardType.PROVINCE) == 0)
+			retValue = true;
+		int counter = 0;
+		for (CardType ct : cardsOnTable.keySet()) {
+			if (cardsOnTable.get(ct) == 0)
+				counter++;
+		}
+		if (counter > 2)
+			retValue = true;
+		if (turn > MAX_TURNS)
+			retValue = true;
+		if (retValue == true) {
+			endOfGameHouseKeeping();
+		}
+		return retValue;
+	}
+
+	private void endOfGameHouseKeeping() {
 		highestScore = -100;
 		lowestScore = 100;
 		for (int loop = 0; loop < 4; loop++) {
@@ -107,37 +173,7 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		if (!clonedGame) {
 			gameWriter.write(this, tableSuffix);
 		}
-		return score;
 	}
-
-	public void nextPlayersTurn() {
-		players[currentPlayer].takeTurn();
-	//	System.out.println("Taken turn " + turn + " for Player " + (currentPlayer+1) + " in Game " + this.toString());
-		
-		if (currentPlayer == 3) turn++;
-		setCurrentTime((long) ((turn-1) * 4 + currentPlayer));
-		currentPlayer++;
-		if (currentPlayer == 4)
-			currentPlayer = 0;
-		
-	}
-
-	public boolean gameOver() {
-		boolean retValue = false;
-		if (cardsOnTable.get(CardType.PROVINCE) == 0)
-			return true;
-		int counter = 0;
-		for (CardType ct : cardsOnTable.keySet()) {
-			if (cardsOnTable.get(ct) == 0)
-				counter++;
-		}
-		if (counter > 2)
-			retValue = true;
-		if (turn > MAX_TURNS)
-			retValue = true;
-		return retValue;
-	}
-
 
 	private void determineWinners() {
 		List<Integer> tempWinners = new ArrayList<Integer>();
@@ -162,12 +198,6 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		for (Player p : players)
 			retValue.add(p);
 		return retValue;
-	}
-
-	public Player getCurrentPlayer() {
-		if (currentPlayer == -1)
-			return players[0];		// i.e. fudge for when game has not yet started
-		return players[currentPlayer];
 	}
 
 	private void setUpCardsOnTable(GameSetup gs) {
@@ -212,7 +242,7 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		}
 		return retValue;
 	}
-	
+
 	public Set<CardType> startingCardTypes() {
 		Set<CardType> retValue = new HashSet<CardType>();
 		for (CardType ct : allStartingCardTypes) {
@@ -274,7 +304,7 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		}
 		return 0;
 	}
-	
+
 	@Override
 	public Player getPlayer(int n) {
 		return players[n-1];
@@ -306,4 +336,19 @@ public class DominionGame extends World implements Persistent, Game<Player, Card
 		return currentPlayer + 1;
 	}
 
+	@Override
+	public World getWorld() {
+		return world;
+	}
+
+	public void setDatabaseAccessUtility(DatabaseAccessUtility databaseUtility) {
+		world.setDatabaseAccessUtility(databaseUtility);
+	}
+
+	public void nextPlayersTurn() {
+		int cp = getCurrentPlayerNumber();
+		do {
+			this.oneAction(false);
+		} while (getCurrentPlayerNumber() == cp);
+	}
 }

@@ -13,9 +13,6 @@ public class DominionAction extends Action<Player> {
 	protected Player player;
 	private boolean isAction;
 
-	protected DominionAction followUpAction;
-	protected List<ActionEnum<Player>> possibleOptions = new ArrayList<ActionEnum<Player>>();
-
 	public DominionAction(Player p, CardTypeAugment actionEnum) {
 		super(actionEnum, p, 0l, false);
 		player = p;
@@ -52,8 +49,6 @@ public class DominionAction extends Action<Player> {
 	@Override
 	protected void doStuff() {
 		for (CardTypeAugment component : cardType) {
-			if (component.card == CardType.NONE)
-				continue;
 			switch (component.type) {
 			case PLAY:
 				Card cardToPlay = player.playFromHandToRevealedCards(component.card);
@@ -65,11 +60,14 @@ public class DominionAction extends Action<Player> {
 						possibleOptions = cardToPlay.takeAction(player);
 						followUpAction = cardToPlay.followUpAction();
 					}
+					player.decrementActionsLeft();
 				} else {
 					logger.severe("No Actual card found in hand for type " + cardType);
 				}
 				break;
 			case MOVE:
+				if (component.card == CardType.NONE)
+					continue;
 				player.log(component.toString()); 
 				switch (component.from) {
 				case SUPPLY:
@@ -121,14 +119,8 @@ public class DominionAction extends Action<Player> {
 		return isAction;
 	}
 
+	@Override
 	public DominionAction clone(Player newPlayer) {
 		return new DominionAction(this, newPlayer);
-	}
-
-	public List<ActionEnum<Player>> getNextOptions() {
-		return possibleOptions;
-	}
-	public DominionAction getFollowOnAction() {
-		return followUpAction;
 	}
 }

@@ -2,6 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.*;
+import hopshackle.simulation.Action;
 import hopshackle.simulation.ActionEnum;
 
 import java.util.*;
@@ -32,7 +33,7 @@ public class Chapel extends Card {
 		options.add(CardTypeAugment.trashCard(CardType.NONE, CardSink.HAND));
 
 		player.setState(Player.State.PURCHASING);
-		DominionAction choice = (DominionAction) player.getDecider().decide(player, options);
+		Action<Player> choice = (Action<Player>) player.getDecider().decide(player, options);
 		choice.start();
 		choice.run();
 		player.setState(Player.State.PLAYING);

@@ -60,7 +60,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.insertCardDirectlyIntoHand(new Cellar());
 		p2.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
 		int estatesInHand = p2.getNumberOfTypeInHand(CardType.ESTATE);
-		
+		game.nextPlayersTurn();
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 6);
 		assertEquals(p2.getDiscardSize(), estatesInHand);	// CELLAR is still in revealed cards
@@ -176,6 +176,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MINE));
 		p2.insertCardDirectlyIntoHand(new Card(CardType.SILVER));
 		int copperBefore = p2.getNumberOfTypeInHand(CardType.COPPER);
+		game.nextPlayersTurn();
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 6);
 		assertEquals(p2.getDiscardSize(), 0);
@@ -188,6 +189,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	public void mineTrashesCopperOtherwise() {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MINE));
 		int copperBefore = p2.getNumberOfTypeInHand(CardType.COPPER);
+		game.nextPlayersTurn();
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 5);
 		assertEquals(p2.getDiscardSize(), 0);
@@ -202,6 +204,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		int copperBefore = p2.getNumberOfTypeInHand(CardType.COPPER);
 		for (int n=0; n<copperBefore; n++)
 			p2.trashCard(CardType.COPPER, CardSink.HAND);
+		game.nextPlayersTurn();
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 5 - copperBefore);
 		assertEquals(p2.getDiscardSize(), 0);
@@ -225,7 +228,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		// With only Copper in hand after discarding Estates, the remodel choice will be:
 		// COPPER into ESTATE
 		// However this will lower the value of the hand overall, so will not be selected.
-
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
 		boolean estatesToDiscard = true;
 		int estatesDiscarded = -1;
@@ -242,6 +245,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void remodelTakesPurchaseDeciderIntoAccount() {
 		// Following on from above test, we now have an ESTATE, so this will be happily remodelled into a SILVER
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
 		p2.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
 		p2.takeActions();
@@ -250,7 +254,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.getDeckSize(), 5);
 		assertEquals(p2.totalTreasureValue(), 9);
 		assertEquals(p2.totalVictoryValue(), 3);
-
+		game.nextPlayersTurn();
 		// Following on from above test, we should now Remodel a SMITHY into a GOLD
 		p3.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, remodelDecider));
 		p3.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
@@ -265,9 +269,9 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertFalse(p3.getCopyOfHand().contains(CardType.SMITHY));
 	}
 
-
 	@Test
 	public void workshopBuysUpToCostOfFour() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WORKSHOP));
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 5);
@@ -281,6 +285,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void workshopDoesNotUseTreasureInHand() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WORKSHOP));
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
@@ -302,8 +307,6 @@ public class SpecialCardAbilitiesInBasicSet {
 		// check that top card of Deck is then Silver
 		// or victory card respectively (and that their hand sizes have reduced by one)
 		p2.insertCardDirectlyIntoHand(new Bureaucrat());
-		p1.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
-		p1.insertCardDirectlyIntoHand(new Moat());
 		p3.insertCardDirectlyIntoHand(new Card(CardType.DUCHY));
 
 		int p4_estates = p4.getNumberOfTypeInHand(CardType.ESTATE);
@@ -314,9 +317,11 @@ public class SpecialCardAbilitiesInBasicSet {
 		for (int i = 0; i < p3_estates; i++) {
 			p3.discard(CardType.ESTATE);
 		}
+		game.nextPlayersTurn();
+		p1.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
+		p1.insertCardDirectlyIntoHand(new Moat());
 		int[] handSize = getAllHandSizes();
 		int[] deckSize = getAllDeckSizes();
-
 		p2.takeActions();
 		assertEquals(handSize[0] - p1.getHandSize(), 0);
 		assertEquals(handSize[1] - p2.getHandSize(), 1);
@@ -340,6 +345,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.discard(CardType.COPPER);
 		p2.insertCardDirectlyIntoHand(new Library());
 		int startingDeckSize = p2.getDeckSize();
+		game.nextPlayersTurn();
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 7);
 		assertEquals(p2.getDeckSize() - startingDeckSize, -3);
@@ -353,6 +359,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.putCardFromHandOnTopOfDeck(CardType.BUREAUCRAT);
 		int startingDeckSize = p2.getDeckSize();
 		int startingDiscardSize = p2.getDiscardSize();
+		game.nextPlayersTurn();
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 7);
 		assertEquals(p2.getDeckSize() - startingDeckSize, -5);
@@ -369,6 +376,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.putCardFromHandOnTopOfDeck(CardType.COPPER);		// to be picked up by Village
 		int startingDeckSize = p2.getDeckSize();
 		int startingDiscardSize = p2.getDiscardSize();
+		game.nextPlayersTurn();
 		p2.takeActions();
 		// Village played first	- picks up Copper, hand size back to 5
 		// then Library - hand size to 7, with 4 cards picked up, and of these the Militia discarded
@@ -381,6 +389,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void throneRoomDoublesUpBasicCardInHandI() {
+		game.nextPlayersTurn();
 		p2.discard(CardType.COPPER);
 		p2.discard(CardType.COPPER);
 		p2.insertCardDirectlyIntoHand(new ThroneRoom());
@@ -391,6 +400,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void throneRoomDoublesUpBasicCardInHandII() {
+		game.nextPlayersTurn();
 		p2.discard(CardType.COPPER);
 		p2.discard(CardType.COPPER);
 		p2.putCardOnDiscard(new Card(CardType.COPPER));
@@ -417,6 +427,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void throneRoomDoublesUpComplicatedCardInHand() {
+		game.nextPlayersTurn();
 		p2.discard(CardType.COPPER);
 		p2.discard(CardType.COPPER);
 		p3.insertCardDirectlyIntoHand(new Card(CardType.DUCHY));
@@ -433,6 +444,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void throneRoomDoublesUpSingleActionCardGivenChoice() {
+		game.nextPlayersTurn();
 		p2.discard(CardType.COPPER);
 		p2.discard(CardType.COPPER);
 		p2.insertCardDirectlyIntoHand(new ThroneRoom());
@@ -445,6 +457,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void chancellorMovesDiscardIntoDeckIfMoreThanSixProvincesLeft() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CHANCELLOR));
 		p2.takeActions();
 		assertEquals(p2.getDeckSize(), 0);
@@ -453,6 +466,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		for (int i=0; i<6; i++)
 			game.drawCard(CardType.PROVINCE);
 
+		game.nextPlayersTurn();
 		p3.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CHANCELLOR));
 		p3.takeActions();
 		assertEquals(p3.getDeckSize(), 5);
@@ -461,6 +475,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void councilRoomCausesOtherPlayersToDrawOneCardEach() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.COUNCIL_ROOM));
 		int[] handSizes = getAllHandSizes();
 		p2.takeActions();
@@ -468,13 +483,14 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.getDiscardSize(), 0);
 		assertEquals(p2.getHandSize(), 9);
 
-		assertEquals(p1.getHandSize() - handSizes[0], 0);	// because p1 already has whole of deck in hand
+		assertEquals(p1.getHandSize() - handSizes[0], 1);	// because p1 already has whole of deck in hand
 		assertEquals(p3.getHandSize() - handSizes[2], 1);
 		assertEquals(p4.getHandSize() - handSizes[3], 1);
 	}
 
 	@Test
 	public void spyDiscardsVictoryAndCopperOnSelfAndComplementOnOthers() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.SPY));
 		p2.putCardOnTopOfDeck(CardType.SILVER);
 		p2.putCardOnTopOfDeck(CardType.COPPER);		// to be drawn by Spy, leaving Silver on top
@@ -493,8 +509,8 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p4.getDeckSize(), 6);
 		assertEquals(p4.getHandSize(), 5);
 		assertEquals(p1.getDiscardSize(), 0);
-		assertEquals(p1.getDeckSize(), 1);
-		assertEquals(p1.getHandSize(), 10);
+		assertEquals(p1.getDeckSize(), 7);
+		assertEquals(p1.getHandSize(), 5);
 	}
 
 	@Test
@@ -502,17 +518,17 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.THIEF));
 		purchasePreferences.put(CardType.COPPER, -0.06);
 		p2.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));
-
+		p3.putCardOnTopOfDeck(CardType.COPPER);
+		p3.putCardOnTopOfDeck(CardType.COPPER);
+		p4.putCardOnTopOfDeck(CardType.ESTATE);
+		p4.putCardOnTopOfDeck(CardType.ESTATE);
+		game.nextPlayersTurn();
 		p1.putCardOnTopOfDeck(CardType.SILVER);
 		p1.putCardOnTopOfDeck(CardType.COPPER);
-		p3.putCardOnTopOfDeck(CardType.COPPER);
-		p3.putCardOnTopOfDeck(CardType.COPPER);
-		p4.putCardOnTopOfDeck(CardType.ESTATE);
-		p4.putCardOnTopOfDeck(CardType.ESTATE);
-
+		assertEquals(p1.totalTreasureValue(), 13);	// buys silver on own turn
 		p2.takeActions();
 
-		assertEquals(p1.getDeckSize(), 0);
+		assertEquals(p1.getDeckSize(), 6);
 		assertEquals(p1.getDiscardSize(), 1);
 		assertEquals(p2.getDeckSize(), 5);
 		assertEquals(p2.getDiscardSize(), 1);
@@ -523,7 +539,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 		assertEquals(p2.totalTreasureValue(), 9);
 		assertEquals(p2.totalVictoryValue(), 3);
-		assertEquals(p1.totalTreasureValue(), 8);
+		assertEquals(p1.totalTreasureValue(), 11);	// buys silver on own turn
 		assertEquals(p3.totalTreasureValue(), 8);
 		assertEquals(p4.totalTreasureValue(), 7);
 		assertEquals(p4.totalVictoryValue(), 5);
@@ -532,7 +548,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void adventurerTakesTwoTreasuresAndDiscardsRemainder() {
 		List<Player> players = game.getAllPlayers();
-		for (int i = 1; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			Player p = players.get(i);
 			p.insertCardDirectlyIntoHand(new Adventurer());
 			do {
@@ -544,6 +560,7 @@ public class SpecialCardAbilitiesInBasicSet {
 			assertEquals(p.getBudget(), 2);
 			assertEquals(p.totalTreasureValue(), 7);	// unchanged
 			assertEquals(p.getDiscardSize(), 10 - p.getDeckSize() - p.getHandSize());
+			game.nextPlayersTurn();
 		}
 	}
 
@@ -562,6 +579,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void chapelTrashesAllFourWhenAdvantageous() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(new Chapel());
 		p2.insertCardDirectlyIntoHand(new Moat());
 		for (int i = 0; i < 5; i++)
@@ -577,6 +595,7 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Test
 	public void chapelTrashesLessThanFourIfAdvantageous() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(new Chapel());
 		p2.insertCardDirectlyIntoHand(new Moat());
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CURSE));
@@ -593,6 +612,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void feastGainsCardAndTrashesItself() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(new Feast());
 		assertEquals(p2.getNumberOfTypeTotal(CardType.FEAST), 1);
 		
@@ -605,6 +625,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void feastGainsCardUpToFive() {
+		game.nextPlayersTurn();
 		HashMap<CardType, Double> purchasePreferences = new HashMap<CardType, Double>();
 		purchasePreferences.put(CardType.COPPER, 0.10);
 		purchasePreferences.put(CardType.ESTATE, 0.09);
@@ -628,6 +649,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void throneRoomOnFeastGainsTwoCardButTrashesOnce() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(new Feast());
 		p2.insertCardDirectlyIntoHand(new ThroneRoom());
 		assertEquals(p2.getNumberOfTypeTotal(CardType.FEAST), 1);
@@ -641,6 +663,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void moneylenderTrashesACopperWhenAdvantageous() {
+		game.nextPlayersTurn();
 		Moneylender moneylender = new Moneylender();
 		purchasePreferences.put(CardType.COPPER, -0.50);
 		p2.insertCardDirectlyIntoHand(moneylender);
@@ -661,6 +684,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void moneylenderDoesNotTrashACopperWhenAdvantageous() {
+		game.nextPlayersTurn();
 		Moneylender moneylender = new Moneylender();
 		purchasePreferences.put(CardType.COPPER, 0.05);
 		p2.insertCardDirectlyIntoHand(moneylender);
@@ -678,6 +702,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void witchDrawsTwoCardsAndPutsCurseInOtherPlayersHands() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(new Witch());
 		p2.takeActions();
 		assertEquals(p2.getCopyOfHand().size(), 7);
@@ -692,6 +717,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void witchAffectsOnlyPlayerToLeftIfJustOneCurse() {
+		game.nextPlayersTurn();
 		DominionGame game = p2.getGame();
 		game.removeCardType(CardType.CURSE);
 		game.addCardType(CardType.CURSE, 1);
@@ -709,6 +735,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	
 	@Test
 	public void moatDefendsAgainstWitch() {
+		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(new Witch());
 		p4.insertCardDirectlyIntoHand(new Moat());
 		p2.takeActions();

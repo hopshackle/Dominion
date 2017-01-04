@@ -1,6 +1,6 @@
 package hopshackle.dominion;
 
-import java.util.List;
+import java.util.*;
 
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;

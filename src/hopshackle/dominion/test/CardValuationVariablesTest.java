@@ -3,7 +3,6 @@ package hopshackle.dominion.test;
 import static org.junit.Assert.assertEquals;
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.SimProperties;
 
 import org.junit.*;
@@ -21,8 +20,8 @@ public class CardValuationVariablesTest {
 	}
 	
 	private void recalculate() {
-		for (int n = 0; n<4; n++)
-			game.getAllPlayers().get(n).tidyUp();
+		for (int n = 1; n<=4; n++)
+			game.getPlayer(n).tidyUp();
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		p2 = game.getAllPlayers().get(1).getPositionSummaryCopy();
 		p3 = game.getAllPlayers().get(2).getPositionSummaryCopy();

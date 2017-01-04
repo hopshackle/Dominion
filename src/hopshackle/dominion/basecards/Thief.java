@@ -31,7 +31,7 @@ public class Thief extends AttackCard {
 		allOptions.add(doNothing);
 		allOptions.add(gainCard);
 		
-		DominionAction decision = (DominionAction) attacker.getDecider().decide(attacker, allOptions);
+		Action<Player> decision = (Action<Player>) attacker.getDecider().decide(attacker, allOptions);
 		decision.start();
 		decision.run();
 		return emptyList;

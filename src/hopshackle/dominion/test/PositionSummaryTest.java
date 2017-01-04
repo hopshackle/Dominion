@@ -3,12 +3,9 @@ package hopshackle.dominion.test;
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import org.junit.*;
-
-import com.sun.media.jfxmedia.events.PlayerStateEvent.PlayerState;
 
 public class PositionSummaryTest {
 
@@ -21,7 +18,7 @@ public class PositionSummaryTest {
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		game.getCurrentPlayer().takeCardFromSupply(CardType.VILLAGE, CardSink.DISCARD);
 		game.getCurrentPlayer().takeCardFromSupply(CardType.GOLD, CardSink.DISCARD);
-		game.getCurrentPlayer().setState(Player.State.PLAYING);
+	//	game.getCurrentPlayer().setState(Player.State.PLAYING);
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 	}
 
@@ -133,6 +130,8 @@ public class PositionSummaryTest {
 	}
 	@Test
 	public void applicationOfCardPlayFromValidState() {
+		game.getCurrentPlayer().setState(Player.State.PLAYING);
+		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		p1.drawCard(CardType.WOODCUTTER, CardSink.HAND);
 		assertEquals(p1.getActions(), 1);
 		assertEquals(p1.getAdditionalPurchasePower(), 0);
@@ -185,12 +184,29 @@ public class PositionSummaryTest {
 	public void runningAnActionIncreasesActionsLeftInPositionSummary() {
 		Player player = game.getCurrentPlayer();
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CELLAR));
-		DominionAction da = new DominionAction(player, CardTypeAugment.playCard(CardType.CELLAR));
+		Action<Player> da = new DominionAction(player, CardTypeAugment.playCard(CardType.CELLAR));
 
 		da.addToAllPlans();
 		da.start();
 		da.run();
-		assertEquals(player.getActionsLeft(), 2);	// as we have not yet completed the action...we have to discard first
-		assertEquals(player.getPositionSummaryCopy().getActions(), 2);
+		assertEquals(player.getActionsLeft(), 1);
+		assertEquals(player.getPositionSummaryCopy().getActions(), 1);
+	}
+	
+	@Test
+	public void playingACardUpdatesPositionSummaryWithPurchasePower() {
+		Player player = game.getCurrentPlayer();
+		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
+		CardTypeAugment marketEnum = CardTypeAugment.playCard(CardType.MARKET);
+		DominionAction action = new DominionAction(player, marketEnum );
+		assertEquals(player.getAdditionalPurchasePower(), 0);
+		assertEquals(player.getBuys(), 1);
+		action.addToAllPlans();
+		action.start();
+		action.run();
+		assertEquals(player.getAdditionalPurchasePower(), 1);
+		assertEquals(player.getBuys(), 2);
+		assertEquals(player.getPositionSummaryCopy().getAdditionalPurchasePower(), 1);
+		assertEquals(player.getPositionSummaryCopy().getBuys(), 2);
 	}
 }

@@ -21,7 +21,6 @@ public class Player extends Agent {
 	private int playerNumber;
 	private int actionsLeft;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
-	protected Stack<DominionAction> actionStack = new Stack<DominionAction>();
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
@@ -50,17 +49,10 @@ public class Player extends Agent {
 		hand = player.hand.copy();
 		revealedCards = player.revealedCards.copy();
 		decider = player.decider;
-		for (int i = 0; i < player.actionStack.size(); i++) {
-			actionStack.push(player.actionStack.get(i).clone(this));
-		}
 		if (player.getNextAction() != null) {
 			DominionAction da = (DominionAction) player.getNextAction();
-			DominionAction clonedAction = null;
-			if (player.actionStack.contains(da)) {
-				clonedAction = actionStack.get(player.actionStack.indexOf(da));
-			} else {
-				clonedAction = da.clone(this);
-			}
+			Action<Player> clonedAction = null;
+			clonedAction = da.clone(this);
 			this.actionPlan.addAction(clonedAction);
 		}
 
@@ -121,58 +113,20 @@ public class Player extends Agent {
 		return retValue;
 	}
 
-	public void buyCards() {
-		setState(State.PURCHASING);
-		String buys = " buys";
-		if (getBuys() == 1) buys = " buy";
-		log("Has budget of " + getBudget() + " with " + getBuys() + buys);
-		DominionAction decision = (DominionAction) getDecider().decide(this);
-		decision.start();
-		decision.run();
+	public void takeActions() {
+		if (playerState != State.PLAYING)
+			throw new AssertionError("Should be in PLAYING State before taking actions");
+
+		do {
+			game.oneAction(false);
+		} while (actionsLeft > 0);
 	}
 
-	public void takeActions() {
-		if (playerState == State.PURCHASING || playerState == State.WAITING)
-			actionsLeft = 1;
-		setState(State.PLAYING);
+	public void buyCards() {
+		if (playerState != State.PURCHASING)
+			throw new AssertionError("Should be in PURCHASING State before buying cards");
 
-		if (actionsLeft == 0 && !actionStack.isEmpty())
-			throw new AssertionError("Action Stack should always be emptied before actionsLeft is set to zero.");
-
-		while (actionsLeft > 0) {
-			refreshPositionSummary();
-			DominionAction action = null;
-			List<ActionEnum<Player>> nextOptions = new ArrayList<ActionEnum<Player>>();
-			do {
-				if (action != null) {
-					// this occurs if we popped an action off the stack on the last iteration
-					// so we already have the action we wish to execute
-				} else {
-					// we have completed the last one, so pick a new action
-					if (!actionStack.isEmpty()) {
-						nextOptions = actionStack.peek().getNextOptions();
-						action = (DominionAction) getDecider().decide(this, nextOptions);
-					} else {
-						action = (DominionAction) getDecider().decide(this);
-					}
-				}
-				action.start();
-				action.run();
-				nextOptions = action.getNextOptions();
-				if (nextOptions.isEmpty()) {
-					if (actionStack.isEmpty()) {
-						action = null;
-					} else {
-						action = actionStack.pop().getFollowOnAction();
-						actionPlan.addAction(action);
-					}
-				} else {
-					actionStack.push(action);
-					action = null;
-				}
-			} while (action != null || !actionStack.isEmpty());
-			decrementActionsLeft();
-		}
+		game.oneAction(true);
 	}
 
 	public void incrementActionsLeft() {
@@ -198,7 +152,7 @@ public class Player extends Agent {
 			}
 			drawTopCardFromDeckIntoHand();
 		}
-		setState(State.WAITING);
+		refreshPositionSummary();
 	}
 
 	public void shuffleDeckAndHandTogether() {
@@ -229,6 +183,8 @@ public class Player extends Agent {
 		return 100.0;
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
 	public DominionGame getGame() {
 		return game;
 	}
@@ -361,6 +317,8 @@ public class Player extends Agent {
 	}
 
 	public void setState(Player.State newState) {
+		if (playerState != State.PLAYING && newState == State.PLAYING)
+			actionsLeft = 1;
 		playerState = newState;
 		refreshPositionSummary();
 	}
@@ -391,6 +349,7 @@ public class Player extends Agent {
 
 	public Card playFromHandToRevealedCards(CardType cardType) {
 		if (cardType != CardType.NONE) {
+			summary = summary.apply(CardTypeAugment.playCard(cardType));
 			Card retValue = hand.removeSpecificCard(cardType);
 			revealedCards.addCard(retValue);
 			summary.updateHandFromPlayer();
@@ -416,19 +375,6 @@ public class Player extends Agent {
 		return revealedCards.getAdditionalPurchasePower();
 	}
 
-	public void takeTurn() {
-		switch (playerState) {
-		case WAITING:
-		case PLAYING:
-			takeActions();
-		case PURCHASING:
-			if (!actionStack.isEmpty())
-				takeActions();
-			buyCards();
-		}
-		tidyUp();
-	}
-
 	public List<ActionEnum<Player>> getActionsInHand() {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		Set<CardType> cardsSeen = new HashSet<CardType>();
@@ -447,7 +393,8 @@ public class Player extends Agent {
 	public void refreshPositionSummary() {
 		summary = new PositionSummary(this, null);
 	}
-	public int actionStackSize() {
-		return actionStack.size();
+
+	public void setGame(DominionGame dominionGame) {
+		game = dominionGame;
 	}
 }
