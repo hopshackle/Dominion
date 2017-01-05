@@ -59,6 +59,9 @@ public class DominionAction extends Action<Player> {
 						player.log("Plays " + cardToPlay.toString());
 						possibleOptions = cardToPlay.takeAction(player);
 						followUpAction = cardToPlay.followUpAction();
+						nextActor = cardToPlay.nextActor();
+						if (nextActor == null)
+							nextActor = player;
 					}
 					player.decrementActionsLeft();
 				} else {

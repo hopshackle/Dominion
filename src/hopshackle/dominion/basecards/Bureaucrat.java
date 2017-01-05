@@ -26,7 +26,7 @@ public class Bureaucrat extends AttackCard {
 	}
 
 	@Override
-	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player target, Player attacker) {
+	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player target) {
 		target.log("Is target of BUREAUCRAT");
 		for (CardType ct : target.getCopyOfHand()) {
 			if (ct.isVictory() && ct != CardType.CURSE) {		// technically CURSE cards are not Victory cards

@@ -16,7 +16,7 @@ public class Witch extends AttackCard {
 	}
 
 	@Override
-	public List<ActionEnum<Player>> executeAttackOnPlayer(Player target, Player attacker) {
+	public List<ActionEnum<Player>> executeAttackOnPlayer(Player target) {
 		DominionGame game = target.getGame();
 	
 		if (game.getNumberOfCardsRemaining(CardType.CURSE) > 0) {

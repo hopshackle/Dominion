@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import hopshackle.simulation.HopshackleUtilities;
+
 import java.util.*;
 
 public class Deck {
@@ -9,19 +11,17 @@ public class Deck {
 	public Deck() {
 		cards = new LinkedList<Card>();
 	}
-	private Deck(Deck toClone, boolean keepOrder) {
+	private Deck(Deck toClone, boolean keepOrder, DominionGame newGame) {
 		cards = new LinkedList<Card>();
 		for (Card c : toClone.cards) {
-			cards.add(new Card(c.getType()));
+			cards.add(c.clone(newGame));
 		}
 		if (!keepOrder)
 			this.shuffle();
 	}
-	public Deck copyWithShuffle() {
-		return new Deck(this, false);
-	}
-	public Deck copy() {
-		return new Deck(this, true);
+
+	public Deck copy(DominionGame newGame) {
+		return new Deck(this, true, newGame);
 	}
 	protected Deck(LinkedList<Card> cards) {
 		this.cards = cards;
@@ -124,5 +124,56 @@ public class Deck {
 		for (Card c: cards) {
 			c.reset();
 		}
+	}
+	public Card getLastCard() {
+		return cards.getLast();
+	}
+
+	public List<List<CardType>> getPossibleDiscards(int min, int max) {
+		Map<CardType, Integer> allCardTypesInDeck = new HashMap<CardType, Integer>();
+		for (Card c : cards) {
+			CardType ct = c.getType();
+			if (allCardTypesInDeck.containsKey(ct)) {
+				allCardTypesInDeck.put(ct, allCardTypesInDeck.get(ct) + 1);
+			} else {
+				allCardTypesInDeck.put(ct, 1);
+			}
+		}
+
+		List<List<CardType>> retValue = new ArrayList<List<CardType>>();
+
+		for (CardType ct : allCardTypesInDeck.keySet()) {
+			List<List<CardType>> newDiscardStems = new ArrayList<List<CardType>>();
+			for (int i = 1; i <= allCardTypesInDeck.get(ct) && i <= max; i++) {
+				for (List<CardType> discardStem : retValue) {
+					if (discardStem.size() + i <= max) {
+						List<CardType> newDiscardStem = HopshackleUtilities.cloneList(discardStem);
+						for (int j = 0; j < i; j++) {
+							newDiscardStem.add(ct);
+						}
+						newDiscardStems.add(newDiscardStem);
+					}
+				}
+				List<CardType> newDiscardStem = new ArrayList<CardType>();
+				for (int j = 0; j < i; j++) {
+					newDiscardStem.add(ct);
+				}
+				newDiscardStems.add(newDiscardStem);
+			}
+			retValue.addAll(newDiscardStems);
+		}
+		if (min > 0) {
+			List<List<CardType>> optionsBelowMinimum = new ArrayList<List<CardType>>();
+			for (List<CardType> option : retValue) {
+				if (option.size() < min)
+					optionsBelowMinimum.add(option);
+			}
+			retValue.removeAll(optionsBelowMinimum);
+		}
+		if (min == 0) {
+			List<CardType> noAction = new ArrayList<CardType>();
+			retValue.add(noAction);
+		}
+		return retValue;
 	}
 }

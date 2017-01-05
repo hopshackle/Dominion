@@ -1,11 +1,9 @@
 package hopshackle.dominion.basecards;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 public class Thief extends AttackCard {
@@ -15,7 +13,7 @@ public class Thief extends AttackCard {
 	}
 
 	@Override
-	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player target, Player attacker) {
+	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player target) {
 		target.log("Is target of THIEF");
 		// always trash the highest value treasure card drawn
 		Card[] topTwoCards = discardTopTwoCards(target);

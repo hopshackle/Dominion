@@ -24,7 +24,7 @@ public class Spy extends AttackCard {
 
 
 	@Override
-	public List<ActionEnum<Player>> executeAttackOnPlayer(Player target, Player attacker) {
+	public List<ActionEnum<Player>> executeAttackOnPlayer(Player target) {
 		spyOnPlayer(target, true);
 		return emptyList;
 	}

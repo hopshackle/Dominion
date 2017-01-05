@@ -70,4 +70,12 @@ public class Card {
 	public DominionAction followUpAction() {
 		return null;
 	}
+
+	public Player nextActor() {
+		return null;
+	}
+	
+	public Card clone(DominionGame newGame) {
+		return new Card(type);
+	}
 }

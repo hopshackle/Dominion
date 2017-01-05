@@ -381,4 +381,29 @@ public class BasicGameMechanics {
 		clonedGame.nextPlayersTurn();
 		assertEquals(newP1.getNumberOfTypeTotal(CardType.COPPER), 9);
 	}
+	
+	@Test
+	public void discardOptionsTakeAccountOfMaximum() {
+		List<List<CardType>> discards = game.getCurrentPlayer().getPossibleDiscardsFromHand(0, 2);
+		for (List<CardType> discard : discards) {
+			assertTrue(discard.size() < 3);
+		}
+	}
+	@Test
+	public void discardOptionsTakeAccountOfMinimum() {
+		List<List<CardType>> discards = game.getCurrentPlayer().getPossibleDiscardsFromHand(2, 4);
+		for (List<CardType> discard : discards) {
+			assertTrue(discard.size() > 1);
+		}
+	}
+	@Test
+	public void discardOptionsWorksWithSameMinMax() {
+		game.getCurrentPlayer().insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
+		game.getCurrentPlayer().insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
+		List<List<CardType>> discards = game.getCurrentPlayer().getPossibleDiscardsFromHand(2, 2);
+		for (List<CardType> discard : discards) {
+			assertEquals(discard.size(), 2);
+		}
+		assertEquals(discards.size(), 3);
+	}
 }

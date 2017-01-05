@@ -44,10 +44,10 @@ public class Player extends Agent {
 		game = newGame;
 		// Responsibility for taking into account the information set resides in the caller
 		// as that has the information from whose perspective the clone is taking place
-		deck = player.deck.copy();
-		discard = player.discard.copy();
-		hand = player.hand.copy();
-		revealedCards = player.revealedCards.copy();
+		deck = player.deck.copy(newGame);
+		discard = player.discard.copy(newGame);
+		hand = player.hand.copy(newGame);
+		revealedCards = player.revealedCards.copy(newGame);
 		decider = player.decider;
 		if (player.getNextAction() != null) {
 			DominionAction da = (DominionAction) player.getNextAction();
@@ -80,6 +80,9 @@ public class Player extends Agent {
 
 	public int getNumberOfTypeInHand(CardType type) {
 		return hand.getNumberOfType(type);
+	}
+	public List<List<CardType>> getPossibleDiscardsFromHand(int min, int max) {
+		return hand.getPossibleDiscards(min, max);
 	}
 
 	public int getNumberOfTypePlayedSoFar(CardType type) {
@@ -273,6 +276,9 @@ public class Player extends Agent {
 	}
 	public List<CardType> getCopyOfPlayedCards() {
 		return revealedCards.getAllCards();
+	}
+	public Card getCardLastPlayed() {
+		return revealedCards.getLastCard();
 	}
 
 	public boolean discard(CardType cardTypeToDiscard) {

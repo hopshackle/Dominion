@@ -17,7 +17,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 	static {
 		variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
 		List<CardType> allCards = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
-		actionsToUse = CardType.toActionEnum(allCards);
+		actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(allCards);
 	}
 
 	public TestDominionDecider(HashMap<CardType, Double> values, HashMap<CardType, Double> handValues) {

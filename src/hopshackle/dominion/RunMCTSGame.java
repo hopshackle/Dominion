@@ -16,7 +16,7 @@ public class RunMCTSGame {
 		Player firstPlayer = game.getPlayer(1);
 		List<CardValuationVariables> varList = gamesetup.getDeckVariables();
 		List<CardType> cardsAvailable = gamesetup.getCardTypes();
-		List<ActionEnum<Player>> actionsToUse = CardType.toActionEnum(cardsAvailable);
+		List<ActionEnum<Player>> actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardsAvailable);
 		MCTSMasterDecider<Player> mctsDecider = new MCTSMasterDominion(actionsToUse, varList, dg.completeHeuristic, dg.completeHeuristic);
 		firstPlayer.setDecider(mctsDecider);
 //		do {

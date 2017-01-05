@@ -1,14 +1,7 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.AttackCard;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.DominionStateFactory;
-import hopshackle.dominion.HardCodedDiscardDecider;
-import hopshackle.dominion.Player;
-import hopshackle.dominion.PositionSummary;
-import hopshackle.simulation.ActionEnum;
-import hopshackle.simulation.HopshackleUtilities;
-import hopshackle.simulation.LookaheadDecider;
+import hopshackle.dominion.*;
+import hopshackle.simulation.*;
 
 import java.util.*;
 
@@ -19,7 +12,7 @@ public class Militia extends AttackCard {
 	}
 
 	@Override
-	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player victim, Player attacker) {
+	public List<ActionEnum<Player>> executeAttackOnPlayer(Player victim) {
 		List<CardType> hand = victim.getCopyOfHand();
 		CardType[] cardsInHand = hand.toArray(new CardType[1]);
 		if (cardsInHand.length < 4) {
@@ -27,42 +20,9 @@ public class Militia extends AttackCard {
 			return emptyList;
 		}
 		victim.log("Victim of MILITIA:");
-		CardType[] possibleCombination = new CardType[3];
-		CardType[] bestCombination = new CardType[3];
-		LookaheadDecider<Player> victimDecider = new HardCodedDiscardDecider(
-				new DominionStateFactory(HopshackleUtilities.convertList(victim.getDecider().getVariables())), 
-				hand);
-		double bestValue = -1.0;
-		for (int loop=0; loop<cardsInHand.length; loop++) {
-			possibleCombination[0] = cardsInHand[loop];
-			for (int loop2=loop+1; loop2<cardsInHand.length; loop2++){
-				possibleCombination[1] = cardsInHand[loop2];
-				for (int loop3=loop2+1; loop3<cardsInHand.length; loop3++) {
-					possibleCombination[2] = cardsInHand[loop3];
-					PositionSummary positionWithReducedHand = (PositionSummary) victimDecider.getCurrentState(victim);
-					positionWithReducedHand.changeHand(possibleCombination);
-					double value = victimDecider.value(positionWithReducedHand);
-					if (value > bestValue) {
-						bestValue = value;
-						for (int n=0; n<3; n++)
-							bestCombination[n] = possibleCombination[n];
-					}
-				}
-			}
-		}
-
-		List<CardType> cardsToKeep = new ArrayList<CardType>();
-		for (CardType cardToKeep : bestCombination) {
-			cardsToKeep.add(cardToKeep);
-		}
-		for (CardType cardInHand : hand) {
-			if (cardsToKeep.contains(cardInHand))
-				cardsToKeep.remove(cardInHand);
-			else {
-				victim.discard(cardInHand);
-			}
-		}
-		return emptyList;
+	
+		List<List<CardType>> discardOptions = victim.getPossibleDiscardsFromHand(cardsInHand.length - 3, cardsInHand.length - 3);
+		return CardType.listToActionEnumList(discardOptions);
 	}
 
 }

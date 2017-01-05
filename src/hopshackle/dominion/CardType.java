@@ -1,10 +1,7 @@
 package hopshackle.dominion;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 public enum CardType {
@@ -108,19 +105,30 @@ public enum CardType {
 		return (!isTreasure() && !isVictory());
 	}
 
-	/* 
-	 * Really want to use this as little as possible, as the list of chooseable options should be defined
-	 * when the decider is called, rather than being held in the Decider. But for backwards compatibility
-	 * this is currently needed.
-	 */
-	public static List<ActionEnum<Player>> toActionEnum(List<CardType> actionsToUse) {
+	public static List<ActionEnum<Player>> generateListOfPossibleActionEnumsFromCardTypes(List<CardType> actionsToUse) {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (CardType ct : actionsToUse) {
 			retValue.add(CardTypeAugment.takeCard(ct));
 			if (ct.isAction())
 				retValue.add(CardTypeAugment.playCard(ct));
 		}
-		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, CardSink.DISCARD, ChangeType.PLAY));
 		return retValue;
+	}
+	public static List<ActionEnum<Player>> listToActionEnumList(List<List<CardType>> possibleDiscards) {
+		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>(possibleDiscards.size());
+		for (List<CardType> discard : possibleDiscards) {
+			retValue.add(toActionEnum(discard));
+		}
+		return retValue;
+	}
+	public static ActionEnum<Player> toActionEnum(List<CardType> cardList) {
+		List<CardTypeAugment> asCTA = new ArrayList<CardTypeAugment>(cardList.size());
+		if (cardList.isEmpty()) {
+			asCTA.add(CardTypeAugment.discardCard(CardType.NONE));
+		}
+		for (CardType ct : cardList) {
+			asCTA.add(CardTypeAugment.discardCard(ct));
+		}
+		return new CardTypeList(asCTA, false);
 	}
 }

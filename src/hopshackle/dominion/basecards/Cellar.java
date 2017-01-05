@@ -24,8 +24,8 @@ public class Cellar extends Card {
 		 */
 		this.player = player;
 		this.startingHandSize = player.getHandSize();
-		List<List<CardType>> possibleDiscards = getPossibleDiscards();
-		List<ActionEnum<Player>> possibleActions = convertToActionEnum(possibleDiscards);
+		List<List<CardType>> possibleDiscards = player.getPossibleDiscardsFromHand(0, startingHandSize);
+		List<ActionEnum<Player>> possibleActions = CardType.listToActionEnumList(possibleDiscards);
 		
 		return possibleActions;
 	}
@@ -35,60 +35,7 @@ public class Cellar extends Card {
 		DominionAction retValue = new CellarFollowOnAction(player, startingHandSize);
 		return retValue;
 	}
-
-	private List<List<CardType>> getPossibleDiscards() {
-		Map<CardType, Integer> allCardTypesInHand = new HashMap<CardType, Integer>();
-		for (CardType ct : player.getCopyOfHand()) {
-			if (allCardTypesInHand.containsKey(ct)) {
-				allCardTypesInHand.put(ct, allCardTypesInHand.get(ct) + 1);
-			} else {
-				allCardTypesInHand.put(ct, 1);
-			}
-		}
-
-		List<List<CardType>> retValue = new ArrayList<List<CardType>>();
-
-		for (CardType ct : allCardTypesInHand.keySet()) {
-			List<List<CardType>> newDiscardStems = new ArrayList<List<CardType>>();
-			for (int i = 1; i <= allCardTypesInHand.get(ct); i++) {
-				for (List<CardType> discardStem : retValue) {
-					List<CardType> newDiscardStem = HopshackleUtilities.cloneList(discardStem);
-					for (int j = 0; j < i; j++) {
-						newDiscardStem.add(ct);
-					}
-					newDiscardStems.add(newDiscardStem);
-				}
-				List<CardType> newDiscardStem = new ArrayList<CardType>();
-				for (int j = 0; j < i; j++) {
-					newDiscardStem.add(ct);
-				}
-				newDiscardStems.add(newDiscardStem);
-			}
-			retValue.addAll(newDiscardStems);
-		}
-		List<CardType> noAction = new ArrayList<CardType>();
-		retValue.add(noAction);
-		return retValue;
-	}
-	private List<ActionEnum<Player>> convertToActionEnum(List<List<CardType>> possibleDiscards) {
-		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>(possibleDiscards.size());
-		for (List<CardType> discard : possibleDiscards) {
-			retValue.add(convertCardListToActionEnum(discard));
-		}
-		return retValue;
-	}
-	private ActionEnum<Player> convertCardListToActionEnum(List<CardType> cardList) {
-		List<CardTypeAugment> asCTA = new ArrayList<CardTypeAugment>(cardList.size());
-		if (cardList.isEmpty()) {
-			asCTA.add(CardTypeAugment.discardCard(CardType.NONE));
-		}
-		for (CardType ct : cardList) {
-			asCTA.add(CardTypeAugment.discardCard(ct));
-		}
-		return new CardTypeList(asCTA, false);
-	}
 }
-
 
 class CellarFollowOnAction extends DominionAction {
 

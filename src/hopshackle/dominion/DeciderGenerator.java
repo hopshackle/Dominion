@@ -52,7 +52,7 @@ public class DeciderGenerator {
 		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
 
 		cardTypes = gamesetup.getCardTypes();
-		actionsToUse = CardType.toActionEnum(cardTypes);
+		actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);
 		hardCodedActionDecider = new HardCodedActionDecider(cardTypes, variablesToUseForActions);
 		hardCodedActionDecider.setName("DEFAULT");
 		bigMoney = new BigMoneyDecider(actionsToUse, HopshackleUtilities.convertList(variablesToUseForPurchase));
