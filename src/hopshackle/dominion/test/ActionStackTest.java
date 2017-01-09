@@ -2,7 +2,7 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 
-import java.util.Stack;
+import java.util.*;
 
 import hopshackle.dominion.*;
 import hopshackle.simulation.Action;
@@ -18,7 +18,8 @@ public class ActionStackTest {
 
 	@Before
 	public void setUp() throws Exception {
-		SimProperties.setProperty("DominionCardSetup", "NONE");
+		SimProperties.setProperty("DominionCardSetup", "FirstGame");
+		SimProperties.setProperty("DominionHardCodedActionDecider", "true");
 		game = new TestGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		player = game.getCurrentPlayer();
 	}
@@ -32,6 +33,38 @@ public class ActionStackTest {
 		assertEquals(game.getActionStack().size(), 1);
 		assertEquals(newGame.getActionStack().size(), 1);
 		assertFalse(newGame.getActionStack().pop() == action);
+	}
+	
+	@Test
+	public void actionStackIsClonedProperlyWithAttributes() {
+		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MILITIA));
+		game.oneAction(false, true);	// executes the play of the militia, but not the following defence
+		newGame = game.clone(player);
+		assertEquals(game.getActionStack().size(), 1);
+		assertEquals(newGame.getActionStack().size(), 1);
+		DominionAction clonedAction = (DominionAction) newGame.getActionStack().peek();
+		DominionAction oldAction = (DominionAction) game.getActionStack().peek();
+		assertTrue(oldAction.getNextActor() == game.getPlayer(2));
+		assertFalse(oldAction.getNextOptions().isEmpty());
+		assertTrue(oldAction.getFollowOnAction() != null);
+		assertTrue(clonedAction.getNextActor() == newGame.getPlayer(2));
+		assertFalse(clonedAction.getNextOptions().isEmpty());
+		assertTrue(clonedAction.getFollowOnAction() != null);
+		
+		newGame.oneAction(false, true);		// first defence - looks at nextOptions from stack, decides and executes.
+											// Then pops FollowOnAction off the stack, and executes it, putting new Follow-On
+											// Action on the stack with options for P3
+		assertEquals(newGame.getActionStack().size(), 1);
+		Action<Player> action = newGame.getActionStack().peek();
+		assertTrue(action.getNextActor() == newGame.getPlayer(3));
+		assertTrue(action.getActor() == newGame.getPlayer(1));
+		assertFalse(action.getNextOptions().isEmpty());
+		
+		game = newGame.clone(newGame.getPlayer(3));
+		clonedAction = (DominionAction) game.getActionStack().peek();
+		assertTrue(clonedAction.getNextActor() == game.getPlayer(3));
+		assertTrue(clonedAction.getActor() == game.getPlayer(1));
+		assertFalse(clonedAction.getNextOptions().isEmpty());
 	}
 	
 	@Test

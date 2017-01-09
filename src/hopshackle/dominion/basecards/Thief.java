@@ -29,6 +29,7 @@ public class Thief extends AttackCard {
 		allOptions.add(doNothing);
 		allOptions.add(gainCard);
 		
+		Player attacker = game.getPlayer(this.attacker);
 		Action<Player> decision = (Action<Player>) attacker.getDecider().decide(attacker, allOptions);
 		decision.start();
 		decision.run();

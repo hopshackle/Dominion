@@ -13,9 +13,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private static AtomicInteger idFountain = new AtomicInteger(1);
 	private int id = idFountain.getAndIncrement();
 	private int turn;
-	private int losingPlayerNumber;
-	private int[] winningPlayerNumbers = new int[0];
-	private double highestScore, lowestScore;
 	private double score[] = new double[4];
 	private static DatabaseWriter<DominionGame> gameWriter = new DatabaseWriter<DominionGame>(new GameDAO());
 	protected DeciderGenerator deciderGenerator;
@@ -25,6 +22,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private String tableSuffix;
 	private FastCalendar calendar;
 	private World world = new World();
+	private int[] ordinalPositions = new int[4];
 
 	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, Decider<Player> deciderToUse) {
 		DominionGame retValue = new DominionGame(deciderGen, name, false);
@@ -39,7 +37,8 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		turn = 1;
 		players = new Player[4];
 		boolean debugGame = false;
-		calendar = new FastCalendar(0l);
+		calendar = new FastCalendar(1l);
+		world.setCalendar(calendar);
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
 		if (Math.random() < debugGameProportion) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
@@ -50,7 +49,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 				DominionDeciderContainer ddc = new DominionDeciderContainer(
 						pd, 
 						deciderGenerator.getActionDecider());
-				ddc.setName(pd.toString());
 				players[n].setDecider(ddc);
 			}
 			players[n].setGame(this);
@@ -79,8 +77,8 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			players[i] = master.players[i].clone(this);
 		for (int i = 0; i < master.actionStack.size(); i++) {
 			Player oldPlayer = master.actionStack.get(i).getActor();
-			int playerNumber = master.getPlayerNumber(oldPlayer) - 1;
-			actionStack.push(master.actionStack.get(i).clone(players[playerNumber]));
+			int playerNumber = master.getPlayerNumber(oldPlayer);
+			actionStack.push(master.actionStack.get(i).clone(players[playerNumber-1]));
 		}
 		for (int n = 0; n < players.length; n++)
 			players[n].refreshPositionSummary();
@@ -122,11 +120,10 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			p.tidyUp();
 			p.setState(Player.State.WAITING);
 			if (currentPlayer == 3) turn++;
-			calendar.setTime((long) ((turn-1) * 4 + currentPlayer));
 			currentPlayer++;
 			if (currentPlayer == 4)
 				currentPlayer = 0;
-
+			calendar.setTime((long) ((turn-1) * 4 + currentPlayer + 1));
 			players[currentPlayer].setState(Player.State.PLAYING);
 		}
 	}
@@ -150,45 +147,26 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		return retValue;
 	}
 
-	private void endOfGameHouseKeeping() {
-		highestScore = -100;
-		lowestScore = 100;
-		for (int loop = 0; loop < 4; loop++) {
-			score[loop] = players[loop].totalVictoryValue();
-			players[loop].log("Final score is " + score[loop]);
-			if (score[loop] >= highestScore) {
-				highestScore = score[loop];
-			}
-			if (score[loop] < lowestScore) {
-				lowestScore = score[loop];
-				losingPlayerNumber = loop+1;
-			}
-		}
+	private void endOfGameHouseKeeping() {	
+		for (int i = 0; i < 4; i++)
+			score[i] = getPlayer(i+1).totalVictoryValue();
 
-		determineWinners();
+		for (int i = 0; i < 4; i++)
+			ordinalPositions[i] = getOrdinalPosition(i+1);
 
 		for (int n = 0; n < 4; n++) 
 			players[n].die("Game Over");
 
+		for (int n = 0; n < 4; n++) {
+			players[n].log(String.format("Final Score is %d, with utility of %.0f.", players[n].totalVictoryValue(),  players[n].getScore()));
+			if (getOrdinalPosition(n+1) == 1) 
+				players[n].log("Wins Game!");
+			else 
+				players[n].log("Ends game at position " + getOrdinalPosition(n+1));
+		}
+
 		if (!clonedGame) {
 			gameWriter.write(this, tableSuffix);
-		}
-	}
-
-	private void determineWinners() {
-		List<Integer> tempWinners = new ArrayList<Integer>();
-		for (int loop = 0; loop < 4; loop++) {
-			if (score[loop] == highestScore) 
-				tempWinners.add(loop+1);
-		}
-		winningPlayerNumbers = new int[tempWinners.size()];
-		for (int i = 0; i < tempWinners.size(); i++) {
-			winningPlayerNumbers[i] = tempWinners.get(i);
-			players[tempWinners.get(i)-1].log("Wins Game.");
-		}
-		if (turn > MAX_TURNS) {
-			winningPlayerNumbers = new int[0];
-			losingPlayerNumber = -1;
 		}
 	}
 
@@ -282,18 +260,25 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		return turn;
 	}
 
-	public int[] getWinningPlayers() {return winningPlayerNumbers;}
-	public int getLosingPlayer() {return losingPlayerNumber;}
-
-	public double getRelativeScore(Player p) {
-		if (gameOver() && winningPlayerNumbers.length > 0) {
-			int playerNumber = getPlayerNumber(p);
-			if (playerNumber > 0) {
-				if (highestScore - lowestScore < 0.1) return 50.0;
-				return 100.0 * (score[playerNumber-1] - lowestScore) / (highestScore - lowestScore);
-			}
+	public int getOrdinalPosition(int p) {
+		// we count how many scores are less than or equal to the players score
+		int retValue = 5;
+		for (double s : score) {
+			if (s <= score[p-1]) retValue--;
 		}
-		return 0.0;
+		return retValue;
+	}
+	public int getNumberOfPlayersInOrdinalPosition(int i) {
+		int retValue = 0;
+		for (int j = 0; j < 4; j++) {
+			if (ordinalPositions[j] == i) retValue++;
+		}
+		return retValue;
+	}
+	public int getPlayerInOrdinalPosition(int i) {
+		for (int j = 3; j >=0; j--)
+			if (ordinalPositions[j] == i) return j+1;
+		return 0;
 	}
 
 	public int getPlayerNumber(Player p) {
@@ -348,7 +333,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	public void nextPlayersTurn() {
 		int cp = getCurrentPlayerNumber();
 		do {
-			this.oneAction(false);
+			this.oneAction();
 		} while (getCurrentPlayerNumber() == cp);
 	}
 }

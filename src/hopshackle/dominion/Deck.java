@@ -125,8 +125,8 @@ public class Deck {
 			c.reset();
 		}
 	}
-	public Card getLastCard() {
-		return cards.getLast();
+	public Card getTopCard() {
+		return cards.getFirst();
 	}
 
 	public List<List<CardType>> getPossibleDiscards(int min, int max) {

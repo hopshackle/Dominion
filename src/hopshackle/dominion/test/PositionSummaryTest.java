@@ -209,4 +209,35 @@ public class PositionSummaryTest {
 		assertEquals(player.getPositionSummaryCopy().getAdditionalPurchasePower(), 1);
 		assertEquals(player.getPositionSummaryCopy().getBuys(), 2);
 	}
+	
+	@Test
+	public void positionSummaryUpdatedAheadOfDefensivePlay() {
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		Player p1 = game.getCurrentPlayer();
+		Player p3 = game.getPlayer(3);
+		assertEquals(game.getCurrentPlayerNumber(),1);
+		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MILITIA));
+		assertEquals(p3.getPositionSummaryCopy().getTurns(), 0.00, 0.001);
+		assertEquals(p3.getPositionSummaryCopy().getActions(), 0.00, 0.001);
+		p1.takeActions();
+		assertEquals(p3.getPositionSummaryCopy().getTurns(), 1.0, 0.001);
+		assertEquals(p3.getPositionSummaryCopy().getActions(), 0.00, 0.001);
+	}
+	
+	@Test
+	public void discardCardAugment() {
+		CardTypeAugment action = CardTypeAugment.discardCard(CardType.COPPER);
+		PositionSummary ps = game.getCurrentPlayer().getPositionSummaryCopy();
+		PositionSummary newPs = ps.apply(action);
+		assertEquals(ps.getHand().size(), 5);
+		assertEquals(newPs.getHand().size(), 4);
+		assertEquals(ps.getNumberInHand(CardType.COPPER) - newPs.getNumberInHand(CardType.COPPER), 1);
+		assertEquals(ps.getNumberInHand(CardType.ESTATE) - newPs.getNumberInHand(CardType.ESTATE), 0);
+		assertEquals(ps.getNumberOfCardsTotal(CardType.COPPER) - newPs.getNumberOfCardsTotal(CardType.COPPER), 0);
+		assertEquals(newPs.getPercentageInDiscard(), 3.0/12.0, 0.001);
+		assertEquals(ps.getPercentageInDiscard(), 2.0/12.0, 0.001);
+	}
 }

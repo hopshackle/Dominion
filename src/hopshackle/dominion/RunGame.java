@@ -176,10 +176,11 @@ public class RunGame {
 		game.playGame();
 
 		Player[] players = game.getAllPlayers().toArray(new Player[1]);
-		for (int p : game.getWinningPlayers()) {
-			players[p-1].log("Wins Game!");
+		for (int p = 0; p < 4; p++) {
+			if (game.getOrdinalPosition(p+1) == 1) {
 			if (dg != null)
-				dg.reportVictory(players[p-1]);
+				dg.reportVictory(players[p]);
+			} 
 		}
 
 		if (maximum + finalScoring > count)

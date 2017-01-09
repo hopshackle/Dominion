@@ -399,18 +399,12 @@ public class DeciderGenerator {
 			actualToRemove = (int) (purchaseDeciders.size() * ((double) toRemove / (double) baseDeciders));
 		}
 		removeDeciders(purchaseDeciders, purchaseVictories, actualToRemove);
-		//			removeDecider(discardDeciders, discardVictories);
-		//			removeDecider(actionDeciders, actionVictories);
 		if (replaceDecidersDeterministically) {
 			purchaseDeciders = addNewCrossedDeciders(purchaseDeciders, purchaseVictories, "P", toAdd);
-			//			discardDeciders = addNewCrossedDeciders(discardDeciders, discardVictories, "D", false, toAdd);
-			//			actionDeciders = addNewCrossedDeciders(actionDeciders, actionVictories, "A", false, toAdd);
 			decideNameCount += toAdd;
 		} else {
 			for (int n = 0; n < toAdd; n++) {
 				purchaseDeciders = addNewCrossedDecider(purchaseDeciders, purchaseVictories, "P");
-				//				discardDeciders = addNewCrossedDecider(discardDeciders, discardVictories, "D", false);
-				//				actionDeciders = addNewCrossedDecider(actionDeciders, actionVictories, "A", false);
 				decideNameCount++;
 			}
 		}

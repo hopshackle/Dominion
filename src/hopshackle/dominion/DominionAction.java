@@ -12,7 +12,6 @@ public class DominionAction extends Action<Player> {
 	private List<CardTypeAugment> cardType;
 	protected Player player;
 	private boolean isAction;
-
 	public DominionAction(Player p, CardTypeAugment actionEnum) {
 		super(actionEnum, p, 0l, false);
 		player = p;
@@ -32,9 +31,12 @@ public class DominionAction extends Action<Player> {
 	public DominionAction(DominionAction master, Player newPlayer) {
 		super(master.actionType, newPlayer, 0l, false);
 		player = newPlayer;
+		DominionGame masterGame = master.actor.getGame();
+		int nextActorNumber = masterGame.getPlayerNumber(master.nextActor);
+		nextActor = newPlayer.getGame().getPlayer(nextActorNumber);
 		cardType = master.cardType;
 		isAction = master.isAction();
-		followUpAction = (followUpAction == null) ? null : master.followUpAction.clone(newPlayer);
+		followUpAction = (master.followUpAction == null) ? null : master.followUpAction.clone(newPlayer);
 		possibleOptions = master.possibleOptions;
 	}
 
@@ -121,7 +123,6 @@ public class DominionAction extends Action<Player> {
 	public boolean isAction() {
 		return isAction;
 	}
-
 	@Override
 	public DominionAction clone(Player newPlayer) {
 		return new DominionAction(this, newPlayer);

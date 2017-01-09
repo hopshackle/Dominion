@@ -86,10 +86,10 @@ public class GameDAO implements DAO<DominionGame> {
 		avgTreasure /= 4.0;
 		avgDeckSize /= 4.0;
 
-		int numberOfWinningPlayers = game.getWinningPlayers().length;
+		int numberOfWinningPlayers = game.getNumberOfPlayersInOrdinalPosition(1);
 		boolean gameHasWinner = (numberOfWinningPlayers > 0);
 		if (gameHasWinner) {
-			winningPlayerNumber = game.getWinningPlayers()[numberOfWinningPlayers-1];
+			winningPlayerNumber = game.getPlayerInOrdinalPosition(1);
 			// on the basis that we want to pick the winning player with least first player advantage
 		}
 

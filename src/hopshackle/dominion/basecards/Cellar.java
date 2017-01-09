@@ -44,6 +44,7 @@ class CellarFollowOnAction extends DominionAction {
 	public CellarFollowOnAction(Player player, int startingHand) {
 		super(player, new CardTypeList(new ArrayList<CardType>()));
 		startingHandSize = startingHand;
+		hasNoAssociatedDecision = true;
 	}
 	
 	@Override 
@@ -57,6 +58,11 @@ class CellarFollowOnAction extends DominionAction {
 		for (int i = 0; i < cardsToDraw; i++) {
 			player.drawTopCardFromDeckIntoHand();
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "Follow-on CELLAR";
 	}
 	
 	@Override

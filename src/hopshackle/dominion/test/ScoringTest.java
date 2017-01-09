@@ -43,30 +43,35 @@ public class ScoringTest {
 		TestDominionDecider newDecider = new TestDominionDecider(values, new HashMap<CardType, Double>());
 		for (int p=0; p<4; p++) {
 			game.getAllPlayers().get(p).setDecider(newDecider);
+			for (int i = 0; i < p; i++) {
+				game.getPlayer(p+1).insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
+			}
 		}
 		game.playGame();
-		int winners[] = game.getWinningPlayers();
-		int loser = game.getLosingPlayer();
 		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		double[] scores = new double[4];
 		for (int n = 0; n < 4; n++) {
 			scores[n] = players[n].getScore();
 		}
 		double winningScore = 0.0;
-		assertTrue(winners.length > 0);
-		for (int p : winners) {
-			assertTrue(p > 0 && p < 5);
-			assertEquals(scores[p-1] - players[p-1].totalVictoryValue(), 50, 0.1);
-			winningScore = scores[p-1];
-			scores[p-1] = -100.0;
+		for (int n = 1; n <= 4; n++) {
+			assertTrue(game.getPlayerInOrdinalPosition(n) >= 0);
+			assertTrue(game.getPlayerInOrdinalPosition(n) < 5);
 		}
-		assertTrue(loser > 0 && loser < 5);
-
+		for (int n = 1; n <= 4; n++) {
+			int position = game.getOrdinalPosition(n);
+			assertTrue(game.getPlayerInOrdinalPosition(position) != 0);
+			if (position == 1) {
+				assertEquals(scores[n-1] - players[n-1].totalVictoryValue(), 50, 0.1);
+				winningScore = scores[n-1];
+				scores[n-1] = -100;
+			}
+		}
 		for (int n = 0; n<4; n++) {
 			assertTrue(scores[n] < winningScore);
 		}
 	}
-	
+
 	@Test
 	public void winningPlayersDecidedCorrectlyInDraw() {
 		for (int i = 0; i < 6; i++) {
@@ -74,11 +79,12 @@ public class ScoringTest {
 			p3.takeCardFromSupply(CardType.PROVINCE, CardSink.DISCARD);
 		}
 		game.playGame();
-		assertEquals(game.getWinningPlayers().length, 2);
-		assertEquals(game.getWinningPlayers()[0], 2);
-		assertEquals(game.getWinningPlayers()[1], 3);
+		assertEquals(game.getPlayerInOrdinalPosition(1), 3);
+		assertEquals(game.getOrdinalPosition(2), 1);
+		assertEquals(game.getOrdinalPosition(3), 1);
+		assertEquals(game.getPlayerInOrdinalPosition(2), 0);
 	}
-	
+
 	@Test
 	public void gardensInDeckCorrectlyValued() {
 		assertEquals(p4.getScore(), 3.0, 0.1);

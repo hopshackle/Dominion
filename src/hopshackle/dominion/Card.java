@@ -76,6 +76,6 @@ public class Card {
 	}
 	
 	public Card clone(DominionGame newGame) {
-		return new Card(type);
+		return CardFactory.instantiateCard(type);
 	}
 }

@@ -8,7 +8,6 @@ import hopshackle.simulation.*;
 public class DominionDeciderContainer implements Decider<Player> {
 
 	protected Decider<Player> purchase, action;
-	private String name;
 
 	public DominionDeciderContainer(Decider<Player> purchase, Decider<Player> action) {
 		this.purchase = purchase;
@@ -120,17 +119,6 @@ public class DominionDeciderContainer implements Decider<Player> {
 	}
 
 	@Override
-	public void setName(String name) {
-		this.name = name;
-		if (purchase == action) {
-			purchase.setName(name);
-		} else {
-			purchase.setName(name + "_P");
-			action.setName(name + "_A");
-		}
-	}
-
-	@Override
 	public <V extends GeneticVariable<Player>> List<V> getVariables() {
 		return purchase.getVariables();
 	}
@@ -165,10 +153,19 @@ public class DominionDeciderContainer implements Decider<Player> {
 		return getDecider(decidingAgent, possibleActions).decide(decidingAgent, possibleActions);
 	}
 
-
 	@Override
 	public String toString() {
-		return name;
+		String retValue = "";
+		if (purchase != null)
+			retValue = retValue + purchase.toString() + " ";
+		if (action != null)
+			retValue = retValue + action.toString();
+		return retValue;
+	}
+
+	@Override
+	public void setName(String name) {
+		
 	}
 
 }

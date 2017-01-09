@@ -21,6 +21,14 @@ public class Player extends Agent {
 	private int playerNumber;
 	private int actionsLeft;
 	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
+	private static double[] rewardVector = new double[4];
+	static {
+		String rewardString = SimProperties.getProperty("DominionGameOrdinalRewards", "50:0:0:0");
+		String[] rewards = rewardString.split(":");
+		for (int i = 0; i < 4; i++) {
+			rewardVector[i] = Double.valueOf(rewards[i]);
+		}
+	}
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
@@ -44,10 +52,10 @@ public class Player extends Agent {
 		game = newGame;
 		// Responsibility for taking into account the information set resides in the caller
 		// as that has the information from whose perspective the clone is taking place
-		deck = player.deck.copy(newGame);
-		discard = player.discard.copy(newGame);
-		hand = player.hand.copy(newGame);
-		revealedCards = player.revealedCards.copy(newGame);
+		deck = player.deck.copy(game);
+		discard = player.discard.copy(game);
+		hand = player.hand.copy(game);
+		revealedCards = player.revealedCards.copy(game);
 		decider = player.decider;
 		if (player.getNextAction() != null) {
 			DominionAction da = (DominionAction) player.getNextAction();
@@ -100,19 +108,18 @@ public class Player extends Agent {
 
 	public double getScore() {
 		double retValue = totalVictoryValue();
-		int[] winningPlayers = game.getWinningPlayers();
-		if (onlyRewardVictory){
-			retValue = 0.0;
-			for (int p : winningPlayers) {
-				if (p == playerNumber) 
-					retValue = 100.0 / (double)winningPlayers.length;
-			}
-		} else {
-			for (int p : winningPlayers) {
-				if (p == playerNumber) retValue += 50;
+		if (isDead()) {
+			if (onlyRewardVictory){
+				int winningPlayers = 0;
+				for (int i = 0; i < 4; i++)
+					if (game.getOrdinalPosition(i) == 1) winningPlayers++;
+				retValue = 0.0;
+				if (game.getOrdinalPosition(playerNumber) == 1)
+					retValue = 100.0 / (double)winningPlayers;
+			} else {
+				retValue += rewardVector[game.getOrdinalPosition(playerNumber) - 1];
 			}
 		}
-
 		return retValue;
 	}
 
@@ -121,7 +128,7 @@ public class Player extends Agent {
 			throw new AssertionError("Should be in PLAYING State before taking actions");
 
 		do {
-			game.oneAction(false);
+			game.oneAction(false, false);
 		} while (actionsLeft > 0);
 	}
 
@@ -129,7 +136,7 @@ public class Player extends Agent {
 		if (playerState != State.PURCHASING)
 			throw new AssertionError("Should be in PURCHASING State before buying cards");
 
-		game.oneAction(true);
+		game.oneAction(true, false);
 	}
 
 	public void incrementActionsLeft() {
@@ -177,7 +184,6 @@ public class Player extends Agent {
 		log("Shuffles discard to form new deck");
 		deck = discard;
 		deck.shuffle();
-		summary.discardCard(-discard.getSize());
 		discard = new Deck();
 	}
 
@@ -202,8 +208,10 @@ public class Player extends Agent {
 	}
 
 	public Card drawTopCardFromDeckButNotIntoHand() {
-		if (deck.isEmpty())
+		if (deck.isEmpty()) {
 			shuffleDiscardToFormNewDeck();
+			refreshPositionSummary();
+		}
 		if (!deck.isEmpty()) {
 			Card cardDrawn = deck.drawTopCard();
 			log("Draws a " + cardDrawn);
@@ -278,7 +286,7 @@ public class Player extends Agent {
 		return revealedCards.getAllCards();
 	}
 	public Card getCardLastPlayed() {
-		return revealedCards.getLastCard();
+		return revealedCards.getTopCard();
 	}
 
 	public boolean discard(CardType cardTypeToDiscard) {
@@ -348,7 +356,7 @@ public class Player extends Agent {
 	public void putCardOnDiscard(Card discarded) {
 		if (discarded.getType() != CardType.NONE) {
 			discard.addCard(discarded);
-			summary.discardCard(1);
+			summary.discardCard(discarded.getType());
 			//		log("Discards " + discarded.getType());
 		}
 	}
@@ -366,8 +374,8 @@ public class Player extends Agent {
 
 	public void putDeckIntoDiscard() {
 		discard.addDeck(deck);
-		summary.discardCard(deck.getSize());
 		deck = new Deck();
+		refreshPositionSummary();
 	}
 
 	public void putCardOnTopOfDeck(CardType cardType) {
@@ -396,6 +404,7 @@ public class Player extends Agent {
 	public Player clone(DominionGame newGame) {
 		return new Player(this, newGame);
 	}
+
 	public void refreshPositionSummary() {
 		summary = new PositionSummary(this, null);
 	}

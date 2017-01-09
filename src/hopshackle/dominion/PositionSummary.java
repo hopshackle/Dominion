@@ -84,7 +84,7 @@ public class PositionSummary implements State<Player> {
 				} else if (componentAction.to == CardSink.TRASH) {
 					retValue.trashCard(componentAction.card, componentAction.from);
 				} else if (componentAction.to == CardSink.DISCARD && componentAction.from == CardSink.HAND) {
-					retValue.discardCard(1);
+					retValue.discardCard(componentAction.card);
 				} else {
 					throw new AssertionError("Unsupported action " + componentAction);
 				}
@@ -174,8 +174,9 @@ public class PositionSummary implements State<Player> {
 		victoryMargin = oldVictoryMargin + victoryPoints - oldVictoryPoints;
 	}
 
-	public void discardCard(double number) {
-		cardsInDiscard += number;
+	public void discardCard(CardType card) {
+		cardsInDiscard++;
+		hand.remove(card);
 	}
 
 	private void changeNumberOnTable(CardType drawnCard, int number) {
