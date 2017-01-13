@@ -4,6 +4,7 @@ import java.util.*;
 
 import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.CardTypeAugment.ChangeType;
+import hopshackle.dominion.basecards.ThroneRoom;
 import hopshackle.simulation.*;
 
 public class DominionAction extends Action<Player> {
@@ -18,7 +19,7 @@ public class DominionAction extends Action<Player> {
 		this.cardType = new ArrayList<CardTypeAugment>();
 		if (actionEnum != null) {
 			this.cardType.add(actionEnum);
-			if (actionEnum.type == ChangeType.PLAY) isAction = true;
+			if (actionEnum.type == ChangeType.PLAY || actionEnum.type == ChangeType.ENTHRONE) isAction = true;
 		}
 	}
 
@@ -52,6 +53,10 @@ public class DominionAction extends Action<Player> {
 	protected void doStuff() {
 		for (CardTypeAugment component : cardType) {
 			switch (component.type) {
+			case ENTHRONE:
+				ThroneRoom parentCard = (ThroneRoom) player.getCardLastPlayed();
+				parentCard.enthrone(component.card);
+				// then continue with PLAY
 			case PLAY:
 				Card cardToPlay = player.playFromHandToRevealedCards(component.card);
 				if (cardToPlay != null) {

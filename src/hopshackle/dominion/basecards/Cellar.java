@@ -35,6 +35,11 @@ public class Cellar extends Card {
 		DominionAction retValue = new CellarFollowOnAction(player, startingHandSize);
 		return retValue;
 	}
+	@Override
+	public void reset() {
+		player = null;
+		startingHandSize = 0;
+	}
 }
 
 class CellarFollowOnAction extends DominionAction {

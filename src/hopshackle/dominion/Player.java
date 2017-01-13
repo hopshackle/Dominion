@@ -233,6 +233,48 @@ public class Player extends Agent {
 			throw new AssertionError("Card Type " + card + " not available." );
 		}
 	}
+	
+
+	public boolean removeCardFrom(Card c, CardSink from) {
+		Deck deckToUpdate = null;
+		switch (from) {
+		case DECK:
+			deckToUpdate = deck;
+			break;
+		case DISCARD:
+			deckToUpdate = discard;
+			break;
+		case HAND:
+			deckToUpdate = hand;
+			break;
+		case REVEALED:
+			deckToUpdate = revealedCards;
+			break;
+		default:
+			throw new AssertionError("Should not be here for " + from);
+		}
+		return deckToUpdate.removeSpecificCard(c);
+	}
+	public Card removeCardFrom(CardType ct, CardSink from) {
+		Deck deckToUpdate = null;
+		switch (from) {
+		case DECK:
+			deckToUpdate = deck;
+			break;
+		case DISCARD:
+			deckToUpdate = discard;
+			break;
+		case HAND:
+			deckToUpdate = hand;
+			break;
+		case REVEALED:
+			deckToUpdate = revealedCards;
+			break;
+		default:
+			throw new AssertionError("Should not be here for " + from);
+		}
+		return deckToUpdate.removeSpecificCard(ct);
+	}
 
 	public void insertCardDirectlyIntoHand(Card c) {
 		hand.addCard(c);

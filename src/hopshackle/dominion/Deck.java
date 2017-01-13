@@ -93,6 +93,10 @@ public class Deck {
 		}
 		return retValue;
 	}
+	
+	public boolean removeSpecificCard(Card cardToRemove) {
+		return cards.remove(cardToRemove);
+	}
 
 	public Card removeSpecificCard(CardType cardTypeToRemove) {
 		Card cardToRemove = new Card(CardType.NONE);

@@ -10,7 +10,7 @@ public class CardTypeAugment implements ActionEnum<Player> {
 		HAND, DISCARD, DECK, REVEALED, SUPPLY, TRASH;
 	}
 	public enum ChangeType {
-		MOVE, PLAY;
+		MOVE, PLAY, ENTHRONE;
 	}
 	
 	public CardType card;
@@ -57,6 +57,8 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	public String toString() {
 		if (type == ChangeType.PLAY) {
 			return "Plays " + card.toString();
+		} else if (type == ChangeType.ENTHRONE) {
+			return "Enthrones " + card.toString();
 		} else {
 			if (from == CardSink.HAND && to == CardSink.DISCARD)
 				return "Discards " + card.toString();

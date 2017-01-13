@@ -417,11 +417,9 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.getBuys(), 3);
 		assertEquals(p2.getBudget(), 12);	// so we have all treasure in hand, bar one copper left in deck, +4 from doubled Festival
 
-		assertEquals(throneRoom.getAdditionalBuys(), 1);	// inheriting from Festival
-		assertEquals(throneRoom.getAdditionalPurchasePower(), 2);	// inheriting from Festival
 		p2.tidyUp();
-		assertEquals(throneRoom.getAdditionalBuys(), 0);	// to confirm that Reset has occurred
-		assertEquals(throneRoom.getAdditionalPurchasePower(), 0);	// to confirm that Reset has occurred
+		assertEquals(p2.getHandSize(), 5); 
+		assertEquals(p2.getBuys(), 1);
 	}
 
 	@Test
