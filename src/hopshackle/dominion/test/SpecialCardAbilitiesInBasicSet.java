@@ -337,7 +337,6 @@ public class SpecialCardAbilitiesInBasicSet {
 		p3.drawTopCardFromDeckIntoHand();
 		assertEquals(p2.getNumberOfTypeInHand(CardType.SILVER), 1);
 		assertEquals(p3.getNumberOfTypeInHand(CardType.DUCHY), 1);
-
 	}
 
 	@Test

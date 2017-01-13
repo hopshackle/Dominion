@@ -37,6 +37,8 @@ public class Library extends Card {
 		for (Card c : setAsideCards)
 			player.putCardOnDiscard(c);
 		return emptyList;
+		
+		// Technically I need to decide at each point an action card is drawn whether to discard it or not.
 	}
 
 }

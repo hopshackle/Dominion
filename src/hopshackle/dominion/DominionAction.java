@@ -85,6 +85,9 @@ public class DominionAction extends Action<Player> {
 					} else if (component.to == CardSink.TRASH) {
 						player.trashCard(component.card, component.from);
 						break;
+					} else if (component.to == CardSink.DECK) {
+						player.putCardFromHandOnTopOfDeck(component.card);
+						break;
 					}
 				case TRASH:
 					if (component.to == CardSink.DISCARD) {

@@ -5,7 +5,7 @@ import hopshackle.simulation.*;
 import java.util.*;
 
 public class HardCodedActionDecider extends LookaheadDecider<Player> {
-	
+
 	public HardCodedActionDecider(List<CardType> actions, List<CardValuationVariables> variables) {
 		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)), CardType.generateListOfPossibleActionEnumsFromCardTypes(actions));
 	}
@@ -95,6 +95,10 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 		return 0;
 	}
 
+	@Override
+	public List<ActionEnum<Player>> getChooseableOptions(Player player) {
+		return DominionNeuralDecider.dominionPlayOptions(player);
+	}
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
 }

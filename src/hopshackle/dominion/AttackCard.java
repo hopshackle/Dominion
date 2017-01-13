@@ -106,6 +106,13 @@ public abstract class AttackCard extends Card {
 			retValue.game = newGame;
 		return retValue;
 	}
+	@Override
+	public void reset() {
+		notYetAttacked = null;
+		defendingPlayer = 0;
+		attacker = 0;
+		game = null;
+	}
 }
 
 class AttackCardFollowOnAction extends DominionAction{

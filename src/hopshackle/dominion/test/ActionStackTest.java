@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.basecards.Bureaucrat;
 import hopshackle.simulation.Action;
 import hopshackle.simulation.Decider;
 import hopshackle.simulation.SimProperties;
@@ -84,6 +85,24 @@ public class ActionStackTest {
 		da.run();
 		assertEquals(game.getActionStack().size(), 0);
 		assertTrue(player.getActionPlan().getNextAction() == null);
+	}
+	
+	
+	@Test
+	public void bureaucratGivesOpponentOptionWithTwoTypesOfVictoryCard() {
+		Player p2 = game.getPlayer(2);
+		Player p3 = game.getPlayer(3);
+		p2.insertCardDirectlyIntoHand(new Bureaucrat());
+		p3.insertCardDirectlyIntoHand(new Card(CardType.DUCHY));
+		p3.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
+		assertEquals(p3.getHandSize(), 7);
+		game.nextPlayersTurn();
+		game.oneAction(false, true); 	// this should execute attack on p3, and leave options
+		Action<Player> nextAction = game.getActionStack().get(0);
+		assertEquals(nextAction.getNextOptions().size(), 2);
+		assertTrue(nextAction.getNextActor() == p3);
+		game.nextPlayersTurn();
+		assertEquals(p3.getHandSize(), 6);
 	}
 }
 

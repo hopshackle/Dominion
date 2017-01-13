@@ -85,6 +85,9 @@ public class PositionSummary implements State<Player> {
 					retValue.trashCard(componentAction.card, componentAction.from);
 				} else if (componentAction.to == CardSink.DISCARD && componentAction.from == CardSink.HAND) {
 					retValue.discardCard(componentAction.card);
+				} else if (componentAction.to == CardSink.DECK && componentAction.from == CardSink.HAND) {
+					retValue.hand.remove(componentAction.card);
+					retValue.cardsInDeck.put(componentAction.card, retValue.cardsInDeck.getOrDefault(componentAction.card, 0)+1);
 				} else {
 					throw new AssertionError("Unsupported action " + componentAction);
 				}
