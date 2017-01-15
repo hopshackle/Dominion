@@ -104,6 +104,16 @@ public class ActionStackTest {
 		game.nextPlayersTurn();
 		assertEquals(p3.getHandSize(), 6);
 	}
+	
+	@Test
+	public void multipleItemsOnStackPoppedUntilFollowOnActionFound() {
+		Player p1 = game.getPlayer(1);
+		game.addToStack(CardTypeAugment.discardCard(CardType.COPPER).getAction(p1));
+		game.addToStack(CardTypeAugment.discardCard(CardType.COPPER).getAction(p1));
+		assertEquals(game.getActionStack().size(),2);
+		game.oneAction(false, true);
+		assertEquals(game.getActionStack().size(),0);
+	}
 }
 
 class TestGame extends DominionGame {

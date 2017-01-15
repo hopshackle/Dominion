@@ -355,14 +355,17 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.discard(CardType.COPPER);
 		p2.insertCardDirectlyIntoHand(new Library());
 		p2.putCardFromHandOnTopOfDeck(CardType.MILITIA);
+		p2.putCardFromHandOnTopOfDeck(CardType.MILITIA);
 		p2.putCardFromHandOnTopOfDeck(CardType.BUREAUCRAT);
+		handPreferences.put(CardType.MILITIA, -2.0);
+		handPreferences.put(CardType.BUREAUCRAT, -2.0);
 		int startingDeckSize = p2.getDeckSize();
 		int startingDiscardSize = p2.getDiscardSize();
 		game.nextPlayersTurn();
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 7);
-		assertEquals(p2.getDeckSize() - startingDeckSize, -5);
-		assertEquals(p2.getDiscardSize() - startingDiscardSize, 2);
+		assertEquals(p2.getDeckSize() - startingDeckSize, -6);
+		assertEquals(p2.getDiscardSize() - startingDiscardSize, 3);
 	}
 
 	@Test
@@ -376,6 +379,8 @@ public class SpecialCardAbilitiesInBasicSet {
 		int startingDeckSize = p2.getDeckSize();
 		int startingDiscardSize = p2.getDiscardSize();
 		game.nextPlayersTurn();
+		handPreferences.put(CardType.MILITIA, -2.0);
+		handPreferences.put(CardType.BUREAUCRAT, 2.0);
 		p2.takeActions();
 		// Village played first	- picks up Copper, hand size back to 5
 		// then Library - hand size to 7, with 4 cards picked up, and of these the Militia discarded
@@ -450,6 +455,15 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 10);	// Throne Room and Smithy Discarded from original 6, and then 6 picked up. Moat is ignored
 		assertEquals(p2.getNumberOfTypeInHand(CardType.MOAT), 1);
+	}
+	
+	@Test
+	public void throneRoomWithNoActionCardPlayer() {
+		game.nextPlayersTurn();
+		p2.insertCardDirectlyIntoHand(new ThroneRoom());
+		p2.takeActions();
+		assertEquals(p2.getHandSize(), 5);
+		assertEquals(p2.getCardsInPlay().getSize(), 1);
 	}
 
 	@Test

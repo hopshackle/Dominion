@@ -46,8 +46,5 @@ public class Bureaucrat extends AttackCard {
 			}
 			return retValue;
 		}
-
 	}
-
-
 }

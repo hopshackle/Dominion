@@ -1,17 +1,19 @@
 package hopshackle.dominion.basecards;
 
 import java.util.*;
+import java.util.concurrent.atomic.*;
 
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.CardTypeAugment.ChangeType;
-import hopshackle.simulation.ActionEnum;
+import hopshackle.simulation.*;
 public class ThroneRoom extends Card {
 
+	private static AtomicLong idFountain = new AtomicLong(1);
+	DominionGame game;
 	CardType enthronedCard;
-	Card replicaCard;
-	Player player;
-	
+	int player;
+
 	public ThroneRoom() {
 		super(CardType.THRONE_ROOM);
 	}
@@ -19,7 +21,9 @@ public class ThroneRoom extends Card {
 	@Override
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
-		this.player= player;
+		this.setRef("TR" + idFountain.getAndIncrement());
+		this.player = player.getNumber();
+		this.game = player.getGame();
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		Set<CardType> cardsSeen = new HashSet<CardType>();
 		for (CardType ct : player.getCopyOfHand()) {
@@ -29,14 +33,14 @@ public class ThroneRoom extends Card {
 			}
 		}
 		retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, CardSink.REVEALED, ChangeType.PLAY));
-		
+
 		return retValue;
 	}
-	
+
 	public void enthrone(CardType ct) {
 		enthronedCard = ct;
 	}
-	
+
 	@Override
 	public DominionAction followUpAction() {
 		DominionAction retValue = new ThroneRoomFollowOnAction(this);
@@ -45,53 +49,68 @@ public class ThroneRoom extends Card {
 
 	@Override
 	public void reset() {
-		if (replicaCard != null) {
-			player.removeCardFrom(replicaCard, CardSink.DECK);
-			player.removeCardFrom(replicaCard, CardSink.DISCARD);
-			player.removeCardFrom(replicaCard, CardSink.REVEALED);
-			player.removeCardFrom(replicaCard, CardSink.HAND);
+		Player player = game.getPlayer(this.player);
+		// the problem is that we don't know where the replica card might be...
+		if (enthronedCard != null) {
+			player.removeCardsWithRef(this.getRef()+ "-REP");
 		}
-		replicaCard = null;
 		enthronedCard = null;
+		game = null;
+		this.setRef("");
+		this.player = 0;
+	}
+
+	@Override
+	public ThroneRoom clone(DominionGame newGame) {
+		ThroneRoom retValue = (ThroneRoom) super.clone(newGame);
+		retValue.enthronedCard = enthronedCard;
+		retValue.player = player;
+		retValue.game = newGame;
+		return retValue;
 	}
 }
 
 class ThroneRoomFollowOnAction extends DominionAction {
-	
+
 	private ThroneRoom masterCard;
-	
+
 	public ThroneRoomFollowOnAction(ThroneRoom card) {
-		super(card.player, new CardTypeList(new ArrayList<CardType>()));
+		super(card.game.getPlayer(card.player), new CardTypeList(new ArrayList<CardType>()));
 		masterCard = card;
 	}
 	@Override
 	public void doStuff() {
 		// put masterCard back into hand from revealed
 		CardType enthronedCard = masterCard.enthronedCard;
-		// TODO: This could break with certain cards in future expansions
+		// Add two actions, one for each of the two cards we will be playing
+		player.incrementActionsLeft();
+		player.incrementActionsLeft();
 		if (enthronedCard == null || enthronedCard == CardType.NONE){
 			// No card was actually played		
 			return;
 		}
-		// Add two actions, one for each of the two cards we will be playing
-		player.incrementActionsLeft();
-		player.incrementActionsLeft();
-//		player.removeCardFrom(enthronedCard, CardSink.REVEALED);
-		masterCard.replicaCard = CardFactory.instantiateCard(enthronedCard);
-		player.insertCardDirectlyIntoHand(masterCard.replicaCard);
+		Card replicaCard = CardFactory.instantiateCard(enthronedCard);
+		replicaCard.setRef(masterCard.getRef() + "-REP");
+		player.insertCardDirectlyIntoHand(replicaCard);
 		// set possibleOptions as just playing said card
 		List<ActionEnum<Player>> singleOption = new ArrayList<ActionEnum<Player>>();
 		singleOption.add(CardTypeAugment.playCard(enthronedCard));
 		possibleOptions = singleOption;
-		nextActor = masterCard.player;
+		nextActor = masterCard.game.getPlayer(masterCard.player);
 		// finish
+	}
+
+	@Override
+	public ThroneRoomFollowOnAction clone(Player newPlayer) {
+		ThroneRoom newMaster = (ThroneRoom) newPlayer.getCardsWithRef(masterCard.getRef()).get(0);
+		return new ThroneRoomFollowOnAction(newMaster);
 	}
 	
 	@Override
 	public ActionEnum<Player> getType() {
-		return CardTypeAugment.playCard(masterCard.getType());
+		return CardTypeAugment.playCard(masterCard.enthronedCard);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Follow-on ThroneRoom of " + masterCard.enthronedCard.toString();

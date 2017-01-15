@@ -102,9 +102,12 @@ public class DominionAction extends Action<Player> {
 						// This will need to be updated once Trash is specifically tracked for a later expansion.
 						break;
 					}
+				case REVEALED:		
+						Card c = player.removeCardFrom(component.card, component.from);
+						player.insertCardDirectlyInto(c, component.to);
+						break;
 				case DISCARD:
 				case DECK:
-				case REVEALED:		
 					throw new AssertionError("Should not be possible: " + component.toString());
 				}
 			}

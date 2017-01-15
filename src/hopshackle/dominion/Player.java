@@ -277,7 +277,27 @@ public class Player extends Agent {
 	}
 
 	public void insertCardDirectlyIntoHand(Card c) {
-		hand.addCard(c);
+		insertCardDirectlyInto(c, CardSink.HAND);
+	}
+	public void insertCardDirectlyInto(Card c, CardSink to) {
+		Deck deckToUse = null;
+		switch (to) {
+		case DECK:
+			deckToUse = deck;
+			break;
+		case DISCARD:
+			deckToUse = discard;
+			break;
+		case HAND:
+			deckToUse = hand;
+			break;
+		case REVEALED:
+			deckToUse = revealedCards;
+			break;
+		default: 
+			throw new AssertionError("Should not be here for sink " + to);
+		}
+		deckToUse.addCard(c);
 		refreshPositionSummary();
 	}
 
@@ -329,6 +349,10 @@ public class Player extends Agent {
 	}
 	public Card getCardLastPlayed() {
 		return revealedCards.getTopCard();
+	}
+
+	public Deck getCardsInPlay() {
+		return revealedCards;
 	}
 
 	public boolean discard(CardType cardTypeToDiscard) {
@@ -453,5 +477,24 @@ public class Player extends Agent {
 
 	public void setGame(DominionGame dominionGame) {
 		game = dominionGame;
+	}
+
+	public int getNumber() {
+		return playerNumber;
+	}
+
+	public void removeCardsWithRef(String ref) {
+		deck.removeCardWithRef(ref);
+		hand.removeCardWithRef(ref);
+		discard.removeCardWithRef(ref);
+		revealedCards.removeCardWithRef(ref);
+	}
+	public List<Card> getCardsWithRef(String requiredRef) {
+		List<Card> retValue = new ArrayList<Card>();
+		retValue.addAll(deck.getCardsWithRef(requiredRef));
+		retValue.addAll(hand.getCardsWithRef(requiredRef));
+		retValue.addAll(discard.getCardsWithRef(requiredRef));
+		retValue.addAll(revealedCards.getCardsWithRef(requiredRef));
+		return retValue;
 	}
 }

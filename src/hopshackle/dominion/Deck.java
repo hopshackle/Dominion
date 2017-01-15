@@ -93,7 +93,7 @@ public class Deck {
 		}
 		return retValue;
 	}
-	
+
 	public boolean removeSpecificCard(Card cardToRemove) {
 		return cards.remove(cardToRemove);
 	}
@@ -125,9 +125,24 @@ public class Deck {
 		return retValue;
 	}
 	public void reset() {
-		for (Card c: cards) {
+		List<Card> cardCopy = HopshackleUtilities.cloneList(cards);
+		for (Card c: cardCopy) {
 			c.reset();
 		}
+	}
+	public void removeCardWithRef(String ref) {
+		List<Card> cardCopy = HopshackleUtilities.cloneList(cards);
+		for (Card c: cardCopy) {
+			if (c.getRef().equals(ref)) cards.remove(c);
+		}
+	}
+	public List<Card> getCardsWithRef(String requiredRef) {
+		List<Card> retValue = new ArrayList<Card>();
+		for (Card c: cards) {
+			if (c.getRef().equals(requiredRef))
+				retValue.add(c);
+		}
+		return retValue;
 	}
 	public Card getTopCard() {
 		return cards.getFirst();

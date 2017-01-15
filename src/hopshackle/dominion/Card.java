@@ -6,12 +6,13 @@ import java.util.*;
 public class Card {
 
 	private CardType type;
+	protected String reference = "";
 	protected static List<ActionEnum<Player>> emptyList = new ArrayList<ActionEnum<Player>>();
 	
 	public Card(CardType type) {
 		this.type = type;
 	}
-	
+
 	public CardType getType() {
 		return type;
 	}
@@ -32,6 +33,8 @@ public class Card {
 		return type.isVictory();
 	}
 	public String toString() {
+		if (reference != "")
+			return type.toString() + " " + reference;
 		return type.toString();
 	}
 
@@ -63,6 +66,12 @@ public class Card {
 	public boolean executeReactionAgainst(AttackCard attackCard, Player attacker, Player victim) {
 		return false;
 	}
+	public String getRef() {
+		return reference;
+	}
+	public void setRef(String newRef) {
+		reference = newRef;
+	}
 	
 	public void reset() {
 	}
@@ -76,6 +85,8 @@ public class Card {
 	}
 	
 	public Card clone(DominionGame newGame) {
-		return CardFactory.instantiateCard(type);
+		Card retValue = CardFactory.instantiateCard(type);
+		retValue.reference = reference;
+		return retValue;
 	}
 }

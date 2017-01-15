@@ -1,13 +1,18 @@
 package hopshackle.dominion.basecards;
 
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardType;
-import hopshackle.dominion.Player;
+import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.*;
 import hopshackle.simulation.ActionEnum;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Library extends Card {
+
+	private static AtomicLong idFountain = new AtomicLong(1);
+	CardType currentActionCard;
+	int playerNumber;
+	DominionGame game;
 
 	public Library() {
 		super(CardType.LIBRARY);
@@ -15,30 +20,93 @@ public class Library extends Card {
 
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
-		int numberOfActionsOutstanding = player.getActionsLeft() - 1;	// as this otherwise includes the Library action itself
-		List<Card> setAsideCards = new ArrayList<Card>();
-		if (player.getHandSize() > 6) return emptyList;;
+		setRef("LIB" + idFountain.getAndIncrement());
+		playerNumber = player.getNumber();
+		game = player.getGame();
+		if (player.getHandSize() > 6) return emptyList;
+
+		return drawToLimit();
+	}
+	protected List<ActionEnum<Player>> drawToLimit() {
+		Player player = game.getPlayer(playerNumber);
 		do {
 			Card nextCard = player.drawTopCardFromDeckButNotIntoHand();
 			if (nextCard.getType() == CardType.NONE) {
 				player.log("Has no more cards in deck or discard. So stops.");
 				break;
 			}
-			if (nextCard.isAction() && numberOfActionsOutstanding > 0) {
-				player.insertCardDirectlyIntoHand(nextCard);
-				numberOfActionsOutstanding--;
-				numberOfActionsOutstanding += nextCard.getType().getAdditionalActions();
-			} else if (nextCard.isAction()) {
-				setAsideCards.add(nextCard);
+			if (nextCard.isAction()) {
+				player.insertCardDirectlyInto(nextCard, CardSink.REVEALED);
+				currentActionCard = nextCard.getType();
+				List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
+				retValue.add(new CardTypeAugment(nextCard.getType(), CardSink.REVEALED, CardSink.HAND, ChangeType.MOVE));
+				retValue.add(new CardTypeAugment(nextCard.getType(), CardSink.REVEALED, CardSink.DISCARD, ChangeType.MOVE));
+				return retValue;
 			} else {
+				currentActionCard = null;
 				player.insertCardDirectlyIntoHand(nextCard);
 			}
 		} while (player.getHandSize() < 7);
-		for (Card c : setAsideCards)
-			player.putCardOnDiscard(c);
 		return emptyList;
-		
-		// Technically I need to decide at each point an action card is drawn whether to discard it or not.
 	}
 
+	@Override
+	public DominionAction followUpAction() {
+		DominionAction retValue = new LibraryFollowOnAction(this);
+		return retValue;
+	}
+	@Override
+	public Library clone(DominionGame newGame) {
+		Library retValue = (Library) super.clone(newGame);
+		retValue.game = newGame;
+		retValue.playerNumber = playerNumber;
+		retValue.currentActionCard = currentActionCard;
+		return retValue;
+	}
+	@Override
+	public void reset() {
+		currentActionCard = null;
+		playerNumber = 0;
+		game = null;
+		setRef("");
+	}
+}
+
+class LibraryFollowOnAction extends DominionAction {
+
+	private Library masterCard;
+
+	public LibraryFollowOnAction(Library parent) {
+		super(parent.game.getPlayer(parent.playerNumber), new CardTypeList(new ArrayList<CardType>()));
+		masterCard = parent;
+	}
+	@Override 
+	public LibraryFollowOnAction clone(Player newPlayer) {
+		Library newMaster = (Library) newPlayer.getCardsWithRef(masterCard.getRef()).get(0);
+		LibraryFollowOnAction retValue = new LibraryFollowOnAction(newMaster);
+		retValue.possibleOptions = possibleOptions;
+		if (retValue.followUpAction != null) 
+			retValue.followUpAction = followUpAction.clone(newPlayer);
+		return retValue;
+	}
+
+	@Override
+	public void doStuff() {
+		possibleOptions = masterCard.drawToLimit();
+		if (possibleOptions.isEmpty()) {
+			followUpAction = null;
+		} else {
+			followUpAction = new LibraryFollowOnAction(masterCard);
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "Follow-on LIBRARY";
+	}
+
+	@Override
+	public ActionEnum<Player> getType() {
+		return CardTypeAugment.playCard(CardType.LIBRARY);
+	}
 }
