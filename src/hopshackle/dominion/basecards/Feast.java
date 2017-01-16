@@ -15,7 +15,7 @@ public class Feast extends Card {
 
 	@Override
 	public List<ActionEnum<Player>> takeAction(Player player) {
-		player.trashCard(CardType.FEAST, CardSink.REVEALED);
+		player.moveCard(CardType.FEAST, CardSink.REVEALED, CardSink.TRASH);
 		player.setState(Player.State.PURCHASING);
 		Action<Player> action = (new DominionBuyingDecision(player, 5, 1)).getBestMandatoryPurchase();
 		action.start();

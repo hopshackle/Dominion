@@ -1,6 +1,8 @@
 package hopshackle.dominion;
 
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.*;
+
 import java.util.*;
 
 public class Card {
@@ -56,7 +58,7 @@ public class Card {
 	
 	public List<ActionEnum<Player>> takeAction (Player player) {
 		for (int n=0; n < type.getDraw(); n++) {
-			player.drawTopCardFromDeckIntoHand();
+			player.drawTopCardFromDeckInto(CardSink.HAND);
 		}
 		for (int i = 0; i < type.getAdditionalActions(); i++)
 			player.incrementActionsLeft();

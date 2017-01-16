@@ -17,7 +17,7 @@ public class Bureaucrat extends AttackCard {
 		DominionGame game = player.getGame();
 		if (game.drawCard(CardType.SILVER)) {
 			player.insertCardDirectlyIntoHand(new Card(CardType.SILVER));
-			player.putCardFromHandOnTopOfDeck(CardType.SILVER);
+			player.moveCard(CardType.SILVER, CardSink.HAND, CardSink.DECK);
 		}
 		return super.takeAction(player);
 	}
@@ -36,7 +36,7 @@ public class Bureaucrat extends AttackCard {
 		case 0:
 			return emptyList;
 		case 1:
-			target.putCardFromHandOnTopOfDeck(victoryCardTypes.iterator().next());
+			target.moveCard(victoryCardTypes.iterator().next(), CardSink.HAND, CardSink.DECK);
 			return emptyList;
 		default:
 			List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();

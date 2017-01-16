@@ -2,7 +2,6 @@ package hopshackle.dominion;
 
 import java.util.*;
 
-import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.dominion.basecards.ThroneRoom;
 import hopshackle.simulation.*;
@@ -79,37 +78,7 @@ public class DominionAction extends Action<Player> {
 				if (component.card == CardType.NONE)
 					continue;
 				player.log(component.toString()); 
-				switch (component.from) {
-				case SUPPLY:
-					player.takeCardFromSupply(component.card, component.to);
-					break;
-				case HAND:
-					if (component.to == CardSink.DISCARD) {
-						player.discard(component.card);
-						break;
-					} else if (component.to == CardSink.TRASH) {
-						player.trashCard(component.card, component.from);
-						break;
-					} else if (component.to == CardSink.DECK) {
-						player.putCardFromHandOnTopOfDeck(component.card);
-						break;
-					}
-				case TRASH:
-					if (component.to == CardSink.DISCARD) {
-						player.putCardOnDiscard(CardFactory.instantiateCard(component.card));
-						// TODO: currently game does not keep formal track of the contents of the trash pile
-						// so anything from trash has to be recreated.
-						// This will need to be updated once Trash is specifically tracked for a later expansion.
-						break;
-					}
-				case REVEALED:		
-						Card c = player.removeCardFrom(component.card, component.from);
-						player.insertCardDirectlyInto(c, component.to);
-						break;
-				case DISCARD:
-				case DECK:
-					throw new AssertionError("Should not be possible: " + component.toString());
-				}
+				player.moveCard(component.card, component.from, component.to);
 			}
 		}
 	}

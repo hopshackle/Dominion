@@ -145,7 +145,4 @@ public class GameSetup {
 	public List<CardType> getCardTypes() {
 		return cardTypes;
 	}
-
-
-
 }

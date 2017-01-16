@@ -202,7 +202,7 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/13.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), (1.0/13.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MARKET_PERCENT.getValue(p1), 0.0, 0.001);
-		player.trashCard(CardType.MINE, CardSink.HAND);
+		player.moveCard(CardType.MINE, CardSink.HAND, CardSink.TRASH);
 		p1 = player.getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.REMODEL_PERCENT.getValue(p1), (2.0/12.0)*5.0, 0.001);
 		assertEquals(CardValuationVariables.MINE_PERCENT.getValue(p1), 0.0, 0.001);
@@ -312,16 +312,16 @@ public class CardValuationVariablesTest {
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), 0.0, 0.0001);
 		player.takeCardFromSupply(CardType.MILITIA, CardSink.DISCARD);
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (1.0/11.0), 0.0001);
-		player.discard(CardType.COPPER);
+		player.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD);
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (2.0/11.0), 0.0001);
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (2.0/12.0), 0.0001);
-		player.putCardFromHandOnTopOfDeck(CardType.MARKET);
+		player.moveCard(CardType.MARKET, CardSink.HAND, CardSink.DECK);
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (2.0/12.0), 0.0001);
 		player.putDeckIntoDiscard();
 		double hand = player.getHandSize();
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), (12.0 - hand)/12.0, 0.0001);
-		player.drawTopCardFromDeckIntoHand();
+		player.drawTopCardFromDeckInto(CardSink.HAND);
 		assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(player.getPositionSummaryCopy()), 0.0, 0.0001);
 	}
 	

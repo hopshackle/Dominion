@@ -18,7 +18,7 @@ public class PositionSummaryTest {
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		game.getCurrentPlayer().takeCardFromSupply(CardType.VILLAGE, CardSink.DISCARD);
 		game.getCurrentPlayer().takeCardFromSupply(CardType.GOLD, CardSink.DISCARD);
-	//	game.getCurrentPlayer().setState(Player.State.PLAYING);
+		//	game.getCurrentPlayer().setState(Player.State.PLAYING);
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 	}
 
@@ -33,7 +33,7 @@ public class PositionSummaryTest {
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		assertEquals(p1.getPercentageInDiscard(), 2.0/12.0, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.GOLD), 1);
-		game.getCurrentPlayer().trashCard(CardType.GOLD, CardSink.DISCARD);
+		game.getCurrentPlayer().moveCard(CardType.GOLD, CardSink.DISCARD, CardSink.TRASH);
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		assertEquals(p1.getPercentageInDiscard(), 1.0/11.0, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 7);
@@ -45,7 +45,7 @@ public class PositionSummaryTest {
 		int estates = p1.getNumberInHand(CardType.ESTATE);
 		assertEquals(copper+estates, 5);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 7);
-		game.getCurrentPlayer().trashCard(CardType.COPPER, CardSink.HAND);
+		game.getCurrentPlayer().moveCard(CardType.COPPER, CardSink.HAND, CardSink.TRASH);
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		assertEquals(p1.getPercentageInDiscard(), 2.0/11.0, 0.001);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.COPPER), 6);
@@ -55,27 +55,32 @@ public class PositionSummaryTest {
 	@Test
 	public void trashCardFromRevealed() {
 		game.getCurrentPlayer().putCardOnTopOfDeck(CardType.MILITIA);
-		game.getCurrentPlayer().drawTopCardFromDeckIntoHand();
+		game.getCurrentPlayer().drawTopCardFromDeckInto(CardSink.HAND);
 		game.getCurrentPlayer().takeActions();
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		assertEquals(p1.getNumberPlayed(CardType.MILITIA), 1);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.MILITIA), 1);
 		assertEquals(p1.totalNumberOfCards(), 13.0, 0.0001);
-		game.getCurrentPlayer().trashCard(CardType.MILITIA, CardSink.REVEALED);
+		assertEquals(p1.getPercentAction(), 2.0 / 13.0, 0.001);
+		game.getCurrentPlayer().moveCard(CardType.MILITIA, CardSink.REVEALED, CardSink.TRASH);
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		assertEquals(p1.getNumberPlayed(CardType.MILITIA), 0);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.MILITIA), 0);
 		assertEquals(p1.totalNumberOfCards(), 12.0, 0.0001);
+		assertEquals(p1.getPercentAction(), 1.0 / 12.0, 0.001);
 	}
 	@Test
 	public void addCardToHand() {
 		assertEquals(p1.getNumberInHand(CardType.GOLD), 0);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.GOLD), 1);
 		assertEquals(p1.getPercentageInDiscard(), 2.0/12.0, 0.001);
+		assertEquals(p1.getPercentAction(), 1.0/12.00, 0.001);
 		p1.addCard(CardType.GOLD, CardSink.HAND);
 		assertEquals(p1.getNumberInHand(CardType.GOLD), 1);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.GOLD), 2);
 		assertEquals(p1.getPercentageInDiscard(), 2.0/13.0, 0.001);
+		assertEquals(p1.getPercentAction(), 1.0/13.00, 0.001);
+
 	}
 	@Test
 	public void addCardToDiscard() {
@@ -139,6 +144,7 @@ public class PositionSummaryTest {
 		assertEquals(p1.getNumberInHand(CardType.WOODCUTTER), 1);
 		assertEquals(p1.getNumberPlayed(CardType.WOODCUTTER), 0);
 		assertEquals(p1.getNumberOfCardsTotal(CardType.WOODCUTTER), 1);
+		assertEquals(p1.getPercentAction(), 2.0 / 13.0, 0.001);
 		ActionEnum<Player> testAction = CardTypeAugment.playCard(CardType.WOODCUTTER);
 		PositionSummary updated = p1.apply(testAction);
 		assertEquals(updated.getActions(), 0);
@@ -147,7 +153,9 @@ public class PositionSummaryTest {
 		assertEquals(updated.getNumberInHand(CardType.WOODCUTTER), 0);
 		assertEquals(updated.getNumberPlayed(CardType.WOODCUTTER), 1);
 		assertEquals(updated.getNumberOfCardsTotal(CardType.WOODCUTTER), 1);
+		assertEquals(updated.getPercentAction(), 2.0 / 13.0, 0.001);
 
+		assertEquals(p1.getPercentAction(), 2.0 / 13.0, 0.001);
 		assertEquals(p1.getActions(), 1);
 		assertEquals(p1.getAdditionalPurchasePower(), 0);
 		assertEquals(p1.getBuys(), 1);
@@ -179,7 +187,7 @@ public class PositionSummaryTest {
 			// Hurrah
 		}
 	}
-	
+
 	@Test
 	public void runningAnActionIncreasesActionsLeftInPositionSummary() {
 		Player player = game.getCurrentPlayer();
@@ -192,7 +200,7 @@ public class PositionSummaryTest {
 		assertEquals(player.getActionsLeft(), 1);
 		assertEquals(player.getPositionSummaryCopy().getActions(), 1);
 	}
-	
+
 	@Test
 	public void playingACardUpdatesPositionSummaryWithPurchasePower() {
 		Player player = game.getCurrentPlayer();
@@ -209,7 +217,7 @@ public class PositionSummaryTest {
 		assertEquals(player.getPositionSummaryCopy().getAdditionalPurchasePower(), 1);
 		assertEquals(player.getPositionSummaryCopy().getBuys(), 2);
 	}
-	
+
 	@Test
 	public void positionSummaryUpdatedAheadOfDefensivePlay() {
 		game.nextPlayersTurn();
@@ -226,7 +234,7 @@ public class PositionSummaryTest {
 		assertEquals(p3.getPositionSummaryCopy().getTurns(), 1.0, 0.001);
 		assertEquals(p3.getPositionSummaryCopy().getActions(), 0.00, 0.001);
 	}
-	
+
 	@Test
 	public void discardCardAugment() {
 		CardTypeAugment action = CardTypeAugment.discardCard(CardType.COPPER);
@@ -239,5 +247,52 @@ public class PositionSummaryTest {
 		assertEquals(ps.getNumberOfCardsTotal(CardType.COPPER) - newPs.getNumberOfCardsTotal(CardType.COPPER), 0);
 		assertEquals(newPs.getPercentageInDiscard(), 3.0/12.0, 0.001);
 		assertEquals(ps.getPercentageInDiscard(), 2.0/12.0, 0.001);
+	}
+	@Test
+	public void fromHandToDeck() {
+		Player p2 = game.getPlayer(2);
+		PositionSummary ps = p2.getPositionSummaryCopy();
+		assertEquals(ps.getHandSize(), 5);
+		double startMoney = ps.getHandMoneyValue();
+		assertEquals(ps.getPercentageInDiscard(), 0.00, 0.01);
+		assertEquals(ps.getPercentVictory(), 0.30, 0.01);
+		p2.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DECK);
+		ps = p2.getPositionSummaryCopy();
+		assertEquals(ps.getHandSize(), 4);
+		assertEquals(ps.getHandMoneyValue() - startMoney, -1.00, 0.01);
+		assertEquals(ps.getPercentageInDiscard(), 0.00, 0.01);
+		assertEquals(ps.getPercentVictory(), 0.30, 0.01);
+	}
+
+	@Test
+	public void fromSupplyToHand() {
+		Player p2 = game.getPlayer(2);
+		PositionSummary ps = p2.getPositionSummaryCopy();
+		assertEquals(ps.getHandSize(), 5);
+		assertEquals(ps.getPercentageDepleted()[0], 0.00, 0.001);
+		assertEquals(ps.getPercentAction(), 0.00, 0.01);
+		p2.moveCard(CardType.VILLAGE, CardSink.SUPPLY, CardSink.HAND);
+		ps = p2.getPositionSummaryCopy();
+		assertEquals(ps.getHandSize(), 6);
+		assertEquals(ps.getPercentageDepleted()[0], 0.10, 0.001);
+		assertEquals(ps.getPercentAction(), 1.0 / 11.0, 0.01);
+	}
+
+	@Test
+	public void puttingDiscardIntoDeck() {
+		Player p1 = game.getPlayer(1);
+		PositionSummary ps = p1.getPositionSummaryCopy();
+		assertEquals(ps.getPercentageInDiscard(), 2.0 / 12.0, 0.001);
+		int cardsInDeck = p1.getDeckSize();
+		for (int i = 0; i < cardsInDeck; i++) {
+			p1.drawTopCardFromDeckInto(CardSink.DISCARD);
+		}
+		ps = p1.getPositionSummaryCopy();
+		assertEquals(ps.getPercentageInDiscard(), 7.0 / 12.0, 0.001);
+		p1.peekAtTopCardOfDeck();
+		ps = p1.getPositionSummaryCopy();
+		assertEquals(p1.getDeckSize(), 7);
+		assertEquals(p1.getDiscardSize(), 0);
+		assertEquals(ps.getPercentageInDiscard(), 0.0 / 12.0, 0.001);
 	}
 }

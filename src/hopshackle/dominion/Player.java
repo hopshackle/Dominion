@@ -160,7 +160,7 @@ public class Player extends Agent {
 				if (discard.isEmpty()) break;
 				shuffleDiscardToFormNewDeck();
 			}
-			drawTopCardFromDeckIntoHand();
+			drawTopCardFromDeckInto(CardSink.HAND);
 		}
 		refreshPositionSummary();
 	}
@@ -185,6 +185,7 @@ public class Player extends Agent {
 		deck = discard;
 		deck.shuffle();
 		discard = new Deck();
+		refreshPositionSummary();
 	}
 
 	@Override
@@ -198,63 +199,59 @@ public class Player extends Agent {
 		return game;
 	}
 
-	public Card drawTopCardFromDeckIntoHand() {
-		Card cardDrawn = drawTopCardFromDeckButNotIntoHand();
+	public Card drawTopCardFromDeckInto(CardSink to) {
+		Card cardDrawn = drawTopCardFromDeck();
 		if (cardDrawn.getType() != CardType.NONE) {
-			hand.addCard(cardDrawn);
-			summary.updateHandFromPlayer();
+			insertCardDirectlyInto(cardDrawn, to);
 		}
 		return cardDrawn;
 	}
 
-	public Card drawTopCardFromDeckButNotIntoHand() {
+	public Card drawTopCardFromDeck() {
 		if (deck.isEmpty()) {
 			shuffleDiscardToFormNewDeck();
 			refreshPositionSummary();
 		}
 		if (!deck.isEmpty()) {
 			Card cardDrawn = deck.drawTopCard();
+			summary.removeCardFrom(cardDrawn.getType(), CardSink.DECK);
 			log("Draws a " + cardDrawn);
 			return cardDrawn;
 		}
 		return new Card(CardType.NONE);
 	}
 
-	public void takeCardFromSupply(CardType card, CardSink dest) {
-		Deck destination = discard;
+	public Card takeCardFromSupply(CardType card, CardSink dest) {
+		Card retValue = CardFactory.instantiateCard(card);
+		if (card.equals(CardType.NONE)) return retValue;
+		Deck destination = null;
 		if (dest == CardSink.HAND) destination = hand;
 		if (dest == CardSink.REVEALED) destination = revealedCards;
 		if (dest == CardSink.DECK) destination = deck;
-		if (card.equals(CardType.NONE)) return;
+		if (dest == CardSink.DISCARD) destination = discard;
 		if (game.drawCard(card)) {
-			destination.addCard(CardFactory.instantiateCard(card));
-			summary.drawCard(card, dest);
+			summary.removeCardFrom(card, CardSink.SUPPLY);
+			if (dest != null) {
+				destination.addCard(retValue);
+				summary.addCard(card, dest);
+			}
 		} else {
 			throw new AssertionError("Card Type " + card + " not available." );
 		}
+		return retValue;
 	}
-	
 
-	public boolean removeCardFrom(Card c, CardSink from) {
-		Deck deckToUpdate = null;
-		switch (from) {
-		case DECK:
-			deckToUpdate = deck;
-			break;
-		case DISCARD:
-			deckToUpdate = discard;
-			break;
-		case HAND:
-			deckToUpdate = hand;
-			break;
-		case REVEALED:
-			deckToUpdate = revealedCards;
-			break;
-		default:
-			throw new AssertionError("Should not be here for " + from);
+	public Card moveCard(CardType cardType, CardSink from, CardSink to) {
+		if (cardType != CardType.NONE) {
+			Card retValue = removeCardFrom(cardType, from);
+			if (retValue.getType() == CardType.NONE) 
+				throw new AssertionError(cardType + " not found in " + from);
+			insertCardDirectlyInto(retValue, to);
+			return retValue;
 		}
-		return deckToUpdate.removeSpecificCard(c);
+		return new Card(CardType.NONE);
 	}
+
 	public Card removeCardFrom(CardType ct, CardSink from) {
 		Deck deckToUpdate = null;
 		switch (from) {
@@ -270,9 +267,12 @@ public class Player extends Agent {
 		case REVEALED:
 			deckToUpdate = revealedCards;
 			break;
-		default:
-			throw new AssertionError("Should not be here for " + from);
+		case SUPPLY:
+			return takeCardFromSupply(ct, null);
+		case TRASH:
+			return CardFactory.instantiateCard(ct);
 		}
+		summary.removeCardFrom(ct, from);
 		return deckToUpdate.removeSpecificCard(ct);
 	}
 
@@ -294,11 +294,16 @@ public class Player extends Agent {
 		case REVEALED:
 			deckToUse = revealedCards;
 			break;
+		case TRASH:
+			// no deck currently maintained
+			break;
 		default: 
 			throw new AssertionError("Should not be here for sink " + to);
 		}
-		deckToUse.addCard(c);
-		refreshPositionSummary();
+		if (deckToUse != null) {
+			summary.addCard(c.getType(), to);
+			deckToUse.addCard(c);
+		}
 	}
 
 	public int totalTreasureValue() {
@@ -355,37 +360,6 @@ public class Player extends Agent {
 		return revealedCards;
 	}
 
-	public boolean discard(CardType cardTypeToDiscard) {
-		Card discarded = hand.removeSpecificCard(cardTypeToDiscard);
-		if (discarded.getType() != CardType.NONE) {
-			summary.updateHandFromPlayer();
-			putCardOnDiscard(discarded);
-			return true;
-		}
-		return false;
-	}
-
-	public void trashCard(CardType card, CardSink dest) {
-		switch (dest) {
-		case HAND:
-			hand.removeSpecificCard(card);
-			break;
-		case REVEALED:
-			revealedCards.removeSpecificCard(card);
-			break;
-		case DISCARD:
-			discard.removeSpecificCard(card);
-			break;
-		case DECK:
-			deck.removeSpecificCard(card);
-			break;
-		case SUPPLY:
-		case TRASH:
-			throw new AssertionError("Not valid");
-		}
-		summary.trashCard(card, dest);
-	}
-
 	/**
 	 * Indicates whether we are taking Actions (true), or making a purchase (false).
 	 * This is a bit of a hack to cater for Purchase decisions made during the
@@ -406,25 +380,11 @@ public class Player extends Agent {
 		return playerState;
 	}
 
-	public void putCardFromHandOnTopOfDeck(CardType cardType) {
-		hand.removeSpecificCard(cardType);
-		deck.addCard(CardFactory.instantiateCard(cardType));
-		log("Puts " + cardType + " on top of deck");
-	}
-
 	public int getActionsLeft() {
 		return actionsLeft;
 	}
 	public int getBuys() {
 		return  1 + revealedCards.getAdditionalBuys();
-	}
-
-	public void putCardOnDiscard(Card discarded) {
-		if (discarded.getType() != CardType.NONE) {
-			discard.addCard(discarded);
-			summary.discardCard(discarded.getType());
-			//		log("Discards " + discarded.getType());
-		}
 	}
 
 	public Card playFromHandToRevealedCards(CardType cardType) {
@@ -496,5 +456,11 @@ public class Player extends Agent {
 		retValue.addAll(discard.getCardsWithRef(requiredRef));
 		retValue.addAll(revealedCards.getCardsWithRef(requiredRef));
 		return retValue;
+	}
+
+	public CardType peekAtTopCardOfDeck() {
+		if (deck.isEmpty())
+			shuffleDiscardToFormNewDeck();
+		return deck.getTopCard().getType();
 	}
 }

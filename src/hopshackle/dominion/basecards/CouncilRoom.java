@@ -4,6 +4,7 @@ import java.util.List;
 
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.Player;
 import hopshackle.simulation.ActionEnum;
 
@@ -20,7 +21,7 @@ public class CouncilRoom extends Card {
 		for (Player other : otherPlayers) {
 			if (other == player) continue;
 			other.log("Draws Card due to COUNCIL_ROOM");
-			other.drawTopCardFromDeckIntoHand();
+			other.drawTopCardFromDeckInto(CardSink.HAND);
 		}
 		return emptyList;
 	}

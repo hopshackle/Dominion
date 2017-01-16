@@ -2,6 +2,7 @@ package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.Player;
 import hopshackle.simulation.ActionEnum;
 
@@ -19,7 +20,7 @@ public class Adventurer extends Card {
 		boolean exhaustedDeckAndDiscard = false;
 		List<Card> revealedCards = new ArrayList<Card>();
 		do {
-			Card drawnCard = player.drawTopCardFromDeckButNotIntoHand();
+			Card drawnCard = player.drawTopCardFromDeck();
 			if (drawnCard.isTreasure()) {
 				treasureCardsDrawn++;
 				player.insertCardDirectlyIntoHand(drawnCard);
@@ -32,7 +33,7 @@ public class Adventurer extends Card {
 		} while (!exhaustedDeckAndDiscard && treasureCardsDrawn < 2);
 
 		for (Card card : revealedCards)
-			player.discard(card.getType());
+			player.moveCard(card.getType(), CardSink.HAND, CardSink.DISCARD);
 		
 		return emptyList;
 	}

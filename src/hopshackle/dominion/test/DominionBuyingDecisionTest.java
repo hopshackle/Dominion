@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.*;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.*;
 
 import org.junit.Before;
@@ -21,7 +22,7 @@ public class DominionBuyingDecisionTest {
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		p1 = game.getCurrentPlayer();
 		for (int n=0; n<5; n++)
-			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
+			p1.drawTopCardFromDeckInto(CardSink.HAND);	// so p1 always has 7 copper and 3 estates
 	}
 
 	@Test

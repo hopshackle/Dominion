@@ -5,6 +5,7 @@ import java.util.List;
 import hopshackle.dominion.AttackCard;
 import hopshackle.dominion.Card;
 import hopshackle.dominion.CardType;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.Player;
 import hopshackle.simulation.ActionEnum;
 
@@ -31,7 +32,7 @@ public class Spy extends AttackCard {
 
 	private void spyOnPlayer(Player player, boolean opponent) {
 		if (opponent) player.log("Is target of SPY");
-		Card topCard = player.drawTopCardFromDeckIntoHand();
+		Card topCard = player.drawTopCardFromDeckInto(CardSink.HAND);
 		boolean discard = opponent;
 		if (topCard.isVictory()) 
 			discard = !discard;
@@ -50,9 +51,9 @@ public class Spy extends AttackCard {
 		}
 
 		if (discard) {
-			player.discard(topCard.getType());
+			player.moveCard(topCard.getType(), CardSink.HAND, CardSink.DISCARD);
 		} else {
-			player.putCardFromHandOnTopOfDeck(topCard.getType());
+			player.moveCard(topCard.getType(), CardSink.HAND, CardSink.DECK);
 		}
 	}
 

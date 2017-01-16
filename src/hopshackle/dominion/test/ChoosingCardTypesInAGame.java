@@ -53,7 +53,7 @@ public class ChoosingCardTypesInAGame {
 	@Test
 	public void onlyAffordableCardTypesInTheGameAreChooseable() {
 		for (int loop = 0; loop < 5; loop++)
-			firstPlayer.drawTopCardFromDeckIntoHand();
+			firstPlayer.drawTopCardFromDeckInto(CardSink.HAND);
 		assertEquals(firstPlayer.getNumberOfTypeInHand(CardType.COPPER), 7);
 		game.removeCardType(CardType.DUCHY);
 		game.addCardType(CardType.VILLAGE, 10);
@@ -68,7 +68,7 @@ public class ChoosingCardTypesInAGame {
 	@Test
 	public void exhaustedCardTypesAreNotChooseable() {
 		for (int loop = 0; loop < 5; loop++)
-			firstPlayer.drawTopCardFromDeckIntoHand();
+			firstPlayer.drawTopCardFromDeckInto(CardSink.HAND);
 		assertEquals(firstPlayer.getNumberOfTypeInHand(CardType.COPPER), 7);
 		assertEquals(game.getNumberOfCardsRemaining(CardType.ESTATE), 12);
 		for (int loop = 0; loop < 12; loop++) {

@@ -25,7 +25,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
 		p1 = game.getCurrentPlayer();
 		for (int n=0; n<5; n++)
-			p1.drawTopCardFromDeckIntoHand();	// so p1 always has 7 copper and 3 estates
+			p1.drawTopCardFromDeckInto(CardSink.HAND);	// so p1 always has 7 copper and 3 estates
 		
 		HashMap<CardType, Double> values = new HashMap<CardType, Double>();
 		values.put(CardType.COPPER, 0.5);
@@ -192,9 +192,9 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void twoBuysAreProcessedAsExpectedI() {
 		p1.setDecider(new DominionDeciderContainer(generalPurchaseDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
-		p1.discard(CardType.COPPER); // leaves six left
-		p1.discard(CardType.COPPER); // leaves five left
-		p1.discard(CardType.COPPER); // leaves four left
+		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves six left
+		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves five left
+		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves four left
 		p1.takeActions();
 		p1.buyCards();
 		// should buy one Gold and one Copper
@@ -209,7 +209,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void twoBuysAreProcessedAsExpectedII() {
 		p1.setDecider(new DominionDeciderContainer(generalPurchaseDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
-		p1.discard(CardType.COPPER); // leaves six left
+		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves six left
 		p1.takeActions();
 		p1.buyCards();
 		// should buy two Smithies

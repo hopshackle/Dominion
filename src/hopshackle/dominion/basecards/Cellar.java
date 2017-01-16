@@ -1,6 +1,7 @@
 package hopshackle.dominion.basecards;
 
 import hopshackle.dominion.*;
+import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -61,7 +62,7 @@ class CellarFollowOnAction extends DominionAction {
 	public void doStuff() {
 		int cardsToDraw = startingHandSize - player.getHandSize();
 		for (int i = 0; i < cardsToDraw; i++) {
-			player.drawTopCardFromDeckIntoHand();
+			player.drawTopCardFromDeckInto(CardSink.HAND);
 		}
 	}
 	

@@ -20,7 +20,7 @@ public class Thief extends AttackCard {
 		Card cardToTrash = getHighestTreasureCard(topTwoCards);
 		if (cardToTrash.getType() == CardType.NONE)
 			return emptyList;
-		target.trashCard(cardToTrash.getType(), CardSink.DISCARD);
+		target.moveCard(cardToTrash.getType(), CardSink.DISCARD, CardSink.TRASH);
 
 		// then decide whether to keep the trashed card
 		CardTypeAugment doNothing = CardTypeAugment.takeCard(CardType.NONE);
@@ -38,10 +38,8 @@ public class Thief extends AttackCard {
 
 	private Card[] discardTopTwoCards(Player target) {
 		Card[] retValue = new Card[2];
-		retValue[0] = target.drawTopCardFromDeckButNotIntoHand();
-		target.putCardOnDiscard(retValue[0]);
-		retValue[1] = target.drawTopCardFromDeckButNotIntoHand();
-		target.putCardOnDiscard(retValue[1]);
+		retValue[0] = target.drawTopCardFromDeckInto(CardSink.DISCARD);
+		retValue[1] = target.drawTopCardFromDeckInto(CardSink.DISCARD);
 		return retValue;
 	}
 	

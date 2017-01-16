@@ -79,24 +79,8 @@ public class PositionSummary implements State<Player> {
 				retValue.playCardFromHand(componentAction.card);
 				break;
 			case MOVE:
-				if (componentAction.from == CardSink.SUPPLY) {
-					retValue.drawCard(componentAction.card, componentAction.to);
-				} else if (componentAction.to == CardSink.TRASH) {
-					retValue.trashCard(componentAction.card, componentAction.from);
-				} else if (componentAction.to == CardSink.DISCARD && componentAction.from == CardSink.HAND) {
-					retValue.discardCard(componentAction.card);
-				} else if (componentAction.to == CardSink.DECK && componentAction.from == CardSink.HAND) {
-					retValue.hand.remove(componentAction.card);
-					retValue.cardsInDeck.put(componentAction.card, retValue.cardsInDeck.getOrDefault(componentAction.card, 0)+1);
-				} else if (componentAction.from == CardSink.REVEALED && componentAction.to == CardSink.HAND) {
-					retValue.hand.add(componentAction.card);
-					retValue.cardsPlayed.remove(componentAction.card);
-				} else if (componentAction.from == CardSink.REVEALED && componentAction.to == CardSink.DISCARD) {
-					retValue.discardCard(componentAction.card);
-					retValue.cardsPlayed.remove(componentAction.card);
-				} else {
-					throw new AssertionError("Unsupported action " + componentAction);
-				}
+				retValue.removeCardFrom(componentAction.card, componentAction.from);
+				retValue.addCard(componentAction.card, componentAction.to);
 				break;
 			default:
 				throw new AssertionError("Unsupported action " + componentAction);
@@ -110,10 +94,8 @@ public class PositionSummary implements State<Player> {
 	}
 
 	public void drawCard(CardType drawnCard, CardSink to) {
-		if (drawnCard != null && drawnCard != CardType.NONE) {
-			changeNumberOnTable(drawnCard, -1);
-			addCard(drawnCard, to);
-		}
+		removeCardFrom(drawnCard, CardSink.SUPPLY);
+		addCard(drawnCard, to);
 	}
 
 	public void addCard(CardType newCard, CardSink to) {
@@ -130,10 +112,30 @@ public class PositionSummary implements State<Player> {
 			case HAND:
 				hand.add(newCard);
 				break;
-			case DECK:
-			case REVEALED:
-			case SUPPLY:
 			case TRASH:
+				totalCards--;
+				if (newCard.isVictory()) victoryCards--;
+				if (newCard.isAction()) {
+					actionCards--;
+				}
+				Integer currentAmount = cardsInDeck.get(newCard);
+				if (currentAmount == null)
+					return;
+				currentAmount--;
+				cardsInDeck.put(newCard, currentAmount);
+				treasureValue -= newCard.getTreasure();
+
+				recalculateVictoryPoints();
+				updateDerivedVariables();
+				break;
+			case DECK:
+				break;
+			case REVEALED:
+				cardsPlayed.add(newCard);
+				break;
+			case SUPPLY:
+				changeNumberOnTable(newCard, 1);
+				break;
 			}
 			Integer currentAmount = cardsInDeck.get(newCard);
 			if (currentAmount == null)
@@ -146,32 +148,44 @@ public class PositionSummary implements State<Player> {
 		}
 	}
 
+	public void removeCardFrom(CardType card, CardSink from) {
+		switch(from) {
+		case DISCARD:
+			cardsInDiscard--;
+			break;
+		case HAND:
+			hand.remove(card);
+			break;
+		case SUPPLY:
+			changeNumberOnTable(card, -1);
+			return; // this does not affect number of cards held
+		case DECK:
+			break;
+		case REVEALED:
+			cardsPlayed.remove(card);
+			break;
+		case TRASH:
+			return;	// this does not affect cards in hand/deck
+		}
+		totalCards--;
+		if (card.isVictory()) victoryCards--;
+		if (card.isAction()) {
+			actionCards--;
+		}
+		Integer currentAmount = cardsInDeck.get(card);
+		if (currentAmount == null)
+			currentAmount = 0;
+		currentAmount--;
+		cardsInDeck.put(card, currentAmount);
+		treasureValue -= card.getTreasure();
+		recalculateVictoryPoints();
+		updateDerivedVariables();
+	}
+
 	public void trashCard(CardType oldCard, CardSink from) {
 		if (oldCard != CardType.NONE && oldCard != null) {
-			totalCards--;
-			if (oldCard.isVictory()) victoryCards--;
-			if (oldCard.isAction()) {
-				actionCards--;
-			}
-			Integer currentAmount = cardsInDeck.get(oldCard);
-			if (currentAmount == null)
-				return;
-			currentAmount--;
-			cardsInDeck.put(oldCard, currentAmount);
-			treasureValue -= oldCard.getTreasure();
-			switch(from) {
-			case DISCARD:
-				cardsInDiscard--;
-				break;
-			case HAND:
-				hand.remove(oldCard);
-				break;
-			case DECK:
-			case REVEALED:
-			}
-
-			recalculateVictoryPoints();
-			updateDerivedVariables();
+			removeCardFrom(oldCard, from);
+			addCard(oldCard, CardSink.TRASH);
 		}
 	}
 

@@ -30,21 +30,20 @@ public class Library extends Card {
 	protected List<ActionEnum<Player>> drawToLimit() {
 		Player player = game.getPlayer(playerNumber);
 		do {
-			Card nextCard = player.drawTopCardFromDeckButNotIntoHand();
-			if (nextCard.getType() == CardType.NONE) {
+			CardType nextCard = player.peekAtTopCardOfDeck();
+			if (nextCard == CardType.NONE) {
 				player.log("Has no more cards in deck or discard. So stops.");
 				break;
 			}
 			if (nextCard.isAction()) {
-				player.insertCardDirectlyInto(nextCard, CardSink.REVEALED);
-				currentActionCard = nextCard.getType();
+				currentActionCard = nextCard;
 				List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
-				retValue.add(new CardTypeAugment(nextCard.getType(), CardSink.REVEALED, CardSink.HAND, ChangeType.MOVE));
-				retValue.add(new CardTypeAugment(nextCard.getType(), CardSink.REVEALED, CardSink.DISCARD, ChangeType.MOVE));
+				retValue.add(new CardTypeAugment(nextCard, CardSink.DECK, CardSink.HAND, ChangeType.MOVE));
+				retValue.add(new CardTypeAugment(nextCard, CardSink.DECK, CardSink.DISCARD, ChangeType.MOVE));
 				return retValue;
 			} else {
 				currentActionCard = null;
-				player.insertCardDirectlyIntoHand(nextCard);
+				player.drawTopCardFromDeckInto(CardSink.HAND);
 			}
 		} while (player.getHandSize() < 7);
 		return emptyList;
