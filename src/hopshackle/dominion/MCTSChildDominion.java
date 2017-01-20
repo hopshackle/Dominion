@@ -18,9 +18,9 @@ public class MCTSChildDominion extends MCTSChildDecider<Player> {
 	public List<ActionEnum<Player>> getChooseableOptions(Player player) {
 		switch (player.getPlayerState()) {
 		case PURCHASING:
-			return DominionNeuralDecider.dominionPurchaseOptions(player);
+			return player.getGame().dominionPurchaseOptions(player);
 		case PLAYING:
-			return DominionNeuralDecider.dominionPlayOptions(player);
+			return player.getGame().dominionPlayOptions(player);
 		default:
 			throw new AssertionError("Invalid Player State in getChooseableOptions : " + player.getPlayerState());
 		}

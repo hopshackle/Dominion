@@ -88,10 +88,34 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	public Player getCurrentPlayer() {
 		return players[currentPlayer];
 	}
+	
+	public List<ActionEnum<Player>> dominionPurchaseOptions(Player player) {
+		List<ActionEnum<Player>> retValue = null;
+		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
+		retValue = dpd.getPossiblePurchasesAsActionEnum();
+		return retValue;
+	}
+	public List<ActionEnum<Player>> dominionPlayOptions(Player player) {
+		List<ActionEnum<Player>> retValue = null;
+		retValue = player.getActionsInHand();
+		retValue.add(CardTypeAugment.playCard(CardType.NONE));
+		return retValue;
+	}
 
 	@Override
 	public List<ActionEnum<Player>> getPossibleCurrentActions() {
-		return players[currentPlayer].getDecider().getChooseableOptions(players[currentPlayer]);
+		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
+		switch (players[currentPlayer].getPlayerState()) {
+		case PURCHASING:
+			retValue = dominionPurchaseOptions(players[currentPlayer]);
+			break;
+		case PLAYING:
+			retValue = dominionPlayOptions(players[currentPlayer]);
+			break;
+		case WAITING:
+			throw new AssertionError("No valid options if current player is WAITING");
+		}
+		return retValue;
 	}
 
 	@Override

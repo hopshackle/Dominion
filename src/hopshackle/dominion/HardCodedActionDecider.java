@@ -97,7 +97,7 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 
 	@Override
 	public List<ActionEnum<Player>> getChooseableOptions(Player player) {
-		return DominionNeuralDecider.dominionPlayOptions(player);
+		return player.getGame().dominionPlayOptions(player);
 	}
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
