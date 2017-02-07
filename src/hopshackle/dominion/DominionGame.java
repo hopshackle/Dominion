@@ -103,7 +103,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	}
 
 	@Override
-	public List<ActionEnum<Player>> getPossibleCurrentActions() {
+	public List<ActionEnum<Player>> getPossibleActions() {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		switch (players[currentPlayer].getPlayerState()) {
 		case PURCHASING:

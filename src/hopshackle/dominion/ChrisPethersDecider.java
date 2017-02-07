@@ -6,8 +6,8 @@ import hopshackle.simulation.*;
 
 public class ChrisPethersDecider extends BigMoneyDecider{
 
-	public ChrisPethersDecider(List<ActionEnum<Player>> actionsToUse, List<GeneticVariable<Player>> variables) {
-		super(actionsToUse, variables);
+	public ChrisPethersDecider(List<GeneticVariable<Player>> variables) {
+		super(variables);
 	}
 
 	@Override

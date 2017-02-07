@@ -6,8 +6,8 @@ import java.util.*;
 
 public class BigMoneyDecider extends LookaheadDecider<Player> {
 	
-	public BigMoneyDecider(List<ActionEnum<Player>> actionsToUse, List<GeneticVariable<Player>> variables) {
-		super(new DominionStateFactory(variables), actionsToUse);
+	public BigMoneyDecider(List<GeneticVariable<Player>> variables) {
+		super(new DominionStateFactory(variables));
 	}
 	
 	@Override
@@ -54,14 +54,6 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 		}
 		retValue += handValue / 10.0;
 		
-		return retValue;
-	}
-	
-	@Override
-	public List<ActionEnum<Player>> getChooseableOptions(Player decidingAgent) {
-		Player player = (Player) decidingAgent;
-		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
-		List<ActionEnum<Player>> retValue = dpd.getPossiblePurchasesAsActionEnum();
 		return retValue;
 	}
 	
