@@ -15,8 +15,7 @@ public class BasicGameMechanics {
 	public DominionGame game;
 	TestDominionDecider copperDecider, woodcutterDecider, workshopDecider;
 	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
-	private ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
-	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUse);
+	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(variablesToUse);
 
 	@Before
 	public void setUp() throws Exception {

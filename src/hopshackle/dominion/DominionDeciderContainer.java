@@ -104,16 +104,6 @@ public class DominionDeciderContainer implements Decider<Player> {
 	}
 
 	@Override
-	public Action<Player> decide(Player decidingAgent) {
-		return getDecider(decidingAgent).decide(decidingAgent);
-	}
-
-	@Override
-	public List<ActionEnum<Player>> getChooseableOptions(Player a) {
-		return getDecider(a).getChooseableOptions(a);
-	}
-
-	@Override
 	public Decider<Player> crossWith(Decider<Player> decider) {
 		return this;
 	}
@@ -124,24 +114,15 @@ public class DominionDeciderContainer implements Decider<Player> {
 	}
 
 	@Override
-	public <V extends ActionEnum<Player>> List<V> getActions() {
-		return purchase.getActions();
+	public ActionEnum<Player> decideWithoutLearning(Player decidingAgent, List<ActionEnum<Player>> options) {
+		return getDecider(decidingAgent).decideWithoutLearning(decidingAgent, options);
 	}
 
 	@Override
-	public ActionEnum<Player> decideWithoutLearning(Player decidingAgent) {
-		return getDecider(decidingAgent).decideWithoutLearning(decidingAgent);
+	public ActionEnum<Player> getOptimalDecision(Player decidingAgent, List<ActionEnum<Player>> options) {
+		return getDecider(decidingAgent).getOptimalDecision(decidingAgent, options);
 	}
 
-	@Override
-	public ActionEnum<Player> getOptimalDecision(Player decidingAgent) {
-		return getDecider(decidingAgent).getOptimalDecision(decidingAgent);
-	}
-
-	@Override
-	public ActionEnum<Player> makeDecision(Player decidingAgent) {
-		return getDecider(decidingAgent).makeDecision(decidingAgent);
-	}
 	@Override
 	public ActionEnum<Player> makeDecision(Player decidingAgent, List<ActionEnum<Player>> possibleActions) {
 		return getDecider(decidingAgent, possibleActions).makeDecision(decidingAgent, possibleActions);

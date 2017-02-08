@@ -6,8 +6,8 @@ import java.util.*;
 
 public class HardCodedActionDecider extends LookaheadDecider<Player> {
 
-	public HardCodedActionDecider(List<CardType> actions, List<CardValuationVariables> variables) {
-		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)), CardType.generateListOfPossibleActionEnumsFromCardTypes(actions));
+	public HardCodedActionDecider(List<CardValuationVariables> variables) {
+		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)));
 	}
 
 	@Override
@@ -85,8 +85,9 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 		return 0.0;
 	}
 
-	protected ActionEnum<Player> makeDecision(Player decidingAgent, Agent contextAgent, double explorationChance) {
-		return super.makeDecision(decidingAgent);
+	@Override
+	protected ActionEnum<Player> makeDecision(Player decidingAgent, double explorationChance, List<ActionEnum<Player>> options) {
+		return super.makeDecision(decidingAgent, 0.0, options);
 		// i.e. never explore with a Hardcoded Decider
 	}
 
@@ -95,10 +96,6 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 		return 0;
 	}
 
-	@Override
-	public List<ActionEnum<Player>> getChooseableOptions(Player player) {
-		return player.getGame().dominionPlayOptions(player);
-	}
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
 }

@@ -11,17 +11,14 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 
 	private HashMap<CardType, Double> values;
 	private HashMap<CardType, Double> handValues;
-	private static List<ActionEnum<Player>> actionsToUse;
 	private static List<CardValuationVariables> variablesToUse;
 
 	static {
 		variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
-		List<CardType> allCards = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
-		actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(allCards);
 	}
 
 	public TestDominionDecider(HashMap<CardType, Double> values, HashMap<CardType, Double> handValues) {
-		super(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse)),  HopshackleUtilities.convertList(actionsToUse));
+		super(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUse)));
 		this.values = values;
 		this.handValues = handValues;
 		if (this.values == null)
@@ -89,19 +86,6 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 			retValue += ps.getNumberInHand(card) * handValues.get(card);
 		}
 		retValue -= ps.totalNumberOfCards() * 0.05;
-		return retValue;
-	}
-
-	@Override
-	public List<ActionEnum<Player>> getChooseableOptions(Player decidingAgent) {
-		List<ActionEnum<Player>> retValue = null;
-		Player player = (Player) decidingAgent;
-		if (player.isTakingActions()) {
-			return super.getChooseableOptions(decidingAgent);
-		} else {
-			DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
-			retValue = dpd.getPossiblePurchasesAsActionEnum();
-		}
 		return retValue;
 	}
 

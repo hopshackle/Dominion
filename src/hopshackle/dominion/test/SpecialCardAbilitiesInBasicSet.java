@@ -16,8 +16,7 @@ public class SpecialCardAbilitiesInBasicSet {
 	public Player p1, p2, p3, p4;
 	private TestDominionDecider remodelDecider, defaultPurchaseDecider;
 	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
-	private ArrayList<CardType> actionsToUse = new ArrayList<CardType>(EnumSet.allOf(CardType.class));
-	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(actionsToUse, variablesToUse);
+	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(variablesToUse);
 	private HashMap<CardType, Double> purchasePreferences = new HashMap<CardType, Double>();
 	private HashMap<CardType, Double> handPreferences = new HashMap<CardType, Double>();
 

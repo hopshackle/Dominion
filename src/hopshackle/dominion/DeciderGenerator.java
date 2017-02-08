@@ -53,12 +53,12 @@ public class DeciderGenerator {
 
 		cardTypes = gamesetup.getCardTypes();
 		actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);
-		hardCodedActionDecider = new HardCodedActionDecider(cardTypes, variablesToUseForActions);
+		hardCodedActionDecider = new HardCodedActionDecider(variablesToUseForActions);
 		hardCodedActionDecider.setName("DEFAULT");
-		bigMoney = new BigMoneyDecider(actionsToUse, HopshackleUtilities.convertList(variablesToUseForPurchase));
+		bigMoney = new BigMoneyDecider(HopshackleUtilities.convertList(variablesToUseForPurchase));
 		completeHeuristic = new DominionDeciderContainer(bigMoney, hardCodedActionDecider);
-		chrisPethers = new ChrisPethersDecider(actionsToUse, HopshackleUtilities.convertList(variablesToUseForPurchase));
-		mctsDecider = new MCTSMasterDominion(actionsToUse, variablesToUseForPurchase, completeHeuristic, completeHeuristic);
+		chrisPethers = new ChrisPethersDecider(HopshackleUtilities.convertList(variablesToUseForPurchase));
+		mctsDecider = new MCTSMasterDominion(variablesToUseForPurchase, completeHeuristic, completeHeuristic);
 		mctsDecider.setName("MCTS");
 		int numberMCTS = (int) (numberToMaintain * percentageMCTSToUse);
 		for (int i = 0; i < numberMCTS; i++) {
@@ -68,7 +68,7 @@ public class DeciderGenerator {
 
 		FilenameFilter nameFilter = new HopshackleFilter("", "brain");
 		loadDecidersFromFile(purchaseDeciders, new File(baseDir + "\\DecidersAtStart"), nameFilter, 
-				new DominionNeuralDecider(actionsToUse, variablesToUseForPurchase), 0, "P");
+				new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse), 0, "P");
 		// TODO: This load from file only applies to Purchase Deciders currently
 
 		for (int n = 0; n < baseDeciders; n++) {
@@ -91,9 +91,9 @@ public class DeciderGenerator {
 						varsToUse.add(CardValuationVariables.VICTORY_MARGIN);
 						varsToUse.remove(0);
 					}
-					pd = new DominionNeuralDecider(actionsToUse, varsToUse);
+					pd = new DominionNeuralDecider(varsToUse, actionsToUse);
 				} else {
-					pd = new DominionNeuralDecider(actionsToUse, variablesToUseForPurchase);
+					pd = new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse);
 				}
 				pd.setName("P"+String.format("%03d", decideNameCount));
 				purchaseDeciders.add(pd);
@@ -119,9 +119,9 @@ public class DeciderGenerator {
 								}
 							} while (!choiceMade);
 						}
-						ad = new DominionNeuralDecider(actionsToUse, varsToUse);
+						ad = new DominionNeuralDecider(varsToUse, actionsToUse);
 					} else {
-						ad = new DominionNeuralDecider(actionsToUse, variablesToUseForActions);
+						ad = new DominionNeuralDecider(variablesToUseForActions, actionsToUse);
 					}
 					ad.setName("A"+String.format("%03d", decideNameCount));
 					actionDeciders.add(ad);
@@ -145,7 +145,7 @@ public class DeciderGenerator {
 		if (sampleDecider instanceof DominionNeuralDecider) {
 			for (File f : files) {
 				NeuralDecider<Player> nd = NeuralDecider.createNeuralDecider(new DominionStateFactory(new ArrayList<GeneticVariable<Player>>()), f, 100.0);
-				DominionNeuralDecider newDecider = new DominionNeuralDecider(actionsToUse, nd.getVariables());
+				DominionNeuralDecider newDecider = new DominionNeuralDecider( nd.getVariables(), actionsToUse);
 				newDecider.setInternalNeuralNetwork(nd);
 				deciders.add(newDecider);
 				String newName = prefix + String.format("%03d", startCounter) + " : " + nd.toString();

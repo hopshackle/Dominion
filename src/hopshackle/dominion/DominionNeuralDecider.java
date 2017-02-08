@@ -8,23 +8,8 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
 
 	private boolean ableToLearn = true;
 
-	public DominionNeuralDecider(List<ActionEnum<Player>> actions, List<CardValuationVariables> variables) {
-		super(
-				new DominionStateFactory(HopshackleUtilities.convertList(variables)), 
-				actions, 100.0
-			);
-	}
-
-	@Override
-	public List<ActionEnum<Player>> getChooseableOptions(Player player) {
-		switch (player.getPlayerState()) {
-		case PURCHASING:
-			return player.getGame().dominionPurchaseOptions(player);
-		case PLAYING:
-			return player.getGame().dominionPlayOptions(player);
-		default:
-			throw new AssertionError("Invalid Player State in getChooseableOptions : " + player.getPlayerState());
-		}
+	public DominionNeuralDecider(List<CardValuationVariables> variables, List<ActionEnum<Player>> actions) {
+		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)), new SimpleWorldLogic<Player>(actions), 100.0);
 	}
 
 	@Override

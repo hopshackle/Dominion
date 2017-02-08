@@ -100,7 +100,7 @@ public class CompetitionRound {
 						bestPercentage = 100.0 * (double)bestGvUsage.get(gv)/(double)bestBrains.size();
 					String output = String.format("%25s : Total %.0f%%  /  Best Half %.0f%% ", gv.toString(), totalPercentage, bestPercentage);
 					System.out.println(output);
-					World tempWorld = new World(null, setOfGames.toString(), 0l);
+					World tempWorld = new World(null, setOfGames.toString(), 0l, null);
 					tempWorld.setDatabaseAccessUtility(setOfGames.getDatabaseUtility());
 					VariableRoundResults vrr = new VariableRoundResults(tempWorld, metaCycle, gv.toString(), totalPercentage, bestPercentage);
 					agentWriter.write(vrr, descriptor);

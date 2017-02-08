@@ -6,9 +6,7 @@ import java.util.*;
 
 import hopshackle.dominion.*;
 import hopshackle.dominion.basecards.Bureaucrat;
-import hopshackle.simulation.Action;
-import hopshackle.simulation.Decider;
-import hopshackle.simulation.SimProperties;
+import hopshackle.simulation.*;
 
 import org.junit.*;
 

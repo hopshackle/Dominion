@@ -39,6 +39,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		boolean debugGame = false;
 		calendar = new FastCalendar(1l);
 		world.setCalendar(calendar);
+		world.registerWorldLogic(this, "AGENT");
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
 		if (Math.random() < debugGameProportion) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
@@ -103,14 +104,14 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	}
 
 	@Override
-	public List<ActionEnum<Player>> getPossibleActions() {
+	public List<ActionEnum<Player>> getPossibleActions(Player p) {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
-		switch (players[currentPlayer].getPlayerState()) {
+		switch (p.getPlayerState()) {
 		case PURCHASING:
-			retValue = dominionPurchaseOptions(players[currentPlayer]);
+			retValue = dominionPurchaseOptions(p);
 			break;
 		case PLAYING:
-			retValue = dominionPlayOptions(players[currentPlayer]);
+			retValue = dominionPlayOptions(p);
 			break;
 		case WAITING:
 			throw new AssertionError("No valid options if current player is WAITING");
