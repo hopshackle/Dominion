@@ -337,6 +337,9 @@ public class PositionSummary implements State<Player> {
 		}
 		return retValue;
 	}
+	public int getNumberPlayed() {
+		return cardsPlayed.size();
+	}
 
 	public void updateHandFromPlayer() {
 		hand = player.getCopyOfHand();

@@ -112,7 +112,8 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 	PURCHASE_POWER,
 	HAND_SIZE,
 	MONEY_IN_HAND,
-	UNKNOWN_IN_HAND;
+	UNKNOWN_IN_HAND,
+	ACTION_CARDS_PLAYED;
 	
 	public double getValue(Player a) {
 		if (a instanceof Player) {
@@ -341,6 +342,8 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 			return ps.getHandMoneyValue() / 16.0;
 		case PURCHASE_POWER:
 			return ps.getAdditionalPurchasePower() / 8.0 ;
+		case ACTION_CARDS_PLAYED:
+			return ps.getNumberPlayed() / 5.0;
 		}
 		return 0.0;
 	}
@@ -508,6 +511,7 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 		case BUYS:
 		case ACTIONS:
 		case PURCHASE_POWER:
+		case ACTION_CARDS_PLAYED:
 			return true;
 		default:
 			return false;
