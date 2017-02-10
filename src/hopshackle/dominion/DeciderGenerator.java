@@ -29,6 +29,7 @@ public class DeciderGenerator {
 	protected double selectionThreshold = Double.valueOf(SimProperties.getProperty("DominionSelectionThreshold", "1"));
 	private boolean useHardCodedAction = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	private double percentageMCTSToUse = SimProperties.getPropertyAsDouble("DominionMCTSDeciderProportion", "0.00");
+	private boolean useHandVariables = SimProperties.getProperty("DominionUseHandVariables", "false").equals("true");
 	private boolean evenUseOfDeciders = false;
 	private boolean replaceDecidersDeterministically = false;
 	private int totalWinners, baseDeciders;
@@ -50,6 +51,10 @@ public class DeciderGenerator {
 
 		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
 		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
+		List<CardValuationVariables> allVariables = new ArrayList<CardValuationVariables>();
+		allVariables.addAll(variablesToUseForPurchase);
+		allVariables.addAll(variablesToUseForActions);
+		if (useHandVariables) variablesToUseForPurchase = allVariables;
 
 		cardTypes = gamesetup.getCardTypes();
 		actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);

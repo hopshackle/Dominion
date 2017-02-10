@@ -508,6 +508,7 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
 		case WITCHES_IN_HAND:
 		case WITCHES_PLAYED:
 		case UNKNOWN_IN_HAND:
+		case HAND_SIZE:
 		case BUYS:
 		case ACTIONS:
 		case PURCHASE_POWER:
