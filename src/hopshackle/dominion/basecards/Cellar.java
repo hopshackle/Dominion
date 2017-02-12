@@ -25,7 +25,7 @@ public class Cellar extends Card {
 		 */
 		this.player = player;
 		this.startingHandSize = player.getHandSize();
-		List<List<CardType>> possibleDiscards = player.getPossibleDiscardsFromHand(0, startingHandSize);
+		List<List<CardType>> possibleDiscards = player.getPossibleDiscardsFromHand(1, startingHandSize);
 		List<ActionEnum<Player>> possibleActions = CardType.listToActionEnumList(possibleDiscards);
 		
 		return possibleActions;

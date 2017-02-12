@@ -84,19 +84,6 @@ public class SpecialCardAbilitiesInBasicSet {
 	}
 
 	@Test
-	public void cellarDiscardsNothingIfNoVictoryCards() {
-		for (int n=0; n<5; n++)
-			p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
-		for (int n=0; n<3; n++)
-			p1.moveCard(CardType.ESTATE, CardSink.HAND, CardSink.DISCARD);
-		p1.insertCardDirectlyIntoHand(new Cellar());
-		p1.takeActions();
-		assertEquals(p1.getHandSize(), 7);
-		assertEquals(p1.getDiscardSize(), 8);
-		assertEquals(p1.getDeckSize(), 0);
-	}
-
-	@Test
 	public void militiaForcesAllOtherPlayersToDiscardDownToThree() {
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MILITIA));
 		p2.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD);
@@ -223,11 +210,11 @@ public class SpecialCardAbilitiesInBasicSet {
 	}
 
 	@Test
-	public void remodelWithNothingToTrashDoesNotGainACard() {
+	public void remodelIsForcedToTrashOncePlayedEvenIfSuboptimal() {
 		// defaultPurchaseDecider values Copper at 0.10, Estates at 0.09 and Silver at 0.30
 		// With only Copper in hand after discarding Estates, the remodel choice will be:
 		// COPPER into ESTATE
-		// However this will lower the value of the hand overall, so will not be selected.
+		// However this will lower the value of the hand overall.
 		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
 		int estatesDiscarded = 0;
@@ -238,8 +225,8 @@ public class SpecialCardAbilitiesInBasicSet {
 			} while (p2.getNumberOfTypeInHand(CardType.ESTATE) > 0);
 		}
 		p2.takeActions();
-		assertEquals(p2.getHandSize(), 5 - estatesDiscarded);
-		assertEquals(p2.getDiscardSize(), estatesDiscarded);
+		assertEquals(p2.getHandSize(), 5 - estatesDiscarded - 1);
+		assertEquals(p2.getDiscardSize(), estatesDiscarded + 1);
 		assertEquals(p2.getDeckSize(), 5);
 	}
 

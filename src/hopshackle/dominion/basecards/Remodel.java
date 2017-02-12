@@ -37,7 +37,7 @@ public class Remodel extends Card {
 				allOptions.add(new CardTypeList(compositeAction, true));
 			}
 		}
-		allOptions.add(CardTypeAugment.takeCard(CardType.NONE));
+	//	allOptions.add(CardTypeAugment.takeCard(CardType.NONE));
 		// choose best option, and execute it
 		
 		return allOptions;
