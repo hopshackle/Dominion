@@ -8,6 +8,7 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 
 	public HardCodedActionDecider(List<CardValuationVariables> variables) {
 		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)));
+		setName("HARD");
 	}
 
 	@Override

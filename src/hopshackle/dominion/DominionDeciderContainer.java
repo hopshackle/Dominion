@@ -8,6 +8,7 @@ import hopshackle.simulation.*;
 public class DominionDeciderContainer implements Decider<Player> {
 
 	protected Decider<Player> purchase, action;
+	protected String name;
 	
 	public DominionDeciderContainer(Decider<Player> purchase, Decider<Player> action) {
 		this.purchase = purchase;
@@ -16,7 +17,7 @@ public class DominionDeciderContainer implements Decider<Player> {
 			throw new AssertionError("Both Purchase and Action deciders must be specified");
 	}
 
-	public static DominionDeciderContainer factory(GameSetup gamesetup, DeciderProperties properties) {
+	public static DominionDeciderContainer factory(String name, GameSetup gamesetup, DeciderProperties properties) {
 		
 		boolean useHandVariables = properties.getProperty("DominionUseHandVariables", "false").equals("true");
 		boolean hardCodedActions = properties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
@@ -37,16 +38,17 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 		Decider<Player> bigMoneyPurchase = new BigMoneyDecider(HopshackleUtilities.convertList(variablesToUseForPurchase));
 		DominionDeciderContainer bigMoney = new DominionDeciderContainer(bigMoneyPurchase, hardCodedActionDecider);
-		bigMoney.injectProperties(properties);
 		
 		if (deciderType.equals("NN")) {
 			List<CardType> cardTypes = gamesetup.getCardTypes();
 			List<ActionEnum<Player>> actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);
 			purchase = new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse);
+			purchase.setName(name);
 			purchase.injectProperties(properties);
 			action = hardCodedActionDecider;
 		} else if (deciderType.equals("MCTS")) {
 			purchase = new MCTSMasterDominion(variablesToUseForPurchase, bigMoney, bigMoney);
+			purchase.setName(name);
 			purchase.injectProperties(properties);
 			if (hardCodedActions) {
 				action = hardCodedActionDecider;
@@ -182,30 +184,26 @@ public class DominionDeciderContainer implements Decider<Player> {
 		return getDecider(decidingAgent, possibleActions).decide(decidingAgent, possibleActions);
 	}
 
-	@Override
-	public String toString() {
-		String retValue = "";
-		if (purchase != null)
-			retValue = retValue + purchase.toString() + " ";
-		if (action != null)
-			retValue = retValue + action.toString();
-		return retValue;
-	}
-
-	@Override
-	public void setName(String name) {
-		
-	}
 
 	@Override
 	public void injectProperties(DeciderProperties decProp) {
+		System.out.println("Injecting properties into " + this);
 		if (purchase != null) purchase.injectProperties(decProp);
-		if (action != null) purchase.injectProperties(decProp);
+		if (action != null) action.injectProperties(decProp);
 	}
 
 	@Override
 	public DeciderProperties getProperties() {
 		return purchase.getProperties();
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+	@Override
+	public String toString() {
+		return name;
 	}
 
 }

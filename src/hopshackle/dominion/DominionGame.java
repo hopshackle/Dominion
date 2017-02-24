@@ -48,6 +48,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			if (deciderGenerator != null) {
 				Decider<Player> d = deciderGenerator.getDecider(paceSetters);
 				players[n].setDecider(d);
+				players[n].log("Using Decider " + d.toString());
 			}
 			players[n].setGame(this);
 		}
