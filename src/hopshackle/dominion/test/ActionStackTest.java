@@ -17,9 +17,10 @@ public class ActionStackTest {
 
 	@Before
 	public void setUp() throws Exception {
-		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		SimProperties.setProperty("DominionHardCodedActionDecider", "true");
-		game = new TestGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
+		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DominionCardSetup", "FirstGame");
+		localProp.setProperty("DominionHardCodedActionDecider", "true");
+		game = new TestGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		player = game.getCurrentPlayer();
 	}
 

@@ -3,7 +3,7 @@ package hopshackle.dominion.test;
 import static org.junit.Assert.assertEquals;
 import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.simulation.SimProperties;
+import hopshackle.simulation.*;
 
 import org.junit.*;
 
@@ -14,8 +14,9 @@ public class CardValuationVariablesTest {
 	
 	@Before
 	public void setUp() {
-		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
+		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DominionCardSetup", "FirstGame");
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		recalculate();
 	}
 	

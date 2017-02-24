@@ -19,9 +19,10 @@ public class BasicGameMechanics {
 
 	@Before
 	public void setUp() throws Exception {
-		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		SimProperties.setProperty("DominionMCTSDeciderProportion", "0.0");
-		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
+		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DominionCardSetup", "FirstGame");
+		localProp.setProperty("DeciderType", "NN");
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		copperDecider = TestDominionDecider.getExample(CardType.COPPER);
 		woodcutterDecider = TestDominionDecider.getExample(CardType.WOODCUTTER);
 		workshopDecider = TestDominionDecider.getExample(CardType.WORKSHOP);
