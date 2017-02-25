@@ -45,7 +45,8 @@ public class GameDAO implements DAO<DominionGame> {
 				" avgDeckSize		FLOAT		NOT NULL,"		+
 				" avgTreasure		FLOAT		NOT NULL,"		+
 				" avgVictory		FLOAT		NOT NULL,"		+
-				" winningPStrategy   VARCHAR(30) NOT NULL"		+
+				" winningPStrategy   VARCHAR(30) NOT NULL,"		+
+				" timeTaken			FLOAT		NOT NULL"		+
 				");";
 	}
 
@@ -61,7 +62,7 @@ public class GameDAO implements DAO<DominionGame> {
 				"adventurers, bureaucrats, cellars, chapels, chancellors, council_rooms, feasts, festivals, gardens, laboratories, " +
 				"libraries, markets, militia, mines, moats, moneylenders, remodels, " +
 				"smithies, spies, thieves, throne_rooms, villages, witches, woodcutters, workshops, " + 
-				"avgDeckSize, avgTreasure, avgVictory, winningPStrategy) VALUES";
+				"avgDeckSize, avgTreasure, avgVictory, winningPStrategy, timeTaken) VALUES";
 	}
 
 	@Override
@@ -93,7 +94,7 @@ public class GameDAO implements DAO<DominionGame> {
 			// on the basis that we want to pick the winning player with least first player advantage
 		}
 
-		return String.format(" (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %.2f, %.2f, %.2f, '%s')",
+		return String.format(" (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %.2f, %.2f, %.2f, '%s', %.2f)",
 				game.getUniqueId(),
 				game.turnNumber(),
 				(int) winningScore,
@@ -131,7 +132,8 @@ public class GameDAO implements DAO<DominionGame> {
 				avgTreasure,
 				avgDeckSize,
 				avgScore,
-				(gameHasWinner)?players[winningPlayerNumber-1].getDecider().toString():"NONE"
+				(gameHasWinner)?players[winningPlayerNumber-1].getDecider().toString():"NONE",
+				game.gameLength()
 				);
 	}
 

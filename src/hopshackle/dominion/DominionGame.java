@@ -23,6 +23,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private FastCalendar calendar;
 	private World world = new World();
 	private int[] ordinalPositions = new int[4];
+	private long startTime, endTime;
 
 	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, Decider<Player> deciderToUse) {
 		DominionGame retValue = new DominionGame(deciderGen, name, false);
@@ -35,6 +36,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		deciderGenerator = deciderGen;
 		this.tableSuffix = name;
 		turn = 1;
+		startTime = System.currentTimeMillis();
 		players = new Player[4];
 		boolean debugGame = false;
 		calendar = new FastCalendar(1l);
@@ -191,6 +193,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		}
 
 		if (!clonedGame) {
+			endTime = System.currentTimeMillis();
 			gameWriter.write(this, tableSuffix);
 		}
 	}
@@ -360,5 +363,8 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		do {
 			this.oneAction();
 		} while (getCurrentPlayerNumber() == cp);
+	}
+	public double gameLength() {
+		return (double) ((endTime - startTime) / 1000);
 	}
 }
