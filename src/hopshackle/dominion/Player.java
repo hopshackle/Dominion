@@ -20,15 +20,6 @@ public class Player extends Agent {
 	private PositionSummary summary;
 	private int playerNumber;
 	private int actionsLeft;
-	private boolean onlyRewardVictory = SimProperties.getProperty("DominionOnlyRewardVictory", "false").equals("true");
-	private static double[] rewardVector = new double[4];
-	static {
-		String rewardString = SimProperties.getProperty("DominionGameOrdinalRewards", "50:0:0:0");
-		String[] rewards = rewardString.split(":");
-		for (int i = 0; i < 4; i++) {
-			rewardVector[i] = Double.valueOf(rewards[i]);
-		}
-	}
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
@@ -109,6 +100,12 @@ public class Player extends Agent {
 	public double getScore() {
 		double retValue = totalVictoryValue();
 		if (isDead()) {
+			boolean onlyRewardVictory = false;
+			if (decider != null) {
+				if (decider.getProperties() == null) 
+					System.out.println("Null Properties on " + decider.toString());
+				onlyRewardVictory = decider.getProperties().getProperty("DominionOnlyRewardVictory", "false").equals("true");
+			}
 			if (onlyRewardVictory){
 				int winningPlayers = 0;
 				for (int i = 0; i < 4; i++)
@@ -117,6 +114,12 @@ public class Player extends Agent {
 				if (game.getOrdinalPosition(playerNumber) == 1)
 					retValue = 100.0 / (double)winningPlayers;
 			} else {
+				double[] rewardVector = new double[4];
+					String rewardString = decider.getProperties().getProperty("DominionGameOrdinalRewards", "50:0:0:0");
+					String[] rewards = rewardString.split(":");
+					for (int i = 0; i < 4; i++) {
+						rewardVector[i] = Double.valueOf(rewards[i]);
+					}
 				retValue += rewardVector[game.getOrdinalPosition(playerNumber) - 1];
 			}
 		}

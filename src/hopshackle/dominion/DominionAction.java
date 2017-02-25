@@ -8,7 +8,6 @@ import hopshackle.simulation.*;
 
 public class DominionAction extends Action<Player> {
 
-	private static boolean hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 	private List<CardTypeAugment> cardType;
 	protected Player player;
 	private boolean isAction;
@@ -90,9 +89,6 @@ public class DominionAction extends Action<Player> {
 	}
 	@Override
 	protected void eventDispatch(AgentEvent learningEvent) {
-		if (hardCodedActionDecider && (cardType.isEmpty() || cardType.get(0).type == ChangeType.PLAY)) {
-			return;	// override to turn off any ER stream
-		}
 		super.eventDispatch(learningEvent);
 	}
 

@@ -16,40 +16,47 @@ public class DominionDeciderContainer implements Decider<Player> {
 		if (action == null || purchase == null)
 			throw new AssertionError("Both Purchase and Action deciders must be specified");
 	}
-
+	
 	public static DominionDeciderContainer factory(String name, GameSetup gamesetup, DeciderProperties properties) {
 		
 		boolean useHandVariables = properties.getProperty("DominionUseHandVariables", "false").equals("true");
 		boolean hardCodedActions = properties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 		String deciderType = properties.getProperty("DeciderType", "NN");
-		
+		String coreVariables = properties.getProperty("DominionCoreVariables", "");
+
 		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
 		List<CardValuationVariables> variablesToUseForActions = gamesetup.getHandVariables();
-		List<CardValuationVariables> allVariables = new ArrayList<CardValuationVariables>();
+		String[] varsToInclude = coreVariables.split(",");
+		for (String v : varsToInclude) {
+			variablesToUseForPurchase.add(CardValuationVariables.valueOf(v));
+			variablesToUseForActions.add(CardValuationVariables.valueOf(v));
+		}
+		
+		Set<CardValuationVariables> allVariables = new HashSet<CardValuationVariables>();
 		allVariables.addAll(variablesToUseForPurchase);
 		allVariables.addAll(variablesToUseForActions);
-		if (useHandVariables) variablesToUseForPurchase = allVariables;
+		if (useHandVariables) {
+			variablesToUseForPurchase = new ArrayList<CardValuationVariables>();
+			variablesToUseForPurchase.addAll(allVariables);
+		}
 		
 		Decider<Player> purchase = null;
 		Decider<Player> action = null;
 		
 		Decider<Player> hardCodedActionDecider = new HardCodedActionDecider(variablesToUseForActions);
-		hardCodedActionDecider.injectProperties(properties);
 
 		Decider<Player> bigMoneyPurchase = new BigMoneyDecider(HopshackleUtilities.convertList(variablesToUseForPurchase));
 		DominionDeciderContainer bigMoney = new DominionDeciderContainer(bigMoneyPurchase, hardCodedActionDecider);
+		bigMoney.setName("BigMoney");
+		bigMoney.injectProperties(properties);
 		
 		if (deciderType.equals("NN")) {
 			List<CardType> cardTypes = gamesetup.getCardTypes();
 			List<ActionEnum<Player>> actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);
 			purchase = new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse);
-			purchase.setName(name);
-			purchase.injectProperties(properties);
 			action = hardCodedActionDecider;
 		} else if (deciderType.equals("MCTS")) {
 			purchase = new MCTSMasterDominion(variablesToUseForPurchase, bigMoney, bigMoney);
-			purchase.setName(name);
-			purchase.injectProperties(properties);
 			if (hardCodedActions) {
 				action = hardCodedActionDecider;
 			} else {
@@ -59,8 +66,10 @@ public class DominionDeciderContainer implements Decider<Player> {
 			throw new AssertionError("Unknown DeciderType " + deciderType);
 		}
 
-
-		return new DominionDeciderContainer(purchase, action);
+		DominionDeciderContainer retValue = new DominionDeciderContainer(purchase, action);
+		retValue.setName(name);
+		retValue.injectProperties(properties);
+		return retValue;
 	}
 
 	private Decider<Player> getDecider(Player player) {
@@ -187,7 +196,6 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 	@Override
 	public void injectProperties(DeciderProperties decProp) {
-		System.out.println("Injecting properties into " + this);
 		if (purchase != null) purchase.injectProperties(decProp);
 		if (action != null) action.injectProperties(decProp);
 	}

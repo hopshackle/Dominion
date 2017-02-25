@@ -80,6 +80,11 @@ public class RunGame {
 			factory = new StandardERFactory<Player>(localProp);
 			ercPurcMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, purchaseEventFilter));
 			ercActionMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, actionEventFilter));
+			// TODO: add logic to take account of whether we have a single ER stream, or two separate ones
+			// for purchases and card play
+			// Once I have refactored neural and linear deciders to be flexible in the actions that that they
+			// can take, then I should be able to reduce this to a single stream
+			// Only if we are using a hardcodedactiondecider should we then just keep the purchase stream
 			OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(sets);
 			teacher.registerToERStream(ercPurcMap.get(d.toString()));
 			teacher.registerToERStream(ercActionMap.get(d.toString()));

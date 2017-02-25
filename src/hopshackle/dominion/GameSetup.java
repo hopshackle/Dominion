@@ -9,7 +9,6 @@ public class GameSetup {
 	private ArrayList<CardType> cardTypes = new ArrayList<CardType>();
 	private ArrayList<CardValuationVariables> deckVariables = new ArrayList<CardValuationVariables>();
 	private ArrayList<CardValuationVariables> handVariables = new ArrayList<CardValuationVariables>();
-	private String coreVariables = SimProperties.getProperty("DominionCoreVariables", "");
 	private String[] cardChanges = SimProperties.getProperty("DominionCardChanges", "").split(",");
 
 	public GameSetup() {
@@ -124,12 +123,6 @@ public class GameSetup {
 					deckVariables.add(cardVariable);
 				}
 			}
-		}
-
-		String[] varsToInclude = coreVariables.split(",");
-		for (String v : varsToInclude) {
-			deckVariables.add(CardValuationVariables.valueOf(v));
-			handVariables.add(CardValuationVariables.valueOf(v));
 		}
 	}
 
