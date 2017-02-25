@@ -22,10 +22,11 @@ public class SpecialCardAbilitiesInBasicSet {
 
 	@Before
 	public void setup() {
-		SimProperties.setProperty("DominionCardChanges", "THRONE_ROOM,BUREAUCRAT,LIBRARY,ADVENTURER,THIEF,SPY,FESTIVAL");
+		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DominionCardChanges", "THRONE_ROOM,BUREAUCRAT,LIBRARY,ADVENTURER,THIEF,SPY,FESTIVAL");
 		SimProperties.setProperty("Temperature", "0.0");
-		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		game = new DominionGame(new DeciderGenerator(new GameSetup(), 1, 1, 0, 0), "Test",  false);
+		localProp.setProperty("DominionCardSetup", "FirstGame");
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		p1 = game.getPlayer(1);
 		p2 = game.getPlayer(2);
 		p3 = game.getPlayer(3);

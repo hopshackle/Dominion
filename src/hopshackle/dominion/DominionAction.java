@@ -96,10 +96,6 @@ public class DominionAction extends Action<Player> {
 		super.eventDispatch(learningEvent);
 	}
 
-	public static void refresh() {
-		hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
-	}
-
 	public boolean isAction() {
 		return isAction;
 	}

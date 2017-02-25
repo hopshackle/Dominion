@@ -2,8 +2,6 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
-import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import org.junit.Before;
@@ -14,15 +12,16 @@ public class LearningAndExperience {
 	private DominionGame game;
 	private DominionStateFactory stateFactory;
 	private DeciderGenerator dg;
+	DeciderProperties localProp;
 	
 	@Before
 	public void setUp() throws Exception {
-		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		SimProperties.setProperty("DominionHardCodedActionDecider", "false");
-		DominionAction.refresh();
-		dg = new DeciderGenerator(new GameSetup(), 1, 1, 0, 0);
+		localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DominionCardSetup", "FirstGame");
+		localProp.setProperty("DominionHardCodedActionDecider", "false");
+		dg = new DeciderGenerator(new GameSetup(), localProp);
 		game = new DominionGame(dg, "Test", false);
-		stateFactory = new DominionStateFactory(dg.getPurchaseDecider(false).getVariables());
+		stateFactory = new DominionStateFactory(dg.getDecider(false).getVariables());
 	}
 
 	@Test
@@ -36,7 +35,7 @@ public class LearningAndExperience {
 				return true;
 			}
 		};
-		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>(), purchaseEventFilter);
+		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>(localProp), purchaseEventFilter);
 		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
 		for (Player p : game.getAllPlayers()) {
 			erc.registerAgent(p);
@@ -53,7 +52,7 @@ public class LearningAndExperience {
 	
 	@Test
 	public void playingCardsDoesGenerateExperienceRecordsWithoutFilter() {
-		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>());
+		ExperienceRecordCollector<Player> erc = new ExperienceRecordCollector<Player>(new StandardERFactory<Player>(localProp));
 		OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>();
 		for (Player p : game.getAllPlayers()) {
 			erc.registerAgent(p);

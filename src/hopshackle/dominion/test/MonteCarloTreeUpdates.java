@@ -2,8 +2,6 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
-import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -16,18 +14,18 @@ public class MonteCarloTreeUpdates {
 	MonteCarloTree<Player> tree;
 	PositionSummary startState;
 	List<ActionEnum<Player>> actionList;
-	List<CardType> copperMarket ;
+	List<CardType> copperMarket;
 
 	@Before
 	public void setUp() throws Exception {
-		SimProperties.setProperty("DominionCardSetup", "FirstGame");
-		SimProperties.setProperty("DominionHardCodedActionDecider", "true");
-		DominionAction.refresh();
-		dg = new DeciderGenerator(new GameSetup(), 1, 1, 0, 0);
+		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DominionCardSetup", "FirstGame");
+		localProp.setProperty("DominionHardCodedActionDecider", "true");
+		dg = new DeciderGenerator(new GameSetup(), localProp);
 		game = new DominionGame(dg, "Test", false);
-		tree = new MonteCarloTree<Player>();
+		tree = new MonteCarloTree<Player>(localProp);
 		startState = game.getCurrentPlayer().getPositionSummaryCopy();
-		startState.setVariables(dg.getPurchaseDecider(false).getVariables());
+		startState.setVariables(dg.getDecider(false).getVariables());
 		
 		actionList = new ArrayList<ActionEnum<Player>>();
 		copperMarket = new ArrayList<CardType>();
