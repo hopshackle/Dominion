@@ -33,6 +33,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	}
 
 	public DominionGame(DeciderGenerator deciderGen, String name, boolean paceSetters) {
+		Agent.clearAndResetCacheBuffer(0);
 		deciderGenerator = deciderGen;
 		this.tableSuffix = name;
 		turn = 1;
