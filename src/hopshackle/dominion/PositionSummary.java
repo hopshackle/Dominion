@@ -18,6 +18,7 @@ public class PositionSummary implements State<Player> {
 	private Player player;
 	private List<CardValuationVariables> variables;
 	private Player.State positionState;
+	private double[] playerScores;
 
 	public PositionSummary(Player basePlayer, List<CardValuationVariables> variableList) {
 		variables = variableList;
@@ -58,6 +59,9 @@ public class PositionSummary implements State<Player> {
 		cardsPlayed = new ArrayList<CardType>();
 		cardsPlayed.addAll(base.cardsPlayed);
 		cardsPlayed = player.getCopyOfPlayedCards();
+		playerScores = new double[4];
+		for (int i = 0; i < 4; i++)
+			playerScores[i] = base.playerScores[i];
 		updateDerivedVariables();
 	}
 
@@ -236,8 +240,10 @@ public class PositionSummary implements State<Player> {
 		if (players[3] != null) {
 			double highestScore = -100;
 			double secondScore = -100;
+			playerScores = new double[4];
 			for (int n = 0; n < 4; n++) {
 				double nextScore = players[n].getScore();
+				playerScores[n] = nextScore;
 				if (nextScore > highestScore) {
 					secondScore = highestScore;
 					highestScore = nextScore;
@@ -456,5 +462,26 @@ public class PositionSummary implements State<Player> {
 
 	public void setActions(int actionsLeft) {
 		actions = actionsLeft;
+	}
+
+	@Override
+	public int getActorRef() {
+		return player.getNumber();
+	}
+
+	@Override
+	public double[] getScore() {
+		double[] retValue = new double[4];
+		for (int i = 0; i < 4; i++) {
+			if (i == player.getNumber() - 1) {
+				retValue[i] = victoryPoints;
+			} else {
+				retValue[i] = playerScores[i];
+			}
+		}
+		// TODO: May not be ideal. We assume other player's scores never change
+		// as a result of one of our actions. This might not be too bad in the base game, but will need update
+		// for the WITCH (and others).
+		return retValue;
 	}
 }

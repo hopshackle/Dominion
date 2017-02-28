@@ -43,7 +43,7 @@ public class MonteCarloTreeUpdates {
 		tree.updateState(startState, new CardTypeList(copperMarket), startState, 2.0);
 		assertTrue(tree.containsState(startState));
 		MCStatistics<Player> stats = tree.getStatisticsFor(startState);
-		assertEquals(stats.getMean(new CardTypeList(copperMarket)), 2.0, 0.001);
+		assertEquals(stats.getMean(new CardTypeList(copperMarket))[0], 2.0, 0.001);
 	}
 	
 	@Test

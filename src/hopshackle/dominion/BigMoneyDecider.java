@@ -27,7 +27,6 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 	@Override
 	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
-		Player.State currentState = ps.getPlayerState();
 		double retValue = 0.0;
 		
 		double provincesLeft = ps.getNumberOfCardsRemaining(CardType.PROVINCE);

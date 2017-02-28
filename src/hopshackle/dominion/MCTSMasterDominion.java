@@ -15,7 +15,7 @@ public class MCTSMasterDominion extends MCTSMasterDecider<Player> {
 	}
 
 	@Override
-	protected MCTSChildDecider<Player> createChildDecider(MonteCarloTree<Player> tree) {
+	protected MCTSChildDecider<Player> createChildDecider(MonteCarloTree<Player> tree, int refPlayer) {
 		return new MCTSChildDominion(stateFactory, tree, rolloutDecider, decProp);
 	}
 }

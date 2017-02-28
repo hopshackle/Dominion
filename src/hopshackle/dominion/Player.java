@@ -99,11 +99,9 @@ public class Player extends Agent {
 
 	public double getScore() {
 		double retValue = totalVictoryValue();
-		if (isDead()) {
+		if (game.gameOver()) {
 			boolean onlyRewardVictory = false;
 			if (decider != null) {
-				if (decider.getProperties() == null) 
-					System.out.println("Null Properties on " + decider.toString());
 				onlyRewardVictory = decider.getProperties().getProperty("DominionOnlyRewardVictory", "false").equals("true");
 			}
 			if (onlyRewardVictory){

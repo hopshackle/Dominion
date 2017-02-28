@@ -167,13 +167,13 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			retValue = true;
 		if (turn > MAX_TURNS)
 			retValue = true;
-		if (retValue == true) {
-			endOfGameHouseKeeping();
-		}
 		return retValue;
 	}
 
-	private void endOfGameHouseKeeping() {	
+	@Override
+	protected void endOfGameHouseKeeping() {
+		if (!gameOver()) 
+			throw new AssertionError("Cannot do housekeeping unless game is over");
 		for (int i = 0; i < 4; i++)
 			score[i] = getPlayer(i+1).totalVictoryValue();
 
