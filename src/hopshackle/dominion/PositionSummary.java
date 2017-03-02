@@ -466,7 +466,7 @@ public class PositionSummary implements State<Player> {
 
 	@Override
 	public int getActorRef() {
-		return player.getNumber();
+		return player.getNumber() - 1;
 	}
 
 	@Override
