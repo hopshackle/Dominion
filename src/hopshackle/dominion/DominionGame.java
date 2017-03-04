@@ -180,9 +180,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		for (int i = 0; i < 4; i++)
 			ordinalPositions[i] = getOrdinalPosition(i+1);
 
-		for (int n = 0; n < 4; n++) 
-			players[n].die("Game Over");
-
 		for (int n = 0; n < 4; n++) {
 			players[n].log(String.format("Final Score is %d, with utility of %.0f.", players[n].totalVictoryValue(),  players[n].getScore()));
 			if (getOrdinalPosition(n+1) == 1) 
