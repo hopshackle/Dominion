@@ -68,12 +68,10 @@ public enum CardType {
 		return treasureValue;
 	}
 	public int getVictory(PositionSummary ps) {
-		switch (this) {
-		case GARDENS:
+		if (this.equals(GARDENS))
 			return (int) (ps.totalNumberOfCards() / 10.0);
-		default:
-			return victoryPoints;
-		}
+
+		return victoryPoints;
 	}
 	public int getAdditionalBuys() {
 		return additionalBuys;
@@ -94,11 +92,7 @@ public enum CardType {
 		return (treasureValue > 0);
 	}
 	public boolean isVictory() {
-		switch (this) {
-		case GARDENS:
-			return true;
-		default:
-		}
+		if (this.equals(GARDENS)) return true;
 		return (victoryPoints != 0);
 	}
 	public boolean isAction() {

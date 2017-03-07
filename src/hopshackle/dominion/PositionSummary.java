@@ -19,11 +19,14 @@ public class PositionSummary implements State<Player> {
 	private List<CardValuationVariables> variables;
 	private Player.State positionState;
 	private double[] playerScores;
+	private String asString = "";
+	private boolean hasChanged;
 
 	public PositionSummary(Player basePlayer, List<CardValuationVariables> variableList) {
 		variables = variableList;
 		player = basePlayer;
 		initiateVariables(basePlayer.getGame());
+		hasChanged = false;
 	}
 
 	private PositionSummary(PositionSummary base) {
@@ -58,11 +61,11 @@ public class PositionSummary implements State<Player> {
 		money = base.money;
 		cardsPlayed = new ArrayList<CardType>();
 		cardsPlayed.addAll(base.cardsPlayed);
-		cardsPlayed = player.getCopyOfPlayedCards();
 		playerScores = new double[4];
 		for (int i = 0; i < 4; i++)
 			playerScores[i] = base.playerScores[i];
 		updateDerivedVariables();
+		hasChanged = false;
 	}
 
 	@Override
@@ -95,11 +98,13 @@ public class PositionSummary implements State<Player> {
 
 	public void drawCard(CardType drawnCard) {
 		drawCard(drawnCard, CardSink.DISCARD);
+		hasChanged = true;
 	}
 
 	public void drawCard(CardType drawnCard, CardSink to) {
 		removeCardFrom(drawnCard, CardSink.SUPPLY);
 		addCard(drawnCard, to);
+		hasChanged = true;
 	}
 
 	public void addCard(CardType newCard, CardSink to) {
@@ -109,14 +114,11 @@ public class PositionSummary implements State<Player> {
 			if (newCard.isAction()) {
 				actionCards++;
 			}
-			switch (to) {
-			case DISCARD:
+			if (to == CardSink.DISCARD) {
 				cardsInDiscard++;
-				break;
-			case HAND:
+			} else if (to == CardSink.HAND) {
 				hand.add(newCard);
-				break;
-			case TRASH:
+			} else if (to == CardSink.TRASH) {
 				totalCards--;
 				if (newCard.isVictory()) victoryCards--;
 				if (newCard.isAction()) {
@@ -128,19 +130,12 @@ public class PositionSummary implements State<Player> {
 				currentAmount--;
 				cardsInDeck.put(newCard, currentAmount);
 				treasureValue -= newCard.getTreasure();
-
-				recalculateVictoryPoints();
-				updateDerivedVariables();
-				break;
-			case DECK:
-				break;
-			case REVEALED:
+			} else if (to == CardSink.REVEALED) {
 				cardsPlayed.add(newCard);
-				break;
-			case SUPPLY:
+			} else if (to == CardSink.SUPPLY) {
 				changeNumberOnTable(newCard, 1);
-				break;
 			}
+
 			Integer currentAmount = cardsInDeck.get(newCard);
 			if (currentAmount == null)
 				currentAmount = 0;
@@ -190,6 +185,7 @@ public class PositionSummary implements State<Player> {
 		if (oldCard != CardType.NONE && oldCard != null) {
 			removeCardFrom(oldCard, from);
 			addCard(oldCard, CardSink.TRASH);
+			hasChanged = true;
 		}
 	}
 
@@ -207,6 +203,7 @@ public class PositionSummary implements State<Player> {
 	public void discardCard(CardType card) {
 		cardsInDiscard++;
 		hand.remove(card);
+		hasChanged = true;
 	}
 
 	private void changeNumberOnTable(CardType drawnCard, int number) {
@@ -216,6 +213,7 @@ public class PositionSummary implements State<Player> {
 		} else {
 			cardsRemovedFromTable.put(drawnCard, -number);
 		}
+		hasChanged = true;
 	}
 
 	private void initiateVariables(DominionGame game) {
@@ -266,6 +264,7 @@ public class PositionSummary implements State<Player> {
 		victoryDensity = victoryPoints / totalCards;
 		percentVictory = victoryCards / totalCards;
 		percentAction = actionCards / totalCards;
+		hasChanged = true;
 	}
 
 	public double getVictoryMargin() {
@@ -350,11 +349,13 @@ public class PositionSummary implements State<Player> {
 	public void updateHandFromPlayer() {
 		hand = player.getCopyOfHand();
 		cardsPlayed = player.getCopyOfPlayedCards();
+		hasChanged = true;
 	}
 
 	private void playCardFromHand(CardType type) {
 		if (type == CardType.NONE)
 			return;
+		hasChanged = true;
 		if (getNumberInHand(type) > 0) {
 			hand.remove(type);
 			actions--;
@@ -432,6 +433,7 @@ public class PositionSummary implements State<Player> {
 
 	public void setVariables(List<CardValuationVariables> var) {
 		variables = var;
+		hasChanged = true;
 	}
 
 	public Player.State getPlayerState() {
@@ -452,12 +454,19 @@ public class PositionSummary implements State<Player> {
 
 	@Override
 	public String getAsString() {
+		if (!hasChanged && (asString.length() > 0)) {
+			return asString;
+		}
 		double[] values = getAsArray();
 		StringBuffer retValue = new StringBuffer();
 		for (double d : values) {
-			retValue.append(String.format("%.2f|", d));
+			int asInt = (int) ((d + 0.005) * 100.0);
+			String padded = String.valueOf(asInt);
+			while(padded.length() < 3) padded = "0" + padded;
+			retValue.append(padded + "|");
 		}
-		return retValue.toString();
+		asString = retValue.toString();
+		return asString;
 	}
 
 	public void setActions(int actionsLeft) {

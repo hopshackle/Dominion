@@ -21,6 +21,8 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 		boolean useHandVariables = properties.getProperty("DominionUseHandVariables", "false").equals("true");
 		boolean hardCodedActions = properties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
+		boolean randomRollout = properties.getProperty("DominionRandomRollout", "false").equals("true");
+		boolean randomOpponent = properties.getProperty("DominionRandomOpponent", "false").equals("true");
 		String deciderType = properties.getProperty("DeciderType", "NN");
 		String coreVariables = properties.getProperty("DominionCoreVariables", "");
 
@@ -39,6 +41,9 @@ public class DominionDeciderContainer implements Decider<Player> {
 			variablesToUseForPurchase = new ArrayList<CardValuationVariables>();
 			variablesToUseForPurchase.addAll(allVariables);
 		}
+		// always use all variables for actions. Ensures that with hand variables on, same feature sets used in all cases
+		variablesToUseForActions = new ArrayList<CardValuationVariables>();
+		variablesToUseForActions.addAll(allVariables);
 
 		Decider<Player> purchase = null;
 		Decider<Player> action = null;
@@ -49,6 +54,12 @@ public class DominionDeciderContainer implements Decider<Player> {
 		DominionDeciderContainer bigMoney = new DominionDeciderContainer(bigMoneyPurchase, hardCodedActionDecider);
 		bigMoney.setName("BigMoney");
 		bigMoney.injectProperties(properties);
+		
+		Decider<Player> randomPurc = new RandomDecider<Player>(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUseForPurchase)));
+		Decider<Player> randomAction = new RandomDecider<Player>(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUseForActions)));
+		DominionDeciderContainer random = new DominionDeciderContainer(randomPurc, randomAction);
+		random.setName("Random");
+		random.injectProperties(properties);
 
 		if (deciderType.equals("NN")) {
 			List<CardType> cardTypes = gamesetup.getCardTypes();
@@ -56,9 +67,13 @@ public class DominionDeciderContainer implements Decider<Player> {
 			purchase = new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse);
 			action = hardCodedActionDecider;
 		} else if (deciderType.equals("MCTS")) {
+			Decider<Player> defaultRollout = bigMoney;
+			Decider<Player> opponentModel = bigMoney;
+			if (randomRollout) defaultRollout = random;
+			if (randomOpponent) opponentModel = random;
 			purchase = new MCTSMasterDecider<Player>(
 					new DominionStateFactory(HopshackleUtilities.convertList(variablesToUseForPurchase)), 
-					bigMoney, bigMoney);
+					defaultRollout, opponentModel);
 			if (hardCodedActions) {
 				action = hardCodedActionDecider;
 			} else {
