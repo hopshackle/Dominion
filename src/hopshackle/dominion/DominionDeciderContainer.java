@@ -142,6 +142,11 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
 		return getDecider(decidingAgent).valueOption(option, decidingAgent);
 	}
+	
+	@Override
+	public List<Double> valueOptions(List<ActionEnum<Player>> options, Player decidingAgent) {
+		return getDecider(decidingAgent).valueOptions(options, decidingAgent);
+	}
 
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {
@@ -248,5 +253,4 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public String toString() {
 		return name;
 	}
-
 }
