@@ -363,4 +363,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	public double gameLength() {
 		return (double) ((endTime - startTime) / 1000);
 	}
+	
+	public String getRef() {return String.valueOf(id);}
 }

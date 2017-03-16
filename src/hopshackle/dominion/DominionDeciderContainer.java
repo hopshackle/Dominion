@@ -21,8 +21,8 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 		boolean useHandVariables = properties.getProperty("DominionUseHandVariables", "false").equals("true");
 		boolean hardCodedActions = properties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
-		boolean randomRollout = properties.getProperty("DominionRandomRollout", "false").equals("true");
-		boolean randomOpponent = properties.getProperty("DominionRandomOpponent", "false").equals("true");
+		String rollout = properties.getProperty("DominionRollout", "random");
+		String opponent = properties.getProperty("DominionOpponent", "random");
 		String deciderType = properties.getProperty("DeciderType", "NN");
 		String coreVariables = properties.getProperty("DominionCoreVariables", "");
 
@@ -67,10 +67,28 @@ public class DominionDeciderContainer implements Decider<Player> {
 			purchase = new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse);
 			action = hardCodedActionDecider;
 		} else if (deciderType.equals("MCTS")) {
-			Decider<Player> defaultRollout = bigMoney;
-			Decider<Player> opponentModel = bigMoney;
-			if (randomRollout) defaultRollout = random;
-			if (randomOpponent) opponentModel = random;
+			Decider<Player> defaultRollout = random;
+			Decider<Player> opponentModel = random;
+			switch (rollout) {
+			case "bigMoney":
+				defaultRollout = bigMoney;
+				break;
+			case "random":
+				defaultRollout = random;
+				break;
+			default:
+				throw new AssertionError("Unknown rollout type " + rollout);
+			}
+			switch (opponent) {
+			case "bigMoney":
+				opponentModel = bigMoney;
+				break;
+			case "random":
+				opponentModel = random;
+				break;
+			default:
+				throw new AssertionError("Unknown rollout type " + rollout);
+			}
 			purchase = new MCTSMasterDecider<Player>(
 					new DominionStateFactory(HopshackleUtilities.convertList(variablesToUseForPurchase)), 
 					defaultRollout, opponentModel);

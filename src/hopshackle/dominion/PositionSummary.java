@@ -460,11 +460,18 @@ public class PositionSummary implements State<Player> {
 		double[] values = getAsArray();
 		StringBuffer retValue = new StringBuffer();
 		for (double d : values) {
+			boolean negative = false;
+			if (d < 0.00) {
+				negative = true;
+				d = -d;
+			}
 			int asInt = (int) ((d + 0.005) * 100.0);
 			String padded = String.valueOf(asInt);
 			while(padded.length() < 3) padded = "0" + padded;
+			if (negative) padded = "-" + padded;
 			retValue.append(padded + "|");
 		}
+		retValue.deleteCharAt(retValue.length()-1);
 		asString = retValue.toString();
 		return asString;
 	}
