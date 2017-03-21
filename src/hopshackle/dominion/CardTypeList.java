@@ -1,8 +1,6 @@
 package hopshackle.dominion;
 
 import java.util.*;
-
-import hopshackle.dominion.CardTypeAugment.*;
 import hopshackle.simulation.*;
 
 public class CardTypeList implements ActionEnum<Player> {

@@ -20,7 +20,7 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 
 		if (localDebug)
 			decidingAgent.log("Option " + option.toString() + " has base Value of " + retValue);
-		
+
 		return retValue;
 	}
 	
@@ -53,7 +53,7 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 		}
 		retValue += handValue / 10.0;
 		
-		return retValue;
+		return retValue * 100.0;
 	}
 	
 	@Override

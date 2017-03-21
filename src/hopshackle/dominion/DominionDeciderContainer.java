@@ -65,7 +65,11 @@ public class DominionDeciderContainer implements Decider<Player> {
 			List<CardType> cardTypes = gamesetup.getCardTypes();
 			List<ActionEnum<Player>> actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);
 			purchase = new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse);
-			action = hardCodedActionDecider;
+			if (hardCodedActions) {
+				action = hardCodedActionDecider;
+			} else {
+				action = purchase;
+			}
 		} else if (deciderType.equals("MCTS")) {
 			Decider<Player> defaultRollout = random;
 			Decider<Player> opponentModel = random;

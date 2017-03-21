@@ -57,7 +57,7 @@ public class ChrisPethersDecider extends BigMoneyDecider{
 		retValue += 1 * silver;
 		retValue += 2 * gold;
 
-		return retValue / 100.0;
+		return retValue;
 	}
 	
 	@Override
