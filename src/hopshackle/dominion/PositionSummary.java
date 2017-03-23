@@ -8,7 +8,7 @@ import java.util.*;
 public class PositionSummary implements State<Player> {
 
 	private double victoryPoints, treasureValue;
-	private int turnNumber, buys, actions, money;
+	private int turnNumber, buys, actions, spent, baseBudget;
 	private double victoryMargin, wealthDensity, victoryDensity, percentVictory, percentAction;
 	private double totalCards, victoryCards, actionCards, cardsInDiscard;
 	private HashMap<CardType, Integer> cardsRemovedFromTable = new HashMap<CardType, Integer>();
@@ -58,7 +58,8 @@ public class PositionSummary implements State<Player> {
 		hand.addAll(base.hand);
 		actions = base.actions;
 		buys = base.buys;
-		money = base.money;
+		spent = base.spent;
+		baseBudget = base.baseBudget;
 		cardsPlayed = new ArrayList<CardType>();
 		cardsPlayed.addAll(base.cardsPlayed);
 		playerScores = new double[4];
@@ -85,6 +86,9 @@ public class PositionSummary implements State<Player> {
 					throw new AssertionError("Should not PLAY card unless PLAYING");
 				retValue.playCardFromHand(componentAction.card);
 				break;
+			case BUY:
+				retValue.spend(componentAction.card.getCost());
+				retValue.buys--;
 			case MOVE:
 				retValue.removeCardFrom(componentAction.card, componentAction.from);
 				retValue.addCard(componentAction.card, componentAction.to);
@@ -118,6 +122,7 @@ public class PositionSummary implements State<Player> {
 				cardsInDiscard++;
 			} else if (to == CardSink.HAND) {
 				hand.add(newCard);
+				baseBudget += newCard.getTreasure();
 			} else if (to == CardSink.TRASH) {
 				totalCards--;
 				if (newCard.isVictory()) victoryCards--;
@@ -131,7 +136,7 @@ public class PositionSummary implements State<Player> {
 				cardsInDeck.put(newCard, currentAmount);
 				treasureValue -= newCard.getTreasure();
 			} else if (to == CardSink.REVEALED) {
-				cardsPlayed.add(newCard);
+				revealCard(newCard);
 			} else if (to == CardSink.SUPPLY) {
 				changeNumberOnTable(newCard, 1);
 			}
@@ -154,6 +159,7 @@ public class PositionSummary implements State<Player> {
 			break;
 		case HAND:
 			hand.remove(card);
+			baseBudget -= card.getTreasure();
 			break;
 		case SUPPLY:
 			changeNumberOnTable(card, -1);
@@ -162,6 +168,9 @@ public class PositionSummary implements State<Player> {
 			break;
 		case REVEALED:
 			cardsPlayed.remove(card);
+			baseBudget -= card.getAdditionalPurchasePower();
+			actions -= card.getAdditionalActions();
+			buys -= card.getAdditionalBuys();
 			break;
 		case TRASH:
 			return;	// this does not affect cards in hand/deck
@@ -225,7 +234,6 @@ public class PositionSummary implements State<Player> {
 		treasureValue = 0.0;
 		actions = player.getActionsLeft();
 		buys = player.getBuys();
-		money = player.getAdditionalPurchasePower();
 		cardsInDeck = new HashMap<CardType, Integer>();
 		for (CardType card : player.getAllCards()) {
 			addCard(card, CardSink.DECK);
@@ -291,8 +299,11 @@ public class PositionSummary implements State<Player> {
 	public int getBuys() {
 		return buys;
 	}
-	public int getAdditionalPurchasePower() {
-		return money;
+	public int getBudget() {
+		return baseBudget - spent;
+	}
+	public void spend(int money) {
+		spent += money;
 	}
 
 	public double totalNumberOfCards() {
@@ -349,7 +360,22 @@ public class PositionSummary implements State<Player> {
 	public void updateHandFromPlayer() {
 		hand = player.getCopyOfHand();
 		cardsPlayed = player.getCopyOfPlayedCards();
+		baseBudget = 0;
+		for (CardType ct : hand) {
+			baseBudget += ct.getTreasure();
+		}
+		for (CardType ct : cardsPlayed) {
+			baseBudget += ct.getAdditionalPurchasePower();
+		}
+		spent = baseBudget - player.getBudget();
 		hasChanged = true;
+	}
+	
+	private void revealCard(CardType newCard) {
+		cardsPlayed.add(newCard);
+		baseBudget += newCard.getAdditionalPurchasePower();
+		buys += newCard.getAdditionalBuys();
+		actions += newCard.getAdditionalActions();
 	}
 
 	private void playCardFromHand(CardType type) {
@@ -359,12 +385,9 @@ public class PositionSummary implements State<Player> {
 		if (getNumberInHand(type) > 0) {
 			hand.remove(type);
 			actions--;
-			actions += type.getAdditionalActions();
-			buys += type.getAdditionalBuys();
-			money += type.getAdditionalPurchasePower();
+			revealCard(type);
 			for (int i = 0; i < type.getDraw(); i++)
 				hand.add(CardType.UNKNOWN); 
-			cardsPlayed.add(type);
 		} else {
 			throw new AssertionError("Cannot play " + type + " as none in hand.");
 		}
@@ -479,7 +502,9 @@ public class PositionSummary implements State<Player> {
 	public void setActions(int actionsLeft) {
 		actions = actionsLeft;
 	}
-
+	public void setBuys(int buysLeft) {
+		buys = buysLeft;
+	}
 	@Override
 	public int getActorRef() {
 		return player.getNumber() - 1;

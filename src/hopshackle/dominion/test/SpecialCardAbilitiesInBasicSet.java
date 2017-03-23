@@ -386,11 +386,12 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.insertCardDirectlyIntoHand(new Library());
 		p2.moveCard(CardType.MILITIA, CardSink.SUPPLY, CardSink.DECK);
 		p2.refreshPositionSummary();
+		int copper = p2.getNumberOfTypeInHand(CardType.COPPER);
 		PositionSummary initial = p2.getPositionSummaryCopy();
 		assertEquals(initial.getPercent(CardType.MILITIA), 1.0 / 12.0, 0.001);
 		assertEquals(initial.getPercent(CardType.LIBRARY), 1.0 / 12.0, 0.001);
 		assertEquals(initial.getBuys(), 1);
-		assertEquals(initial.getAdditionalPurchasePower(), 0);
+		assertEquals(initial.getBudget(), copper);
 		assertEquals(initial.getPercentAction(), 2.0 / 12.0, 0.001);
 		game.nextPlayersTurn();
 		game.oneAction(false, true);
@@ -399,7 +400,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(ps.getPercent(CardType.LIBRARY), 1.0 / 12.0, 0.001);
 		assertEquals(ps.getBuys(), 1);
 		assertEquals(ps.getPercentAction(), 2.0 / 12.0, 0.001);
-		assertEquals(ps.getAdditionalPurchasePower(), 0);
+		assertEquals(ps.getBudget(), copper);
 	}
 
 	@Test

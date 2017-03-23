@@ -52,37 +52,6 @@ public class ChoosingCardTypesInAGame {
 	}
 
 	@Test
-	public void onlyAffordableCardTypesInTheGameAreChooseable() {
-		for (int loop = 0; loop < 5; loop++)
-			firstPlayer.drawTopCardFromDeckInto(CardSink.HAND);
-		assertEquals(firstPlayer.getNumberOfTypeInHand(CardType.COPPER), 7);
-		game.removeCardType(CardType.DUCHY);
-		game.addCardType(CardType.VILLAGE, 10);
-		assertTrue(CardTypeAugment.takeCard(CardType.VILLAGE).isChooseable(firstPlayer));
-		assertFalse(CardTypeAugment.takeCard(CardType.DUCHY).isChooseable(firstPlayer));
-		assertTrue(CardTypeAugment.takeCard(CardType.COPPER).isChooseable(firstPlayer));
-		assertTrue(CardTypeAugment.takeCard(CardType.PROVINCE).isChooseable(firstPlayer));
-		assertTrue(CardTypeAugment.takeCard(CardType.ESTATE).isChooseable(firstPlayer));
-		assertTrue(CardTypeAugment.takeCard(CardType.SILVER).isChooseable(firstPlayer));
-	}
-
-	@Test
-	public void exhaustedCardTypesAreNotChooseable() {
-		for (int loop = 0; loop < 5; loop++)
-			firstPlayer.drawTopCardFromDeckInto(CardSink.HAND);
-		assertEquals(firstPlayer.getNumberOfTypeInHand(CardType.COPPER), 7);
-		assertEquals(game.getNumberOfCardsRemaining(CardType.ESTATE), 12);
-		for (int loop = 0; loop < 12; loop++) {
-			System.out.println(loop);
-			assertTrue(CardTypeAugment.takeCard(CardType.ESTATE).isChooseable(firstPlayer));
-			firstPlayer.takeCardFromSupply(CardType.ESTATE, CardSink.DISCARD);
-		}
-		assertEquals(game.getNumberOfCardsRemaining(CardType.ESTATE), 0);
-		assertFalse(CardTypeAugment.takeCard(CardType.ESTATE).isChooseable(firstPlayer));
-
-	}
-	
-	@Test
 	public void possibleToNotBuyACard() {
 		assertTrue(CardTypeAugment.takeCard(CardType.NONE).isChooseable(firstPlayer));
 		assertEquals(firstPlayer.totalNumberOfCards(), 10);

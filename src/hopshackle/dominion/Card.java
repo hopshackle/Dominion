@@ -62,6 +62,8 @@ public class Card {
 		}
 		for (int i = 0; i < type.getAdditionalActions(); i++)
 			player.incrementActionsLeft();
+		for (int i = 0; i < type.getAdditionalBuys(); i++)
+			player.incrementBuysLeft();
 		return emptyList;
 	}
 

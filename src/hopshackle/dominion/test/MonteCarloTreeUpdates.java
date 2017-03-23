@@ -50,9 +50,9 @@ public class MonteCarloTreeUpdates {
 	public void cardTypeListActionsReturnCorrectActionEnum() {
 		ActionEnum<Player> cmActionEnum = new CardTypeList(copperMarket);
 		Action<Player> cmAction = cmActionEnum.getAction(game.getCurrentPlayer());
-		assertTrue(cmActionEnum.toString().equals("Gains COPPER Gains MARKET "));
+		assertTrue(cmActionEnum.toString().equals("Buys COPPER Buys MARKET "));
 		assertTrue(cmAction.getType().equals(cmActionEnum));
-		assertTrue(cmAction.toString().equals("Gains COPPER Gains MARKET "));
+		assertTrue(cmAction.toString().equals("Buys COPPER Buys MARKET "));
 	}
 	
 	@Test

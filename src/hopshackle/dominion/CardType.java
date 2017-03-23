@@ -102,7 +102,7 @@ public enum CardType {
 	public static List<ActionEnum<Player>> generateListOfPossibleActionEnumsFromCardTypes(List<CardType> actionsToUse) {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 		for (CardType ct : actionsToUse) {
-			retValue.add(CardTypeAugment.takeCard(ct));
+			retValue.add(CardTypeAugment.buyCard(ct));
 			if (ct.isAction())
 				retValue.add(CardTypeAugment.playCard(ct));
 		}

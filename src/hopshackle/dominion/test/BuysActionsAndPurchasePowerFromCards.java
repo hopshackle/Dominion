@@ -30,8 +30,8 @@ public class BuysActionsAndPurchasePowerFromCards {
 		HashMap<CardType, Double> values = new HashMap<CardType, Double>();
 		values.put(CardType.COPPER, 0.5);
 		values.put(CardType.SILVER, 1.5);
-		values.put(CardType.GOLD, 5.0);
-		values.put(CardType.SMITHY, 4.0);
+		values.put(CardType.GOLD, 3.0);
+		values.put(CardType.SMITHY, 2.5);
 		values.put(CardType.CURSE, -1.0);
 		
 		HashMap<CardType, Double> provinceValues = new HashMap<CardType, Double>();
@@ -115,7 +115,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 		assertEquals(p1.totalTreasureValue(), 7);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
 		p1.takeActions();
-		p1.buyCards();
+		p1.buyCards();	// 2 Silver
 		assertEquals(p1.getHandSize(), 10);
 		assertEquals(p1.getDiscardSize(), 2);
 		assertEquals(p1.totalTreasureValue(), 11);
@@ -129,10 +129,10 @@ public class BuysActionsAndPurchasePowerFromCards {
 		assertEquals(p1.getBudget(), 7);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
 		p1.takeActions();
-		p1.buyCards();
+		p1.buyCards();	// 1 Silver
 		assertEquals(p1.getHandSize(), 11);
 		assertEquals(p1.getDiscardSize(), 1);
-		assertEquals(p1.getBudget(), 7);
+		assertEquals(p1.getBudget(), 4);
 		assertEquals(p1.totalTreasureValue(), 9);
 	}
 
@@ -182,7 +182,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 		p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);
 		p1.takeActions();
-		p1.buyCards();
+		p1.buyCards(false);
 		assertEquals(p1.getHandSize(), 13);
 		assertEquals(p1.getDiscardSize(), 1);
 		assertEquals(p1.getDeckSize(), 0);
@@ -195,7 +195,11 @@ public class BuysActionsAndPurchasePowerFromCards {
 		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves six left
 		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves five left
 		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves four left
+		assertEquals(p1.getBudget(), 4);
+		assertEquals(p1.getBuys(), 1);
 		p1.takeActions();
+		assertEquals(p1.getBudget(), 6);
+		assertEquals(p1.getBuys(), 2);
 		p1.buyCards();
 		// should buy one Gold and one Copper
 		assertEquals(p1.getHandSize(), 7);
@@ -210,15 +214,18 @@ public class BuysActionsAndPurchasePowerFromCards {
 		p1.setDecider(new DominionDeciderContainer(generalPurchaseDecider, woodcutterDecider));
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
 		p1.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD); // leaves six left
+		assertEquals(p1.getDiscardSize(), 1);	
 		p1.takeActions();
+		assertEquals(p1.getBudget(), 8);
+		assertEquals(p1.getBuys(), 2);
 		p1.buyCards();
 		// should buy two Smithies
 		assertEquals(p1.getHandSize(), 9);
-		assertEquals(p1.getDiscardSize(), 3);
+		assertEquals(p1.getDiscardSize(), 3);	// should have bought 2 cards
 		assertEquals(p1.getDeckSize(), 0);
+		assertEquals(p1.getNumberOfTypeTotal(CardType.SMITHY), 2);
 		assertEquals(p1.totalNumberOfCards(), 13);
 		assertEquals(p1.totalTreasureValue(), 7);
-		assertEquals(p1.getNumberOfTypeTotal(CardType.SMITHY), 2);
 	}
 
 	@Test

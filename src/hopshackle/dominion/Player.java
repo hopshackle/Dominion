@@ -19,7 +19,7 @@ public class Player extends Agent {
 	private DominionGame game;
 	private PositionSummary summary;
 	private int playerNumber;
-	private int actionsLeft;
+	private int actionsLeft, buysLeft, spentBudget;
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
@@ -40,6 +40,8 @@ public class Player extends Agent {
 		playerState = player.playerState;
 		playerNumber = player.playerNumber;
 		actionsLeft = player.actionsLeft;
+		buysLeft = player.buysLeft;
+		spentBudget = player.spentBudget;
 		game = newGame;
 		// Responsibility for taking into account the information set resides in the caller
 		// as that has the information from whose perspective the clone is taking place
@@ -113,31 +115,41 @@ public class Player extends Agent {
 					retValue = 100.0 / (double)winningPlayers;
 			} else {
 				double[] rewardVector = new double[4];
-					String rewardString = decider.getProperties().getProperty("DominionGameOrdinalRewards", "50:0:0:0");
-					String[] rewards = rewardString.split(":");
-					for (int i = 0; i < 4; i++) {
-						rewardVector[i] = Double.valueOf(rewards[i]);
-					}
+				String rewardString = decider.getProperties().getProperty("DominionGameOrdinalRewards", "50:0:0:0");
+				String[] rewards = rewardString.split(":");
+				for (int i = 0; i < 4; i++) {
+					rewardVector[i] = Double.valueOf(rewards[i]);
+				}
 				retValue += rewardVector[game.getOrdinalPosition(playerNumber) - 1];
 			}
 		}
 		return retValue;
 	}
 
+	/* 
+	 * Only used for testing
+	 */
 	public void takeActions() {
 		if (playerState != State.PLAYING)
 			throw new AssertionError("Should be in PLAYING State before taking actions");
 
 		do {
 			game.oneAction(false, false);
-		} while (actionsLeft > 0);
+		} while (playerState == State.PLAYING);
 	}
 
+	/* 
+	 * Only used for testing
+	 */
 	public void buyCards() {
+		buyCards(false);
+	}
+	public void buyCards(boolean updateStatusAfter) {
 		if (playerState != State.PURCHASING)
 			throw new AssertionError("Should be in PURCHASING State before buying cards");
-
-		game.oneAction(true, false);
+		do {
+			game.oneAction(!updateStatusAfter, false); 
+		} while (buysLeft > 0 && playerState == State.PURCHASING);
 	}
 
 	public void incrementActionsLeft() {
@@ -149,7 +161,18 @@ public class Player extends Agent {
 		summary.setActions(actionsLeft);
 	}
 
+	public void incrementBuysLeft() {
+		buysLeft++;
+		summary.setBuys(buysLeft);
+	}
+	public void decrementBuysLeft() {
+		buysLeft--;
+		summary.setBuys(buysLeft);
+	}
+
 	public void tidyUp() {
+		buysLeft = 1;
+		actionsLeft = 1;
 		revealedCards.reset();
 		discard.addDeck(revealedCards);
 		discard.addDeck(hand);
@@ -204,6 +227,7 @@ public class Player extends Agent {
 		Card cardDrawn = drawTopCardFromDeck();
 		if (cardDrawn.getType() != CardType.NONE) {
 			insertCardDirectlyInto(cardDrawn, to);
+			summary.updateHandFromPlayer();
 		}
 		return cardDrawn;
 	}
@@ -372,6 +396,10 @@ public class Player extends Agent {
 	}
 
 	public void setState(Player.State newState) {
+		if (playerState != State.PURCHASING && newState == State.PURCHASING) {
+			buysLeft = 1 + revealedCards.getAdditionalBuys();
+			spentBudget = 0;
+		}
 		if (playerState != State.PLAYING && newState == State.PLAYING)
 			actionsLeft = 1;
 		playerState = newState;
@@ -385,7 +413,7 @@ public class Player extends Agent {
 		return actionsLeft;
 	}
 	public int getBuys() {
-		return  1 + revealedCards.getAdditionalBuys();
+		return buysLeft;
 	}
 
 	public Card playFromHandToRevealedCards(CardType cardType) {
@@ -393,7 +421,6 @@ public class Player extends Agent {
 			summary = summary.apply(CardTypeAugment.playCard(cardType));
 			Card retValue = hand.removeSpecificCard(cardType);
 			revealedCards.addCard(retValue);
-			summary.updateHandFromPlayer();
 			return retValue;
 		}
 		return new Card(CardType.NONE);
@@ -410,10 +437,11 @@ public class Player extends Agent {
 	}
 
 	public int getBudget() {
-		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower();
+		return hand.getTreasureValue() + revealedCards.getAdditionalPurchasePower() - spentBudget;
 	}
-	public int getAdditionalPurchasePower() {
-		return revealedCards.getAdditionalPurchasePower();
+	public void spend(int spent) {
+		spentBudget += spent;
+		summary.spend(spent);
 	}
 
 	public List<ActionEnum<Player>> getActionsInHand() {
@@ -435,7 +463,7 @@ public class Player extends Agent {
 	public void refreshPositionSummary() {
 		summary = new PositionSummary(this, null);
 	}
-
+	
 	public void setGame(DominionGame dominionGame) {
 		game = dominionGame;
 	}
@@ -464,4 +492,5 @@ public class Player extends Agent {
 			shuffleDiscardToFormNewDeck();
 		return deck.getTopCard().getType();
 	}
+
 }

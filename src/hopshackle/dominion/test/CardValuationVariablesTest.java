@@ -15,6 +15,7 @@ public class CardValuationVariablesTest {
 	@Before
 	public void setUp() {
 		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DeciderType", "NN");
 		localProp.setProperty("DominionCardSetup", "FirstGame");
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		recalculate();
@@ -330,10 +331,13 @@ public class CardValuationVariablesTest {
 	public void basicVariablesFromCardPlayPlayedI() {
 		Player player = game.getCurrentPlayer();
 		player.setState(Player.State.PLAYING);
+		double startingMoney = player.getBudget();
+		double copper = player.getNumberOfTypeInHand(CardType.COPPER);
+		assertEquals(copper, startingMoney, 0.001);
 		p1 = player.getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.2, 0.001);
-		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0, 0.001);
+		assertEquals(CardValuationVariables.BUDGET.getValue(p1), startingMoney / 16.0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_IN_HAND.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.WORKSHOPS_PLAYED.getValue(p1), 0, 0.001);
@@ -341,14 +345,14 @@ public class CardValuationVariablesTest {
 		p1 = player.getPositionSummaryCopy();
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.2, 0.001);
-		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0, 0.001);
+		assertEquals(CardValuationVariables.BUDGET.getValue(p1), startingMoney / 16.0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_IN_HAND.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.WORKSHOPS_PLAYED.getValue(p1), 0, 0.001);
 		p1 = p1.apply(CardTypeAugment.playCard(CardType.MILITIA));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0, 0.001);
-		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0.25, 0.001);
+		assertEquals(CardValuationVariables.BUDGET.getValue(p1), (startingMoney + 2.0)/16.0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 1, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_IN_HAND.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.WORKSHOPS_PLAYED.getValue(p1), 0, 0.001);
@@ -357,26 +361,29 @@ public class CardValuationVariablesTest {
 	@Test
 	public void basicVariablesFromCardPlayPlayedII() {
 		Player player = game.getCurrentPlayer();
+		double startingMoney = player.getBudget();
+		double copper = player.getNumberOfTypeInHand(CardType.COPPER);
+		assertEquals(copper, startingMoney, 0.001);
 		player.setState(Player.State.PLAYING);
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WOODCUTTER));
 		p1 = player.getPositionSummaryCopy();
-		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
+		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.3333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.2, 0.001);
-		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0, 0.001);
+		assertEquals(CardValuationVariables.BUDGET.getValue(p1), startingMoney / 16.0, 0.001);
 		assertEquals(CardValuationVariables.MILITIA_PLAYED.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0.2, 0.001);
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0.2, 0.001);
 		p1 = p1.apply(CardTypeAugment.playCard(CardType.VILLAGE));	// This is just a lookahead and does not update the game
-		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.333333, 0.001);
+		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.33333, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.4, 0.001);
-		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0, 0.001);
+		assertEquals(CardValuationVariables.BUDGET.getValue(p1), startingMoney / 16.0, 0.001);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0.2, 0.001);
 		p1 = p1.apply(CardTypeAugment.playCard(CardType.WOODCUTTER));	// This is just a lookahead and does not update the game
 		assertEquals(CardValuationVariables.BUYS.getValue(p1), 0.66666666, 0.001);
 		assertEquals(CardValuationVariables.ACTIONS.getValue(p1), 0.2, 0.001);
-		assertEquals(CardValuationVariables.PURCHASE_POWER.getValue(p1), 0.25, 0.001);
+		assertEquals(CardValuationVariables.BUDGET.getValue(p1), (startingMoney + 2.0)/16.0, 0.001);
 		assertEquals(CardValuationVariables.VILLAGES_IN_HAND.getValue(p1), 0, 0.001);
 		assertEquals(CardValuationVariables.WOODCUTTERS_IN_HAND.getValue(p1), 0, 0.001);
 	}

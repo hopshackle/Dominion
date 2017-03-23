@@ -143,7 +143,6 @@ public class CloneTests {
 		assertEquals(p1.getCopyOfHand().size(), 6);
 		p1.setDecider(woodcutterDecider);
 		int oldBudget = p1.getBudget();
-		assertEquals(p1.getBuys(), 1);
 		game.oneAction();
 		// Player has now played Woodcutter, leaving +1 Buy, and +2 purchasing power
 

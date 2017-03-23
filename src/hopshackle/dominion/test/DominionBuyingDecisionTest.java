@@ -74,5 +74,31 @@ public class DominionBuyingDecisionTest {
 		assertFalse(ctl4.equals(ctl2));
 		assertFalse(ctl3.equals(ctl4));
 	}
+	
+
+	@Test
+	public void onlyAffordableAndAvailableCardTypesInTheGameAreChooseable() {
+		for (int loop = 0; loop < 5; loop++)
+			p1.drawTopCardFromDeckInto(CardSink.HAND);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.COPPER), 7);
+		game.removeCardType(CardType.DUCHY);
+		game.addCardType(CardType.VILLAGE, 10);
+		assertEquals(p1.getBudget(), 7);
+		p1.takeActions();
+		List<ActionEnum<Player>> options = game.getPossibleActions(p1);
+		assertTrue(options.contains(CardTypeAugment.buyCard(CardType.VILLAGE)));
+		assertFalse(options.contains(CardTypeAugment.buyCard(CardType.DUCHY)));
+		assertTrue(options.contains(CardTypeAugment.buyCard(CardType.COPPER)));
+		assertFalse(options.contains(CardTypeAugment.buyCard(CardType.PROVINCE)));
+		assertTrue(options.contains(CardTypeAugment.buyCard(CardType.ESTATE)));
+		assertTrue(options.contains(CardTypeAugment.buyCard(CardType.SILVER)));
+		
+		for (int loop = 0; loop < 12; loop++) {
+			System.out.println(loop);
+			p1.takeCardFromSupply(CardType.ESTATE, CardSink.DISCARD);
+		}
+		options = game.getPossibleActions(p1);
+		assertFalse(options.contains(CardTypeAugment.buyCard(CardType.ESTATE)));
+	}
 
 }

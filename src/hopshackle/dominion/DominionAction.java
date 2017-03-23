@@ -60,6 +60,10 @@ public class DominionAction extends Action<Player> {
 				if (cardToPlay != null) {
 					if (cardToPlay.getType() == CardType.NONE) {
 						player.log("Chooses not to play an Action card.");
+						do {
+							player.decrementActionsLeft();
+						} while (player.getActionsLeft() > 0);
+						break;
 					} else {
 						player.log("Plays " + cardToPlay.toString());
 						possibleOptions = cardToPlay.takeAction(player);
@@ -73,6 +77,17 @@ public class DominionAction extends Action<Player> {
 					logger.severe("No Actual card found in hand for type " + cardType);
 				}
 				break;
+			case BUY:
+				if (component.card == CardType.NONE) {
+					player.log("Chooses not to buy a card.");
+					do {
+						player.decrementBuysLeft();
+					} while (player.getBuys() > 0);
+					break;
+				}
+				player.spend(component.card.getCost());
+				player.decrementBuysLeft();
+				// then continue to move the card
 			case MOVE:
 				if (component.card == CardType.NONE)
 					continue;

@@ -139,9 +139,10 @@ public class PositionSummaryTest {
 	public void applicationOfCardPlayFromValidState() {
 		game.getCurrentPlayer().setState(Player.State.PLAYING);
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
+		int copper = p1.getNumberInHand(CardType.COPPER);
 		p1.drawCard(CardType.WOODCUTTER, CardSink.HAND);
 		assertEquals(p1.getActions(), 1);
-		assertEquals(p1.getAdditionalPurchasePower(), 0);
+		assertEquals(p1.getBudget(), copper);
 		assertEquals(p1.getBuys(), 1);
 		assertEquals(p1.getNumberInHand(CardType.WOODCUTTER), 1);
 		assertEquals(p1.getNumberPlayed(CardType.WOODCUTTER), 0);
@@ -150,7 +151,7 @@ public class PositionSummaryTest {
 		ActionEnum<Player> testAction = CardTypeAugment.playCard(CardType.WOODCUTTER);
 		PositionSummary updated = p1.apply(testAction);
 		assertEquals(updated.getActions(), 0);
-		assertEquals(updated.getAdditionalPurchasePower(), 2);
+		assertEquals(updated.getBudget(), 2 + copper);
 		assertEquals(updated.getBuys(), 2);
 		assertEquals(updated.getNumberInHand(CardType.WOODCUTTER), 0);
 		assertEquals(updated.getNumberPlayed(CardType.WOODCUTTER), 1);
@@ -159,7 +160,7 @@ public class PositionSummaryTest {
 
 		assertEquals(p1.getPercentAction(), 2.0 / 13.0, 0.001);
 		assertEquals(p1.getActions(), 1);
-		assertEquals(p1.getAdditionalPurchasePower(), 0);
+		assertEquals(p1.getBudget(), copper);
 		assertEquals(p1.getBuys(), 1);
 		assertEquals(p1.getNumberInHand(CardType.WOODCUTTER), 1);
 		assertEquals(p1.getNumberPlayed(CardType.WOODCUTTER), 0);
@@ -206,18 +207,47 @@ public class PositionSummaryTest {
 	@Test
 	public void playingACardUpdatesPositionSummaryWithPurchasePower() {
 		Player player = game.getCurrentPlayer();
+		int copper = player.getNumberOfTypeInHand(CardType.COPPER);
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MARKET));
+		player.putCardOnTopOfDeck(CardType.COPPER);
 		CardTypeAugment marketEnum = CardTypeAugment.playCard(CardType.MARKET);
 		DominionAction action = new DominionAction(player, marketEnum );
-		assertEquals(player.getAdditionalPurchasePower(), 0);
+		assertEquals(player.getBudget(), copper);
 		assertEquals(player.getBuys(), 1);
 		action.addToAllPlans();
 		action.start();
 		action.run();
-		assertEquals(player.getAdditionalPurchasePower(), 1);
+		assertEquals(player.getBudget(), 2 + copper);	// +1 from Market, +1 from drawn card
 		assertEquals(player.getBuys(), 2);
-		assertEquals(player.getPositionSummaryCopy().getAdditionalPurchasePower(), 1);
-		assertEquals(player.getPositionSummaryCopy().getBuys(), 2);
+		assertEquals(player.getHandSize(), 6);
+		assertEquals(player.getNumberOfTypeInHand(CardType.UNKNOWN), 0);
+		PositionSummary ps = player.getPositionSummaryCopy();
+		assertEquals(ps.getBuys(), 2);
+		assertEquals(ps.getBudget(), 2 + copper);
+		assertEquals(ps.getHandSize(), 6);
+		assertEquals(ps.getNumberInHand(CardType.UNKNOWN), 0);
+	}
+	
+	@Test
+	public void playingACardUpdatedPositionSummaryWithActionsLeft() {
+		Player player = game.getCurrentPlayer();
+		int copper = player.getNumberOfTypeInHand(CardType.COPPER);
+		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
+		player.putCardOnTopOfDeck(CardType.COPPER);
+		CardTypeAugment marketEnum = CardTypeAugment.playCard(CardType.VILLAGE);
+		DominionAction action = new DominionAction(player, marketEnum );
+		assertEquals(player.getBudget(), copper);
+		assertEquals(player.getBuys(), 1);
+		assertEquals(player.getActionsLeft(), 1);
+		action.addToAllPlans();
+		action.start();
+		action.run();
+		assertEquals(player.getActionsLeft(), 2);
+		assertEquals(player.getBudget(), 1 + copper);	//  +1 from drawn card
+		assertEquals(player.getBuys(), 1);
+		assertEquals(player.getPositionSummaryCopy().getBuys(), 1);
+		assertEquals(player.getPositionSummaryCopy().getActions(), 2);
+		assertEquals(player.getPositionSummaryCopy().getBudget(), 1 + copper);
 	}
 
 	@Test
@@ -231,10 +261,10 @@ public class PositionSummaryTest {
 		assertEquals(game.getCurrentPlayerNumber(),1);
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MILITIA));
 		assertEquals(p3.getPositionSummaryCopy().getTurns(), 0.00, 0.001);
-		assertEquals(p3.getPositionSummaryCopy().getActions(), 0.00, 0.001);
+		assertEquals(p3.getPositionSummaryCopy().getActions(), 1.00, 0.001);
 		p1.takeActions();
 		assertEquals(p3.getPositionSummaryCopy().getTurns(), 1.0, 0.001);
-		assertEquals(p3.getPositionSummaryCopy().getActions(), 0.00, 0.001);
+		assertEquals(p3.getPositionSummaryCopy().getActions(), 1.00, 0.001);
 	}
 
 	@Test

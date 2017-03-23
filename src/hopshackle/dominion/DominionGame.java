@@ -90,10 +90,12 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	public Player getCurrentPlayer() {
 		return players[currentPlayer];
 	}
-	
+
 	public List<ActionEnum<Player>> dominionPurchaseOptions(Player player) {
+		int maxCardsPerBuy = player.getDecider().getProperties().getPropertyAsInteger("DominionMaxCardsPerBuy", "1");
+		int cardsForThisBuy = Math.min(maxCardsPerBuy, player.getBuys());
 		List<ActionEnum<Player>> retValue = null;
-		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), player.getBuys());
+		DominionBuyingDecision dpd = new DominionBuyingDecision(player, player.getBudget(), cardsForThisBuy);
 		retValue = dpd.getPossiblePurchasesAsActionEnum();
 		return retValue;
 	}
@@ -143,14 +145,20 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			}
 			break;
 		case PURCHASING:
-			p.tidyUp();
-			p.setState(Player.State.WAITING);
-			if (currentPlayer == 3) turn++;
-			currentPlayer++;
-			if (currentPlayer == 4)
-				currentPlayer = 0;
-			calendar.setTime((long) ((turn-1) * 4 + currentPlayer + 1));
-			players[currentPlayer].setState(Player.State.PLAYING);
+			if (p.getBuys() < 0) 
+				throw new AssertionError("Buys Left should never be negative");
+			if (p.getBuys() == 0) { // have finished
+				p.tidyUp();
+				p.setState(Player.State.WAITING);
+				if (currentPlayer == 3) turn++;
+				currentPlayer++;
+				if (currentPlayer == 4)
+					currentPlayer = 0;
+				calendar.setTime((long) ((turn-1) * 4 + currentPlayer + 1));
+				players[currentPlayer].setState(Player.State.PLAYING);
+			} else {
+				// do nothing...we continue in the current state until all buys used
+			}
 		}
 	}
 
@@ -363,6 +371,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	public double gameLength() {
 		return (double) ((endTime - startTime) / 1000);
 	}
-	
+
 	public String getRef() {return String.valueOf(id);}
 }

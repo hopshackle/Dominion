@@ -162,13 +162,19 @@ public class BasicGameMechanics {
 		for (int i = 1; i<4; i++) {
 			assertFalse(players.get(i).isTakingActions());
 		}
-		players.get(0).takeActions();
-		assertFalse(players.get(0).isTakingActions());
-		players.get(0).buyCards();
+		players.get(0).takeActions();		// calls updateGameStatus
+		assertEquals(players.get(0).getBuys(), 1);
 		assertFalse(players.get(0).isTakingActions());
 		assertFalse(players.get(1).isTakingActions());
-		game.nextPlayersTurn();
+		players.get(0).buyCards(true);			// calls updateGameStatus, moves to next player
+		assertEquals(players.get(0).getBuys(), 1);
+		assertFalse(players.get(0).isTakingActions());
 		assertTrue(players.get(1).isTakingActions());
+		game.nextPlayersTurn();
+		assertEquals(players.get(0).getBuys(), 1);
+		assertFalse(players.get(0).isTakingActions());
+		assertFalse(players.get(1).isTakingActions());
+		assertTrue(players.get(2).isTakingActions());
 	}
 
 	@Test

@@ -43,6 +43,11 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 			} else {
 				if (option.from == CardSink.SUPPLY || option.from == CardSink.TRASH) {
 					retValue += 0.05;
+					if (option.type == ChangeType.BUY) {
+					int buysLeft = decidingAgent.getBuys() - 1;
+					int budgetLeft = decidingAgent.getBudget() - option.card.getCost();
+					if (buysLeft > 0) retValue += Math.pow(budgetLeft, 1.5) * 0.1;
+					}
 					if (values.containsKey(option.card)) {
 						retValue += values.get(option.card);
 					}
@@ -70,7 +75,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 
 	public static TestDominionDecider getExample(CardType preferredCard) {
 		HashMap<CardType, Double> map = new HashMap<CardType, Double>();
-		map.put(preferredCard, 1.0);
+		map.put(preferredCard, 2.0);
 		return new TestDominionDecider(map, new HashMap<CardType, Double>());
 	}
 

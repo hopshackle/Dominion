@@ -9,8 +9,12 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	public enum CardSink {
 		HAND, DISCARD, DECK, REVEALED, SUPPLY, TRASH;
 	}
+	
+	/* 
+	 * BUY is distinguished from MOVE in that it implies that money is spent, and a Buy slot is used
+	 */
 	public enum ChangeType {
-		MOVE, PLAY, ENTHRONE;
+		MOVE, PLAY, ENTHRONE, BUY;
 	}
 	
 	public CardType card;
@@ -19,6 +23,9 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	
 	public static CardTypeAugment playCard(CardType card) {
 		return new CardTypeAugment(card, CardSink.HAND, CardSink.REVEALED, ChangeType.PLAY);
+	}
+	public static CardTypeAugment buyCard(CardType card) {
+		return new CardTypeAugment(card, CardSink.SUPPLY, CardSink.DISCARD, ChangeType.BUY);
 	}
 	public static CardTypeAugment takeCard(CardType card) {
 		return new CardTypeAugment(card, CardSink.SUPPLY, CardSink.DISCARD, ChangeType.MOVE);
@@ -55,7 +62,9 @@ public class CardTypeAugment implements ActionEnum<Player> {
 
 	@Override
 	public String toString() {
-		if (type == ChangeType.PLAY) {
+		if (type == ChangeType.BUY) {
+			return "Buys " + card.toString();
+		} else if (type == ChangeType.PLAY) {
 			return "Plays " + card.toString();
 		} else if (type == ChangeType.ENTHRONE) {
 			return "Enthrones " + card.toString();
@@ -70,19 +79,9 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	
 	@Override
 	public boolean isChooseable(Player p) {
-		if (p.isTakingActions()) {
-			// distinguish between chooseability at purchase and use
-			if (p.getNumberOfTypeInHand(this.card) > 0 && this.type == ChangeType.PLAY)
-				return true;
-			else
-				return false;
-		} else {
-			if (this.type == ChangeType.MOVE && this.from == CardSink.SUPPLY && p.getGame().getNumberOfCardsRemaining(this.card) == 0)
-				return false;
-			if (this.type == ChangeType.MOVE && this.from != CardSink.SUPPLY && p.getNumberOfTypeInDeck(this.card) == 0)
-				return false;
-			return true;
-		}
+		return true;
+		// this is now not used, as possibleActions are determined via DominionGame
+		// this is a dummy stub 
 	}
 
 	@Override
