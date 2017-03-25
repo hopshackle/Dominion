@@ -28,15 +28,20 @@ public class DeciderGenerator {
 		for (String deciderName : deciderTypes) {
 			DeciderProperties localProp = override;
 			if (localProp == null) localProp = SimProperties.getDeciderProperties(deciderName);
-			DominionDeciderContainer newDecider = DominionDeciderContainer.factory(deciderName, gamesetup, localProp);
+			Decider<Player> newDecider = DominionDeciderContainer.factory(deciderName, gamesetup, localProp);
 			System.out.println("Created decider "+ newDecider.toString());
 			purchaseDeciders.add(newDecider);
 			purchaseVictories.add(0);
 		}
 		
 		// now we create the pace-setters
-		DominionDeciderContainer hack = (DominionDeciderContainer) purchaseDeciders.get(0);
-		hardCodedActionDecider = new HardCodedActionDecider(hack.getActionVariables());
+		Decider<Player> hack = purchaseDeciders.get(0);
+		if (hack instanceof DominionDeciderContainer) {
+			hardCodedActionDecider = new HardCodedActionDecider(((DominionDeciderContainer)hack).getActionVariables());
+		} else {
+			hardCodedActionDecider = new HardCodedActionDecider(hack.getVariables());
+		}
+
 		bigMoneyPurchase = new BigMoneyDecider(hack.getVariables());
 		bigMoney = new DominionDeciderContainer(bigMoneyPurchase, hardCodedActionDecider);
 		bigMoney.setName("BigMoney");

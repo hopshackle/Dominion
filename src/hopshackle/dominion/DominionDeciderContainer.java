@@ -17,7 +17,7 @@ public class DominionDeciderContainer implements Decider<Player> {
 			throw new AssertionError("Both Purchase and Action deciders must be specified");
 	}
 
-	public static DominionDeciderContainer factory(String name, GameSetup gamesetup, DeciderProperties properties) {
+	public static Decider<Player> factory(String name, GameSetup gamesetup, DeciderProperties properties) {
 
 		boolean useHandVariables = properties.getProperty("DominionUseHandVariables", "false").equals("true");
 		boolean hardCodedActions = properties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
@@ -105,7 +105,8 @@ public class DominionDeciderContainer implements Decider<Player> {
 			throw new AssertionError("Unknown DeciderType " + deciderType);
 		}
 
-		DominionDeciderContainer retValue = new DominionDeciderContainer(purchase, action);
+		Decider<Player> retValue = new DominionDeciderContainer(purchase, action);
+		if (action == purchase) retValue = purchase;
 		retValue.setName(name);
 		retValue.injectProperties(properties);
 		return retValue;
