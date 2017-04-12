@@ -37,6 +37,7 @@ public class Player extends Agent {
 
 	public Player(Player player, DominionGame newGame) {
 		super(newGame.getWorld());
+		setBirth(0l);
 		playerState = player.playerState;
 		playerNumber = player.playerNumber;
 		actionsLeft = player.actionsLeft;
@@ -491,6 +492,33 @@ public class Player extends Agent {
 		if (deck.isEmpty())
 			shuffleDiscardToFormNewDeck();
 		return deck.getTopCard().getType();
+	}
+
+	public void logCurrentState() {
+		log("Using Decider " + decider);
+		StringBuffer deckContents = new StringBuffer("Deck: ");
+		List<CardType> allCards = getAllCards();
+		for (CardType ct : CardType.values()) {
+			if (ct != CardType.NONE && allCards.contains(ct)) {
+				int count = 0;
+				for (CardType ct1 : allCards)
+					if (ct1 == ct) count++;
+				deckContents.append(count + " " + ct + ", ");
+			}
+		}
+		deckContents.substring(0, deckContents.length()-2);
+		log(deckContents.substring(0, deckContents.length()-2));
+		StringBuffer handContents = new StringBuffer("Hand: ");
+		for (CardType c : hand.getAllCards()) {
+			handContents.append(c + ", ");
+		}
+		log(handContents.substring(0, handContents.length()-2));
+		StringBuffer playedCards = new StringBuffer("Revealed: ");
+		for (CardType c : revealedCards.getAllCards()) {
+			playedCards.append(c + ", ");
+		}
+		playedCards.substring(0, playedCards.length()-3);
+		log(playedCards.substring(0, playedCards.length()-2));
 	}
 
 }

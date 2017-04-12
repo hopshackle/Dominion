@@ -18,6 +18,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	protected DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
+	private double debugRolloutGameProportion = SimProperties.getPropertyAsDouble("DominionRolloutGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
 	private String tableSuffix;
 	private FastCalendar calendar;
@@ -66,6 +67,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		players = new Player[4];
 		long currentTime = master.calendar.getTime();
 		calendar = new FastCalendar(currentTime);
+		world.setCalendar(calendar);
 		cardsOnTable = new HashMap<CardType, Integer>();
 		for (CardType ct : master.cardsOnTable.keySet()) {
 			cardsOnTable.put(ct, master.getNumberOfCardsRemaining(ct));
@@ -74,16 +76,24 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		allStartingCardTypes = master.allStartingCardTypes;
 		turn = master.turn;
 		clonedGame = true;
-
-		for (int i = 0; i < 4; i++)
+		boolean debugGame = false;
+		if (Math.random() < debugRolloutGameProportion) debugGame = true;
+		
+		for (int i = 0; i < 4; i++) {
 			players[i] = master.players[i].clone(this);
+			players[i].setDebugLocal(debugGame);
+		}
 		for (int i = 0; i < master.actionStack.size(); i++) {
 			Player oldPlayer = master.actionStack.get(i).getActor();
 			int playerNumber = master.getPlayerNumber(oldPlayer);
 			actionStack.push(master.actionStack.get(i).clone(players[playerNumber-1]));
 		}
-		for (int n = 0; n < players.length; n++)
+		for (int n = 0; n < players.length; n++) {
 			players[n].refreshPositionSummary();
+			if (debugGame) {
+				players[n].logCurrentState();
+			}
+		}
 	}
 
 	@Override
