@@ -90,9 +90,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		}
 		for (int n = 0; n < players.length; n++) {
 			players[n].refreshPositionSummary();
-			if (debugGame) {
-				players[n].logCurrentState();
-			}
 		}
 	}
 
@@ -353,6 +350,9 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 				// while the perspective player does not know the contents of the Deck (in most, albeit not all cases)
 				// TODO: for track of known features of Deck that could be tracked
 				p.shuffleDeck();
+			}
+			if (p.getDebugLocal()) {
+				p.logCurrentState();
 			}
 		}
 		return newGame;

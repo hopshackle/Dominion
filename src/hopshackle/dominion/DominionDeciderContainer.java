@@ -258,4 +258,9 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public String toString() {
 		return name;
 	}
+
+	@Override
+	public void log(String s) {
+		
+	}
 }
