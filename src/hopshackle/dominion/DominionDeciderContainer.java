@@ -261,6 +261,9 @@ public class DominionDeciderContainer implements Decider<Player> {
 
 	@Override
 	public void log(String s) {
-		
+	}
+
+	@Override
+	public void flushLog() {
 	}
 }
