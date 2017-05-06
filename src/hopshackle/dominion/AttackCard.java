@@ -156,7 +156,7 @@ class AttackCardFollowOnAction extends DominionAction{
 	}
 	@Override
 	public ActionEnum<Player> getType() {
-		return CardTypeAugment.playCard(attackSource.getType());
+		return new CardTypeAugment(attackSource.getType(), CardTypeAugment.CardSink.DISCARD, CardTypeAugment.CardSink.DISCARD, CardTypeAugment.ChangeType.NOCHANGE);
 	}
 }
 

@@ -6,191 +6,200 @@ import hopshackle.simulation.*;
 
 public class RunGame {
 
-	private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
-	private static int gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
-	private boolean addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
-	private boolean trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
-	private DeciderGenerator dg;
-	private int finalScoring;
-	private long count, maximum;
-	private ExperienceRecordFactory<Player> factory;
-	private Map<String, ExperienceRecordCollector<Player>> ercPurcMap = new HashMap<String, ExperienceRecordCollector<Player>>();
-	private Map<String, ExperienceRecordCollector<Player>> ercActionMap = new HashMap<String, ExperienceRecordCollector<Player>>();
+    private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
+    private static int gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
+    private boolean addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
+    private boolean trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
+    private boolean hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
+    private DeciderGenerator dg;
+    private int finalScoring;
+    private long count, maximum;
+    private ExperienceRecordFactory<Player> factory;
+    private Map<String, ExperienceRecordCollector<Player>> ercMainMap = new HashMap<String, ExperienceRecordCollector<Player>>();
+    private Map<String, ExperienceRecordCollector<Player>> ercPurcOnlyMap = new HashMap<String, ExperienceRecordCollector<Player>>();
 
-	private Map<String, OnInstructionTeacher<Player>> teacherMap = new HashMap<String, OnInstructionTeacher<Player>>();
-	private DatabaseAccessUtility databaseUtility;
-	private String name;
+    private Map<String, OnInstructionTeacher<Player>> teacherMap = new HashMap<String, OnInstructionTeacher<Player>>();
+    private DatabaseAccessUtility databaseUtility;
+    private String name;
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		String nameOfRun = HopshackleUtilities.getArgument(args, 0, "FGNoBM_R_");
-		int firstSuffix = HopshackleUtilities.getArgument(args, 1, 1);
-		int secondSuffix = HopshackleUtilities.getArgument(args, 2, 100);
-		int numberOfGames = HopshackleUtilities.getArgument(args, 3, 5000);
-		int numberOfScoringGames = HopshackleUtilities.getArgument(args, 4, 1000);
+        String nameOfRun = HopshackleUtilities.getArgument(args, 0, "FGNoBM_R_");
+        int firstSuffix = HopshackleUtilities.getArgument(args, 1, 1);
+        int secondSuffix = HopshackleUtilities.getArgument(args, 2, 100);
+        int numberOfGames = HopshackleUtilities.getArgument(args, 3, 5000);
+        int numberOfScoringGames = HopshackleUtilities.getArgument(args, 4, 1000);
 
-		int sequencesToRun = secondSuffix - firstSuffix + 1;
-		int iteration = 0;
-		try {
-			do {
-				String name = nameOfRun;
-				if (sequencesToRun > 1) {
-					name = name + (firstSuffix + iteration);
-				}
-				System.out.println("Starting Game " + (iteration+firstSuffix));
-				GameSetup gamesetup = new GameSetup();
-				DeciderGenerator newDG = new DeciderGenerator(gamesetup);
-				RunGame setOfGames = new RunGame(name, numberOfGames, numberOfScoringGames, newDG);
-				setOfGames.runAll();
-				iteration++;
-			} while (iteration < sequencesToRun);
-		} catch (Error e) {
-			System.out.println(e.toString());
-			e.printStackTrace(System.out);
-		}
-	}
+        int sequencesToRun = secondSuffix - firstSuffix + 1;
+        int iteration = 0;
+        try {
+            do {
+                String name = nameOfRun;
+                if (sequencesToRun > 1) {
+                    name = name + (firstSuffix + iteration);
+                }
+                System.out.println("Starting Game " + (iteration + firstSuffix));
+                GameSetup gamesetup = new GameSetup();
+                DeciderGenerator newDG = new DeciderGenerator(gamesetup);
+                RunGame setOfGames = new RunGame(name, numberOfGames, numberOfScoringGames, newDG);
+                setOfGames.runAll();
+                iteration++;
+            } while (iteration < sequencesToRun);
+        } catch (Error e) {
+            System.out.println(e.toString());
+            e.printStackTrace(System.out);
+        }
+    }
 
-	public RunGame(String descriptor, int games, int scoringGames, DeciderGenerator providedDG) {
-		dg = providedDG;
-		maximum = games;
-		finalScoring = scoringGames;
-		name = descriptor;
-		EventFilter purchaseEventFilter = new EventFilter() {
-			@Override
-			public boolean ignore(AgentEvent event) {
-				DominionAction action = (DominionAction) event.getAction();
-				if (action == null || !action.isAction())
-					return false;
-				return true;
-			}
-		};
-		EventFilter actionEventFilter = new EventFilter() {
-			@Override
-			public boolean ignore(AgentEvent event) {
-				DominionAction action = (DominionAction) event.getAction();
-				if (action == null || action.isAction())
-					return false;
-				return true;
-			}
-		};
+    public RunGame(String descriptor, int games, int scoringGames, DeciderGenerator providedDG) {
+        dg = providedDG;
+        maximum = games;
+        finalScoring = scoringGames;
+        name = descriptor;
+        EventFilter purchaseEventFilter = new EventFilter() {
+            @Override
+            public boolean ignore(AgentEvent event) {
+                DominionAction action = (DominionAction) event.getAction();
+                if (action == null || !action.isAction())
+                    return false;
+                return true;
+            }
+        };
+        EventFilter actionEventFilter = new EventFilter() {
+            @Override
+            public boolean ignore(AgentEvent event) {
+                DominionAction action = (DominionAction) event.getAction();
+                if (action == null || action.isAction())
+                    return false;
+                return true;
+            }
+        };
 
-		for (Decider<Player> d : dg.getAllDeciders()) {
-			DeciderProperties localProp = d.getProperties();
-			int sets = localProp.getPropertyAsInteger("DominionPastSetsToIncludeInTraining", "0");
-			factory = new StandardERFactory<Player>(localProp);
-			ercPurcMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, purchaseEventFilter));
-			ercActionMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, actionEventFilter));
-			// TODO: add logic to take account of whether we have a single ER stream, or two separate ones
-			// for purchases and card play
-			// Once I have refactored neural and linear deciders to be flexible in the actions that that they
-			// can take, then I should be able to reduce this to a single stream
-			// Only if we are using a hardcodedactiondecider should we then just keep the purchase stream
-			OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(sets);
-			teacher.registerToERStream(ercPurcMap.get(d.toString()));
-			teacher.registerToERStream(ercActionMap.get(d.toString()));
-			teacherMap.put(d.toString(), teacher);
-			if (trainAllDeciders) {
-				for (Decider<Player> d2 : dg.getAllDeciders())
-					teacher.registerDecider(d2);
-			} else {
-				teacher.registerDecider(d);
-			}
-		}
+        for (Decider<Player> d : dg.getAllDeciders()) {
+            DeciderProperties localProp = d.getProperties();
+            int sets = localProp.getPropertyAsInteger("DominionPastSetsToIncludeInTraining", "0");
+            factory = new StandardERFactory<Player>(localProp);
+            ercMainMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, null));
+            ercPurcOnlyMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, purchaseEventFilter));
+            OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(sets);
+            // each teacher can only have one ER stream registered
+            teacher.registerToERStream(ercMainMap.get(d.toString()));
+            if (hardCodedActionDecider) // only use purchase actions for training
+                teacher.registerToERStream(ercPurcOnlyMap.get(d.toString()));
+            teacherMap.put(d.toString(), teacher);
+            if (trainAllDeciders) {
+                for (Decider<Player> d2 : dg.getAllDeciders())
+                    teacher.registerDecider(d2);
+            } else {
+                teacher.registerDecider(d);
+            }
+        }
 
-		databaseUtility = new DatabaseAccessUtility();
-		Thread t = new Thread(databaseUtility);
-		t.start();
-	}
+        databaseUtility = new DatabaseAccessUtility();
+        Thread t = new Thread(databaseUtility);
+        t.start();
+    }
 
-	public void runAll() {
-		while (!finishedLearningRun()) {
-			runNextSet(gamesPerSet);
-		}
-		System.out.println("Finished Learning Run - starting scoring games");
-		while (!finishedRun()) {
-			runNextGameWithoutLearning();
-		}
-		databaseUtility.addUpdate("EXIT");
-	}
+    public void runAll() {
+        double startTemp = SimProperties.getPropertyAsDouble("StartTemperature", "1.0");
+        double endTemp = SimProperties.getPropertyAsDouble("EndTemperature", "0.0");
+        Temperature temperature = new Temperature(startTemp, endTemp);
 
-	private void runNextSet(int numberOfGames) {
-		for (int i = 0; i < numberOfGames; i++) {
-			DominionGame game = new DominionGame(this.getDeciderDenerator(), this.name, addPaceSetters);
-			game.setDatabaseAccessUtility(databaseUtility);
-			for (Player p : game.getAllPlayers()) {
-				DeciderProperties playerProp = p.getDecider().getProperties();
-				String teachingStrategy = playerProp.getProperty("DominionTeachingStrategy", "AllPlayers");
-				switch(teachingStrategy) {
-				case "AllPlayers" :
-					for (Player p2 : game.getAllPlayers())  {
-						ercPurcMap.get(p.getDecider().toString()).registerAgent(p2);
-						ercActionMap.get(p.getDecider().toString()).registerAgent(p2);
-					}
-					break;
-				case "SelfOnly" :
-					ercPurcMap.get(p.getDecider().toString()).registerAgent(p);
-					ercActionMap.get(p.getDecider().toString()).registerAgent(p);
-					break;
-				case "None" :
-					// No learning
-					break;
-				default:
-					throw new AssertionError("Unknown teaching strategy: " + teachingStrategy);
-				}
-			}
-			runGame(game);
-		}
-		for (OnInstructionTeacher<Player> teacher : teacherMap.values()) {
-			teacher.teach();
-		}
-	}
+        while (!finishedLearningRun()) {
+            runNextSet(gamesPerSet);
+            temperature.setTime(count / (double) (maximum - finalScoring));
+            SimProperties.setProperty("Temperature", String.format("%.3f", temperature.getTemperature()));
+        }
+        System.out.println("Finished Learning Run - starting scoring games");
+        SimProperties.setProperty("Temperature", "0.0");
+        while (!finishedRun()) {
+            runNextGameWithoutLearning();
+        }
+        databaseUtility.addUpdate("EXIT");
+    }
 
-	private void runNextGameWithoutLearning() {
-		DominionGame game = null;
-		if (useBigMoneyInLastK) {
-			game = DominionGame.againstDecider(getDeciderDenerator(), name, 
-					new DominionDeciderContainer(dg.bigMoney, dg.hardCodedActionDecider));
-		} else {
-			game = new DominionGame(getDeciderDenerator(), name, false);
-		}
-		game.setDatabaseAccessUtility(databaseUtility);
-		runGame(game);
-	}
+    private void runNextSet(int numberOfGames) {
+        for (int i = 0; i < numberOfGames; i++) {
+            DominionGame game = new DominionGame(this.getDeciderDenerator(), this.name, addPaceSetters);
+            game.setDatabaseAccessUtility(databaseUtility);
+            for (Player p : game.getAllPlayers()) {
+                DeciderProperties playerProp = p.getDecider().getProperties();
+                String teachingStrategy = playerProp.getProperty("DominionTeachingStrategy", "AllPlayers");
+                switch (teachingStrategy) {
+                    case "AllPlayers":
+                        for (Player p2 : game.getAllPlayers()) {
+                            if (!hardCodedActionDecider)
+                                ercMainMap.get(p.getDecider().toString()).registerAgent(p2);
+                            else
+                                ercPurcOnlyMap.get(p.getDecider().toString()).registerAgent(p2);
+                        }
+                        break;
+                    case "SelfOnly":
+                        if (!hardCodedActionDecider)
+                            ercMainMap.get(p.getDecider().toString()).registerAgent(p);
+                        else
+                            ercPurcOnlyMap.get(p.getDecider().toString()).registerAgent(p);
+                        break;
+                    case "None":
+                        // No learning
+                        break;
+                    default:
+                        throw new AssertionError("Unknown teaching strategy: " + teachingStrategy);
+                }
+            }
+            runGame(game);
+        }
+        for (OnInstructionTeacher<Player> teacher : teacherMap.values()) {
+            teacher.teach();
+        }
+    }
 
-	private void runGame(DominionGame game) {
-		count++;
-		game.playGame();
+    private void runNextGameWithoutLearning() {
+        DominionGame game = null;
+        if (useBigMoneyInLastK) {
+            game = DominionGame.againstDecider(getDeciderDenerator(), name,
+                    new DominionDeciderContainer(dg.bigMoney, dg.hardCodedActionDecider));
+        } else {
+            game = new DominionGame(getDeciderDenerator(), name, false);
+        }
+        game.setDatabaseAccessUtility(databaseUtility);
+        runGame(game);
+    }
 
-		Player[] players = game.getAllPlayers().toArray(new Player[1]);
-		for (int p = 0; p < 4; p++) {
-			if (game.getOrdinalPosition(p+1) == 1) {
-				if (dg != null)
-					dg.reportVictory(players[p]);
-			} 
-		}
+    private void runGame(DominionGame game) {
+        count++;
+        game.playGame();
 
-		if (maximum + finalScoring > count)
-			return;
-	}
+        Player[] players = game.getAllPlayers().toArray(new Player[1]);
+        for (int p = 0; p < 4; p++) {
+            if (game.getOrdinalPosition(p + 1) == 1) {
+                if (dg != null)
+                    dg.reportVictory(players[p]);
+            }
+        }
 
-	public boolean finishedRun() {
-		return (maximum + finalScoring <= count);
-	}
+        if (maximum + finalScoring > count)
+            return;
+    }
 
-	public boolean finishedLearningRun() {
-		return (maximum <= count);
-	}
+    public boolean finishedRun() {
+        return (maximum + finalScoring <= count);
+    }
 
-	public DeciderGenerator getDeciderDenerator() {
-		return dg;
-	}
+    public boolean finishedLearningRun() {
+        return (maximum <= count);
+    }
 
-	public DatabaseAccessUtility getDatabaseUtility() {
-		return databaseUtility;
-	}
+    public DeciderGenerator getDeciderDenerator() {
+        return dg;
+    }
 
-	@Override
-	public String toString() {
-		return name;
-	}
+    public DatabaseAccessUtility getDatabaseUtility() {
+        return databaseUtility;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
