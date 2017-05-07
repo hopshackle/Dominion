@@ -6,11 +6,11 @@ import hopshackle.simulation.*;
 
 public class RunGame {
 
-    private static boolean useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
-    private static int gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
-    private boolean addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
-    private boolean trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
-    private boolean hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
+    private static boolean useBigMoneyInLastK;
+    private static int gamesPerSet;
+    private static boolean addPaceSetters;
+    private static boolean trainAllDeciders;
+    private static boolean hardCodedActionDecider;
     private DeciderGenerator dg;
     private int finalScoring;
     private long count, maximum;
@@ -29,6 +29,16 @@ public class RunGame {
         int secondSuffix = HopshackleUtilities.getArgument(args, 2, 100);
         int numberOfGames = HopshackleUtilities.getArgument(args, 3, 5000);
         int numberOfScoringGames = HopshackleUtilities.getArgument(args, 4, 1000);
+        String propertiesFile = HopshackleUtilities.getArgument(args, 5, "");
+
+        if (propertiesFile != "")
+            SimProperties.setFileLocation(propertiesFile);
+
+        useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
+        gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
+        addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
+        trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
+        hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 
         int sequencesToRun = secondSuffix - firstSuffix + 1;
         int iteration = 0;
@@ -114,6 +124,10 @@ public class RunGame {
         SimProperties.setProperty("Temperature", "0.0");
         while (!finishedRun()) {
             runNextGameWithoutLearning();
+        }
+        Decider<Player> winner = dg.getSingleBestPurchaseBrain();
+        if (winner instanceof NeuralLookaheadDecider) {
+            ((DominionNeuralDecider) winner).saveToFile(name, "C://Simulation//brains");
         }
         databaseUtility.addUpdate("EXIT");
     }

@@ -3,6 +3,7 @@ package hopshackle.dominion;
 import hopshackle.simulation.*;
 import java.util.*;
 import java.util.logging.Logger;
+import java.io.*;
 
 public class DeciderGenerator {
 
@@ -17,6 +18,10 @@ public class DeciderGenerator {
 	private double bigMoneyPacesetter = SimProperties.getPropertyAsDouble("DominionBigMoneyPacesetter", "0.00");
 	private double chrisPethersPacesetter = SimProperties.getPropertyAsDouble("DominionChrisPethersPacesetter", "0.00");
 	private boolean evenUseOfDeciders = SimProperties.getProperty("DominionEvenUseOfDeciders", "true").equals("true");
+	private boolean useSavedDeciders = SimProperties.getProperty("DominionUseSavedDeciders", "false").equals("true");
+	private boolean onlyUseSavedDeciders = SimProperties.getProperty("DominionOnlyUseSavedDeciders", "false").equals("true");
+	private String savedDirectory = SimProperties.getProperty("DominionSavedDeciderDirectory", "C://Simulations//brains");
+	private int decidersByType = SimProperties.getPropertyAsInteger("DominionDecidersOfEachType", "1");
 
 	public DeciderGenerator(GameSetup gameDetails, DeciderProperties override) {
 		gamesetup = gameDetails;
@@ -30,16 +35,36 @@ public class DeciderGenerator {
 			if (localProp == null) localProp = SimProperties.getDeciderProperties(deciderName);
 			Decider<Player> newDecider = DominionDeciderContainer.factory(deciderName, gamesetup, localProp);
 	//		System.out.println("Created decider "+ newDecider.toString());
-			purchaseDeciders.add(newDecider);
-			purchaseVictories.add(0);
+			for (int i = 0; i < decidersByType; i++) {
+				purchaseDeciders.add(newDecider);
+				purchaseVictories.add(0);
+			}
 		}
-		
+
 		// now we create the pace-setters
 		Decider<Player> hack = purchaseDeciders.get(0);
 		if (hack instanceof DominionDeciderContainer) {
 			hardCodedActionDecider = new HardCodedActionDecider(((DominionDeciderContainer)hack).getActionVariables());
 		} else {
 			hardCodedActionDecider = new HardCodedActionDecider(hack.getVariables());
+		}
+
+		if (onlyUseSavedDeciders) {
+			purchaseDeciders.clear();
+			purchaseVictories.clear();
+		}
+
+		if (useSavedDeciders) {
+			HopshackleFilter findBrains = new HopshackleFilter("DOM", "brain");
+			File directory = new File(savedDirectory);
+			if (!directory.exists() || !directory.isDirectory())
+				throw new AssertionError(savedDirectory + " is not a valid directory");
+			String[] brainLocations = directory.list(findBrains);
+			for (String loc : brainLocations) {
+				DominionNeuralDecider newDecider = DominionNeuralDecider.createFromFile(new File(savedDirectory, loc));
+				purchaseDeciders.add(newDecider);
+				purchaseVictories.add(0);
+			}
 		}
 
 		bigMoneyPurchase = new BigMoneyDecider(hack.getVariables());

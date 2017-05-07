@@ -64,7 +64,7 @@ public class DominionDeciderContainer implements Decider<Player> {
 		if (deciderType.equals("NN")) {
 			List<CardType> cardTypes = gamesetup.getCardTypes();
 			List<ActionEnum<Player>> actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);
-			purchase = new DominionNeuralDecider(variablesToUseForPurchase, actionsToUse);
+			purchase = new DominionNeuralDecider(variablesToUseForPurchase);
 			if (hardCodedActions) {
 				action = hardCodedActionDecider;
 			} else {
