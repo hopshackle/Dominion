@@ -91,7 +91,8 @@ public class RunGame {
             factory = new StandardERFactory<Player>(localProp);
             ercMainMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, null));
             ercPurcOnlyMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, purchaseEventFilter));
-            OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(sets);
+            boolean excludeSingleChoiceRecordFromTeaching = localProp.getProperty("ExcludeSingleChoiceExperienceRecords", "false").equals("true");
+            OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(sets, excludeSingleChoiceRecordFromTeaching);
             // each teacher can only have one ER stream registered
             teacher.registerToERStream(ercMainMap.get(d.toString()));
             if (hardCodedActionDecider) // only use purchase actions for training
@@ -142,17 +143,24 @@ public class RunGame {
                 switch (teachingStrategy) {
                     case "AllPlayers":
                         for (Player p2 : game.getAllPlayers()) {
-                            if (!hardCodedActionDecider)
-                                ercMainMap.get(p.getDecider().toString()).registerAgent(p2);
-                            else
-                                ercPurcOnlyMap.get(p.getDecider().toString()).registerAgent(p2);
+                            if (!hardCodedActionDecider) {
+                                ExperienceRecordCollector<Player> erc = ercMainMap.get(p.getDecider().toString());
+                                if (erc != null) erc.registerAgent(p2);
+                            } else {
+                                ExperienceRecordCollector<Player> erc = ercPurcOnlyMap.get(p.getDecider().toString());
+                                if (erc != null) erc.registerAgent(p2);
+                            }
                         }
                         break;
                     case "SelfOnly":
-                        if (!hardCodedActionDecider)
-                            ercMainMap.get(p.getDecider().toString()).registerAgent(p);
-                        else
-                            ercPurcOnlyMap.get(p.getDecider().toString()).registerAgent(p);
+                        if (!hardCodedActionDecider) {
+                            ExperienceRecordCollector<Player> erc = ercMainMap.get(p.getDecider().toString());
+                            if (erc != null) erc.registerAgent(p);
+                        }
+                        else {
+                            ExperienceRecordCollector<Player> erc = ercPurcOnlyMap.get(p.getDecider().toString());
+                            if (erc != null) erc.registerAgent(p);
+                        }
                         break;
                     case "None":
                         // No learning
@@ -171,8 +179,7 @@ public class RunGame {
     private void runNextGameWithoutLearning() {
         DominionGame game = null;
         if (useBigMoneyInLastK) {
-            game = DominionGame.againstDecider(getDeciderDenerator(), name,
-                    new DominionDeciderContainer(dg.bigMoney, dg.hardCodedActionDecider));
+            game = DominionGame.againstDecider(getDeciderDenerator(), name, dg.bigMoney);
         } else {
             game = new DominionGame(getDeciderDenerator(), name, false);
         }

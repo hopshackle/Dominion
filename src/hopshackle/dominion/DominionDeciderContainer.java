@@ -23,7 +23,7 @@ public class DominionDeciderContainer implements Decider<Player> {
 		boolean hardCodedActions = properties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
 		String rollout = properties.getProperty("DominionRollout", "random");
 		String opponent = properties.getProperty("DominionOpponent", "random");
-		String deciderType = properties.getProperty("DeciderType", "NN");
+		String deciderType = properties.getProperty("DeciderType", "NNL");
 		String coreVariables = properties.getProperty("DominionCoreVariables", "");
 
 		List<CardValuationVariables> variablesToUseForPurchase = gamesetup.getDeckVariables();
@@ -61,10 +61,15 @@ public class DominionDeciderContainer implements Decider<Player> {
 		random.setName("Random");
 		random.injectProperties(properties);
 
-		if (deciderType.equals("NN")) {
-			List<CardType> cardTypes = gamesetup.getCardTypes();
-			List<ActionEnum<Player>> actionsToUse = CardType.generateListOfPossibleActionEnumsFromCardTypes(cardTypes);
+		if (deciderType.equals("NNL")) {
 			purchase = new DominionNeuralDecider(variablesToUseForPurchase);
+			if (hardCodedActions) {
+				action = hardCodedActionDecider;
+			} else {
+				action = purchase;
+			}
+		} else if (deciderType.equals("NN")) {
+			purchase = new NeuralDecider<Player>(new DominionStateFactory(HopshackleUtilities.convertList(variablesToUseForPurchase)), 100.0);
 			if (hardCodedActions) {
 				action = hardCodedActionDecider;
 			} else {

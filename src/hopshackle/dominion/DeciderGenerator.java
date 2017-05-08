@@ -61,7 +61,7 @@ public class DeciderGenerator {
 				throw new AssertionError(savedDirectory + " is not a valid directory");
 			String[] brainLocations = directory.list(findBrains);
 			for (String loc : brainLocations) {
-				DominionNeuralDecider newDecider = DominionNeuralDecider.createFromFile(new File(savedDirectory, loc));
+				Decider<Player> newDecider = DominionNeuralDecider.createFromFile(new File(savedDirectory, loc));
 				purchaseDeciders.add(newDecider);
 				purchaseVictories.add(0);
 			}
