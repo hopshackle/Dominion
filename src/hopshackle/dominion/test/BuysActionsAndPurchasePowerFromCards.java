@@ -21,6 +21,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 	public void setUp() throws Exception {
 		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
 		localProp.setProperty("DominionCardSetup", "FirstGame");
+		localProp.setProperty("DominionMaxCardsPerBuy", "1");
 		SimProperties.setProperty("Temperature", "0.0");
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		p1 = game.getCurrentPlayer();

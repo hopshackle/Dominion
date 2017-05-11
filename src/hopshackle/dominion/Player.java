@@ -30,8 +30,9 @@ public class Player extends Agent {
 		hand = new Deck();
 		revealedCards = new Deck();
 		actionsLeft = 1;
-		setState(State.WAITING);
+		refreshPositionSummary();
 		dealFreshHand();
+		setState(State.WAITING);
 		log("Player #" + number + " in Game " + game.getUniqueId());
 	}
 
@@ -187,7 +188,7 @@ public class Player extends Agent {
 			}
 			drawTopCardFromDeckInto(CardSink.HAND);
 		}
-		refreshPositionSummary();
+//		refreshPositionSummary();
 	}
 
 	public void shuffleDeckAndHandTogether() {
@@ -236,7 +237,6 @@ public class Player extends Agent {
 	public Card drawTopCardFromDeck() {
 		if (deck.isEmpty()) {
 			shuffleDiscardToFormNewDeck();
-			refreshPositionSummary();
 		}
 		if (!deck.isEmpty()) {
 			Card cardDrawn = deck.drawTopCard();

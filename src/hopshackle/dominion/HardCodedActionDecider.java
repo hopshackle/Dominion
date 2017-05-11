@@ -4,7 +4,7 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class HardCodedActionDecider extends LookaheadDecider<Player> {
+public class HardCodedActionDecider extends BaseDecider<Player> {
 
 	public HardCodedActionDecider(List<CardValuationVariables> variables) {
 		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)));
@@ -91,12 +91,12 @@ public class HardCodedActionDecider extends LookaheadDecider<Player> {
 		return super.makeDecision(decidingAgent, 0.0, options);
 		// i.e. never explore with a Hardcoded Decider
 	}
-
+/*
 	@Override
 	public double value(State<Player> state) {
 		return 0;
 	}
-
+*/
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
 }

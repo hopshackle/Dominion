@@ -625,6 +625,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.getNumberOfTypeTotal(CardType.CURSE), 1);
 		assertEquals(p2.getHandSize(), 8);
 		p2.takeActions();
+		assertEquals(p2.getHandSize(), 5);
 		assertEquals(p2.getNumberOfTypeInHand(CardType.MOAT), 0);
 		assertEquals(p2.getNumberOfTypeInHand(CardType.CURSE), 0);
 		assertEquals(p2.getNumberOfTypeTotal(CardType.CURSE), 0);

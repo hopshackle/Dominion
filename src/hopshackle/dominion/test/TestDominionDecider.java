@@ -7,7 +7,7 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
-public class TestDominionDecider extends LookaheadDecider<Player> {
+public class TestDominionDecider extends BaseDecider<Player> {
 
 	private HashMap<CardType, Double> values;
 	private HashMap<CardType, Double> handValues;
@@ -79,6 +79,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 		return new TestDominionDecider(map, new HashMap<CardType, Double>());
 	}
 
+	/*
 	@Override
 	public double value(State<Player> state) {
 		PositionSummary ps = (PositionSummary) state;
@@ -93,7 +94,7 @@ public class TestDominionDecider extends LookaheadDecider<Player> {
 		retValue -= ps.totalNumberOfCards() * 0.05;
 		return retValue;
 	}
-
+*/
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
 }

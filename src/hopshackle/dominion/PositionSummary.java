@@ -18,7 +18,7 @@ public class PositionSummary implements State<Player> {
     private Player player;
     private List<CardValuationVariables> variables;
     private Player.State positionState;
-    private double[] playerScores;
+    private double[] playerScores = new double[4];
     private String asString = "";
     private boolean hasChanged;
 
@@ -62,7 +62,6 @@ public class PositionSummary implements State<Player> {
         baseBudget = base.baseBudget;
         cardsPlayed = new ArrayList<CardType>();
         cardsPlayed.addAll(base.cardsPlayed);
-        playerScores = new double[4];
         for (int i = 0; i < 4; i++)
             playerScores[i] = base.playerScores[i];
         updateDerivedVariables();
@@ -94,6 +93,8 @@ public class PositionSummary implements State<Player> {
                     retValue.addCard(componentAction.card, componentAction.to);
                     break;
                 case NOCHANGE:
+                    break;
+                case ENTHRONE:
                     break;
                 default:
                     throw new AssertionError("Unsupported action " + componentAction);
@@ -244,6 +245,7 @@ public class PositionSummary implements State<Player> {
             cardsOnTable.put(ct, game.getNumberOfCardsRemaining(ct));
         }
         cardsInDiscard = player.getDiscardSize();
+        cardsPlayed = player.getCopyOfPlayedCards();
         recalculateVictoryPoints();
         if (players[3] != null) {
             double highestScore = -100;
@@ -541,5 +543,11 @@ public class PositionSummary implements State<Player> {
         // as a result of one of our actions. This might not be too bad in the base game, but will need update
         // for the WITCH (and others).
         return retValue;
+    }
+
+    public CardType getCardInPlay() {
+        if (positionState == Player.State.PLAYING && cardsPlayed != null && cardsPlayed.size() > 0)
+            return cardsPlayed.get(cardsPlayed.size() - 1);
+        return CardType.NONE;
     }
 }

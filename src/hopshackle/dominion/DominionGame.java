@@ -57,8 +57,8 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			}
 			players[n].setGame(this);
 		}
-		for (int n = 0; n < players.length; n++)
-			players[n].refreshPositionSummary();
+	//	for (int n = 0; n < players.length; n++)
+	//		players[n].refreshPositionSummary();
 		currentPlayer = 0;
 		players[0].setState(Player.State.PLAYING);
 	}

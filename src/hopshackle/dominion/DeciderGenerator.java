@@ -70,9 +70,11 @@ public class DeciderGenerator {
 		bigMoneyPurchase = new BigMoneyDecider(hack.getVariables());
 		bigMoney = new DominionDeciderContainer(bigMoneyPurchase, hardCodedActionDecider);
 		bigMoney.setName("BigMoney");
+		bigMoney.injectProperties(SimProperties.getDeciderProperties("GLOBAL"));
 		chrisPethersPurchase = new ChrisPethersDecider(hack.getVariables());
 		chrisPethers = new DominionDeciderContainer(chrisPethersPurchase, hardCodedActionDecider);
 		chrisPethers.setName("ChrisPethers");
+		chrisPethers.injectProperties(SimProperties.getDeciderProperties("GLOBAL"));
 
 		unusedPurchaseDeciders = HopshackleUtilities.cloneList(purchaseDeciders);
 	}

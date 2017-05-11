@@ -22,8 +22,10 @@ public class CardValuationVariablesTest {
 	}
 	
 	private void recalculate() {
-		for (int n = 1; n<=4; n++)
+		for (int n = 1; n<=4; n++) {
 			game.getPlayer(n).tidyUp();
+			game.getPlayer(n).refreshPositionSummary();
+		}
 		p1 = game.getAllPlayers().get(0).getPositionSummaryCopy();
 		p2 = game.getAllPlayers().get(1).getPositionSummaryCopy();
 		p3 = game.getAllPlayers().get(2).getPositionSummaryCopy();
