@@ -2,9 +2,10 @@ package hopshackle.dominion;
 
 import hopshackle.simulation.*;
 
+import javax.swing.text.Position;
 import java.util.*;
 
-public class HardCodedActionDecider extends BaseDecider<Player> {
+public class HardCodedActionDecider extends BaseAgentDecider<Player> {
 
 	public HardCodedActionDecider(List<CardValuationVariables> variables) {
 		super(new DominionStateFactory(HopshackleUtilities.convertList(variables)));
@@ -12,9 +13,8 @@ public class HardCodedActionDecider extends BaseDecider<Player> {
 	}
 
 	@Override
-	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
+	public double valueOption(ActionEnum<Player> option, Player p) {
 		CardType cardType = ((CardTypeAugment) option).card;
-		Player p = (Player) decidingAgent;
 		List<CardType> hand = null;
 		int actionsLeft = p.getActionsLeft();
 		int buys = p.getBuys();
@@ -91,12 +91,8 @@ public class HardCodedActionDecider extends BaseDecider<Player> {
 		return super.makeDecision(decidingAgent, 0.0, options);
 		// i.e. never explore with a Hardcoded Decider
 	}
-/*
-	@Override
-	public double value(State<Player> state) {
-		return 0;
-	}
-*/
+
+
 	@Override
 	public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {	}
 }

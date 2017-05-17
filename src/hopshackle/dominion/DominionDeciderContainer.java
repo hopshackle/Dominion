@@ -5,6 +5,8 @@ import java.util.*;
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.simulation.*;
 
+import javax.swing.text.Position;
+
 public class DominionDeciderContainer implements Decider<Player> {
 
 	protected Decider<Player> purchase, action;
@@ -118,12 +120,21 @@ public class DominionDeciderContainer implements Decider<Player> {
 	}
 
 	private Decider<Player> getDecider(Player player) {
-		switch (player.getPlayerState()) {
-		case PURCHASING:
-			return purchase;
-		case PLAYING:
-		case WAITING:
-			return action;
+		return getDecider(player.getPlayerState());
+	}
+	private Decider<Player> getDecider(State<Player> state) {
+		if (!(state instanceof PositionSummary))
+			throw new AssertionError("Unknown State type in DominionDeciderContainer " + state);
+		PositionSummary ps = (PositionSummary) state;
+		return getDecider(ps.getPlayerState());
+	}
+	private Decider<Player> getDecider(Player.State playerState) {
+		switch (playerState) {
+			case PURCHASING:
+				return purchase;
+			case PLAYING:
+			case WAITING:
+				return action;
 		}
 		return purchase;
 	}
@@ -152,10 +163,18 @@ public class DominionDeciderContainer implements Decider<Player> {
 	public double valueOption(ActionEnum<Player> option, Player decidingAgent) {
 		return getDecider(decidingAgent).valueOption(option, decidingAgent);
 	}
+	@Override
+	public double valueOption(ActionEnum<Player> option, State<Player> state) {
+		return getDecider(state).valueOption(option, state);
+	}
 	
 	@Override
 	public List<Double> valueOptions(List<ActionEnum<Player>> options, Player decidingAgent) {
 		return getDecider(decidingAgent).valueOptions(options, decidingAgent);
+	}
+	@Override
+	public List<Double> valueOptions(List<ActionEnum<Player>> options, State<Player> state) {
+		return getDecider(state).valueOptions(options, state);
 	}
 
 	@Override
@@ -220,16 +239,6 @@ public class DominionDeciderContainer implements Decider<Player> {
 	}
 	public <V extends GeneticVariable<Player>> List<V> getActionVariables() {
 		return action.getVariables();
-	}
-
-	@Override
-	public ActionEnum<Player> decideWithoutLearning(Player decidingAgent, List<ActionEnum<Player>> options) {
-		return getDecider(decidingAgent).decideWithoutLearning(decidingAgent, options);
-	}
-
-	@Override
-	public ActionEnum<Player> getOptimalDecision(Player decidingAgent, List<ActionEnum<Player>> options) {
-		return getDecider(decidingAgent).getOptimalDecision(decidingAgent, options);
 	}
 
 	@Override

@@ -6,6 +6,8 @@ import hopshackle.dominion.CardTypeAugment.CardSink;
 
 import java.util.HashMap;
 
+import hopshackle.simulation.DeciderProperties;
+import hopshackle.simulation.SimProperties;
 import org.junit.*;
 
 public class ScoringTest {
@@ -15,7 +17,9 @@ public class ScoringTest {
 
 	@Before
 	public void setup() {
-		game = new DominionGame(new DeciderGenerator(new GameSetup()), "Test",  false);
+		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
+		localProp.setProperty("DominionGameOrdinalRewards", "50:20:0:0");
+		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		p1 = game.getPlayer(1);
 		p2 = game.getPlayer(2);
 		p3 = game.getPlayer(3);
@@ -47,7 +51,8 @@ public class ScoringTest {
 				game.getPlayer(p+1).insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GOLD));
 			}
 		}
-		game.playGame();
+
+		double[] finalScores = game.playGame();
 		Player[] players = game.getAllPlayers().toArray(new Player[1]);
 		double[] scores = new double[4];
 		for (int n = 0; n < 4; n++) {
@@ -60,11 +65,15 @@ public class ScoringTest {
 		}
 		for (int n = 1; n <= 4; n++) {
 			int position = game.getOrdinalPosition(n);
+			assertEquals(finalScores[n-1], players[n-1].getScore(), 0.1);
 			assertTrue(game.getPlayerInOrdinalPosition(position) != 0);
 			if (position == 1) {
 				assertEquals(scores[n-1] - players[n-1].totalVictoryValue(), 50, 0.1);
 				winningScore = scores[n-1];
 				scores[n-1] = -100;
+			}
+			if (position == 2) {
+				assertEquals(scores[n-1] - players[n-1].totalVictoryValue(), 20, 0.1);
 			}
 		}
 		for (int n = 0; n<4; n++) {

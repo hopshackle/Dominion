@@ -395,8 +395,10 @@ public class PositionSummary implements State<Player> {
     }
 
     private void playCardFromHand(CardType type) {
-        if (type == CardType.NONE)
+        if (type == CardType.NONE)  {
+            actions = 0;
             return;
+        }
         hasChanged = true;
         if (getNumberInHand(type) > 0) {
             hand.remove(type);

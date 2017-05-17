@@ -33,9 +33,11 @@ public class DeciderGenerator {
 		for (String deciderName : deciderTypes) {
 			DeciderProperties localProp = override;
 			if (localProp == null) localProp = SimProperties.getDeciderProperties(deciderName);
-			Decider<Player> newDecider = DominionDeciderContainer.factory(deciderName, gamesetup, localProp);
 	//		System.out.println("Created decider "+ newDecider.toString());
 			for (int i = 0; i < decidersByType; i++) {
+				String nameToUse = deciderName;
+				if (decidersByType > 1) nameToUse = deciderName + "_" + (i+1);
+				Decider<Player> newDecider = DominionDeciderContainer.factory(nameToUse, gamesetup, localProp);
 				purchaseDeciders.add(newDecider);
 				purchaseVictories.add(0);
 			}

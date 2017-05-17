@@ -21,6 +21,7 @@ public class PositionSummaryApplyTests {
         DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
         localProp.setProperty("DominionCardSetup", "FirstGame");
         localProp.setProperty("DeciderType", "NNL");
+        localProp.setProperty("Temperature", "0.0");
         game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test", false);
         //	game.getCurrentPlayer().setState(Player.State.PLAYING);
         p1 = game.getCurrentPlayer();
@@ -57,6 +58,7 @@ public class PositionSummaryApplyTests {
     public void playMilitia() {
         p1.takeCardFromSupply(CardType.MILITIA, CardSink.HAND);
         PositionSummary start = p1.getPositionSummaryCopy();
+        assertTrue(start.getPlayerState() == Player.State.PLAYING);
         assertEquals(start.getNumberInHand(CardType.UNKNOWN), 0);
         assertEquals(start.getNumberInHand(CardType.MILITIA), 1);
         assertEquals(start.getNumberPlayed(), 0);
@@ -64,6 +66,7 @@ public class PositionSummaryApplyTests {
         int startBudget = p1.getBudget();
 
         PositionSummary post = start.apply(CardTypeAugment.playCard(CardType.MILITIA));
+        assertTrue(post.getPlayerState() == Player.State.PLAYING);
         assertEquals(post.getNumberInHand(CardType.UNKNOWN), 0);
         assertEquals(post.getNumberInHand(CardType.MILITIA), 0);
         assertEquals(post.getNumberPlayed(), 1);
@@ -86,6 +89,7 @@ public class PositionSummaryApplyTests {
         assertEquals(start.getNumberInHand(CardType.REMODEL), 1);
         assertEquals(start.getNumberPlayed(), 0);
         assertEquals(start.getHandSize(), 6);
+        assertEquals(start.getActions(), 1);
         int startBudget = p1.getBudget();
 
         PositionSummary post = start.apply(CardTypeAugment.playCard(CardType.REMODEL));
@@ -94,6 +98,7 @@ public class PositionSummaryApplyTests {
         assertTrue(post.getCardInPlay().equals(CardType.REMODEL));
         assertEquals(post.getNumberPlayed(), 1);
         assertEquals(post.getHandSize(), 5);
+        assertEquals(post.getActions(), 0);
         assertEquals(post.getBudget(), startBudget);
 
         assertEquals(start.getNumberInHand(CardType.UNKNOWN), 0);
@@ -104,10 +109,20 @@ public class PositionSummaryApplyTests {
     }
 
     @Test
+    public void playNone() {
+        PositionSummary start = p1.getPositionSummaryCopy();
+        assertEquals(start.getActions(), 1);
+        assertTrue(start.getPlayerState() == Player.State.PLAYING);
+        PositionSummary playNone = start.apply(CardTypeAugment.playCard(CardType.NONE));
+        assertEquals(playNone.getActions(), 0);
+        assertTrue(playNone.getPlayerState() == Player.State.PLAYING);
+    }
+
+    @Test
     public void cardInPlay() {
         /*
         This needs to be set when we instantiate a PS based on the last revealed card IFF we are still making
-        play decisions for the card. Which we can't 100% check, but we can assume this is state is PLAY.
+        play decisions for the card. Which we can't 100% check, but we can assume this if state is PLAY.
         A PS is always reset when we change state.
          */
         p1.takeCardFromSupply(CardType.REMODEL, CardSink.HAND);
@@ -118,6 +133,8 @@ public class PositionSummaryApplyTests {
         p1.refreshPositionSummary();
         PositionSummary later = p1.getPositionSummaryCopy();
  //       assertTrue(p1.getPlayerState() == Player.State.PLAYING);
+        assertEquals(later.getNumberPlayed(), 1);
+        assertEquals(later.getNumberPlayed(CardType.REMODEL), 1);
         assertTrue(later.getCardInPlay() == CardType.REMODEL);
         game.oneAction(false, false);
         assertTrue(p1.getPlayerState() == Player.State.PURCHASING);
