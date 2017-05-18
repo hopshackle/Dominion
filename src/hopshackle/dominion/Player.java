@@ -399,10 +399,10 @@ public class Player extends Agent {
 	public void setState(Player.State newState) {
 		if (playerState != State.PURCHASING && newState == State.PURCHASING) {
 			buysLeft = 1 + revealedCards.getAdditionalBuys();
-			spentBudget = 0;
 		}
 		if (playerState != State.PLAYING && newState == State.PLAYING)
 			actionsLeft = 1;
+		spentBudget = 0;
 		playerState = newState;
 		refreshPositionSummary();
 	}

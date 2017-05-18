@@ -22,7 +22,7 @@ public class Militia extends AttackCard {
 		victim.log("Victim of MILITIA:");
 	
 		List<List<CardType>> discardOptions = victim.getPossibleDiscardsFromHand(cardsInHand.length - 3, cardsInHand.length - 3);
-		return CardType.listToActionEnumList(discardOptions);
+		return CardType.listOfDiscardsToActionEnumList(discardOptions);
 	}
 
 }

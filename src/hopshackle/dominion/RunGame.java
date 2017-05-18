@@ -127,8 +127,8 @@ public class RunGame {
             runNextGameWithoutLearning();
         }
         Decider<Player> winner = dg.getSingleBestPurchaseBrain();
-        if (winner instanceof NeuralLookaheadDecider) {
-            ((DominionNeuralDecider) winner).saveToFile(name, "C://Simulation//brains");
+        if (winner instanceof NeuralDecider) {
+            ((NeuralDecider<Player>)winner).saveBrain(name, "C://Simulation//brains");
         }
         databaseUtility.addUpdate("EXIT");
     }

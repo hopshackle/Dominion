@@ -12,11 +12,6 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
     }
 
     @Override
-    public void learnFromBatch(ExperienceRecord<Player>[] expArray, double maxResult) {
-        super.learnFromBatch(expArray, maxResult);
-    }
-
-    @Override
     public void learnFrom(ExperienceRecord<Player> exp, double maxResult) {
         super.learnFrom(exp, maxResult);
     }
@@ -34,7 +29,6 @@ public class DominionNeuralDecider extends NeuralLookaheadDecider<Player> {
             case "NNL":
                 DominionNeuralDecider retValue = new DominionNeuralDecider(nd.getVariables());
                 retValue.injectProperties(nd.getProperties());
-                retValue.setInternalNeuralNetwork(nd);
                 retValue.setName(nd.toString());
                 return retValue;
             default:

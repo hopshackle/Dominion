@@ -15,6 +15,7 @@ public class PositionSummaryApplyTests {
     DominionGame game;
     Player p1, p2, p3, p4;
     private TestDominionDecider remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
+    private TestDominionDecider moatDecider = TestDominionDecider.getExample(CardType.MOAT);
 
     @Before
     public void setUp() {
@@ -140,5 +141,44 @@ public class PositionSummaryApplyTests {
         assertTrue(p1.getPlayerState() == Player.State.PURCHASING);
         later = p1.getPositionSummaryCopy();
         assertTrue(later.getCardInPlay() == CardType.NONE);
+    }
+
+    @Test
+    public void sequenceOfPlayAndBuyGivesCorrectBudget() {
+        p1.setDecider(moatDecider);
+        PositionSummary start = p1.getPositionSummaryCopy();
+        int startMoney = start.getBudget();
+        PositionSummary afterPlay = start.apply(CardTypeAugment.playCard(CardType.NONE));
+        assertEquals(afterPlay.getBudget(), startMoney);
+        PositionSummary afterBuy = afterPlay.apply(CardTypeAugment.buyCard(CardType.MOAT));
+        assertEquals(afterBuy.getBudget(), startMoney - 2);
+
+        p1.takeActions();
+        assertEquals(p1.getBudget(), startMoney);
+
+        p1.buyCards(true);
+        int newMoney = 7 - startMoney;
+        assertEquals(p1.getNumberOfTypeInHand(CardType.COPPER), newMoney);
+        assertEquals(p1.getBudget(), newMoney);
+        assertEquals(p1.getPositionSummaryCopy().getBudget(), newMoney);
+    }
+
+    @Test
+    public void militiaDefenseReducesBudgetAndHandSize() {
+        p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
+        PositionSummary start = p1.getPositionSummaryCopy();
+        assertEquals(start.getHandSize(), 6);
+        int money = start.getNumberInHand(CardType.COPPER);
+        int estates = start.getNumberInHand(CardType.ESTATE);
+        assertEquals(money + estates, 6);
+        List<CardType> discards = new ArrayList<>();
+        discards.add(CardType.COPPER);
+        discards.add(CardType.ESTATE);
+        ActionEnum<Player> defence = CardType.discardToActionEnum(discards);
+
+        PositionSummary post = start.apply(defence);
+        assertEquals(post.getNumberInHand(CardType.ESTATE), estates -1);
+        assertEquals(post.getNumberInHand(CardType.COPPER), money -1);
+        assertEquals(post.getBudget(), money -1);
     }
 }

@@ -108,14 +108,14 @@ public enum CardType {
 		}
 		return retValue;
 	}
-	public static List<ActionEnum<Player>> listToActionEnumList(List<List<CardType>> possibleDiscards) {
+	public static List<ActionEnum<Player>> listOfDiscardsToActionEnumList(List<List<CardType>> possibleDiscards) {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>(possibleDiscards.size());
 		for (List<CardType> discard : possibleDiscards) {
-			retValue.add(toActionEnum(discard));
+			retValue.add(discardToActionEnum(discard));
 		}
 		return retValue;
 	}
-	public static ActionEnum<Player> toActionEnum(List<CardType> cardList) {
+	public static ActionEnum<Player> discardToActionEnum(List<CardType> cardList) {
 		List<CardTypeAugment> asCTA = new ArrayList<CardTypeAugment>(cardList.size());
 		if (cardList.isEmpty()) {
 			asCTA.add(CardTypeAugment.discardCard(CardType.NONE));
