@@ -12,16 +12,37 @@ import org.junit.*;
 public class CloneTests {
 
 	public DominionGame game;
-	TestDominionDecider woodcutterDecider, workshopDecider;
+	TestDominionDecider woodcutterDecider, workshopDecider, remodelDecider, defaultPurchaseDecider;
+	private HashMap<CardType, Double> purchasePreferences = new HashMap<CardType, Double>();
+	private HashMap<CardType, Double> handPreferences = new HashMap<CardType, Double>();
+	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
+	private HardCodedActionDecider hardCodedActionDecider = new HardCodedActionDecider(variablesToUse);
 
 	@Before
 	public void setUp() throws Exception {
 		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
 		localProp.setProperty("DominionCardSetup", "FirstGame");
 		localProp.setProperty("DeciderType", "NN");
+		localProp.setProperty("Temperature", "0.0");
 		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
 		woodcutterDecider = TestDominionDecider.getExample(CardType.WOODCUTTER);
 		workshopDecider = TestDominionDecider.getExample(CardType.WORKSHOP);
+		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
+
+		purchasePreferences.put(CardType.COPPER, 0.09);
+		purchasePreferences.put(CardType.ESTATE, 0.09);
+		purchasePreferences.put(CardType.SILVER, 0.30);
+		purchasePreferences.put(CardType.GOLD, 0.50);
+		purchasePreferences.put(CardType.PROVINCE, 2.0);
+		purchasePreferences.put(CardType.CURSE, -1.0);
+		purchasePreferences.put(CardType.MOAT, -0.25);
+
+		handPreferences.put(CardType.ESTATE, -0.05);
+		handPreferences.put(CardType.PROVINCE, -0.05);
+		handPreferences.put(CardType.COPPER, 0.01);
+
+		defaultPurchaseDecider = new TestDominionDecider(purchasePreferences, handPreferences);
+		for (Player p : game.getAllPlayers()) p.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));
 	}
 
 	@Test
@@ -226,6 +247,57 @@ public class CloneTests {
 		assertTrue(clonedFollowOn != null);
 		assertTrue(clonedFollowOn.getActor() == clonedGame.getPlayer(1));
 
+	}
+
+	@Test
+	public void cloneDuringMiddleOfRemodel() {
+		Player p1 = game.getCurrentPlayer();
+		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
+		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
+		p1.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, remodelDecider));
+		int estatesInHand = p1.getNumberOfTypeInHand(CardType.ESTATE);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.ESTATE), estatesInHand);
+		game.oneAction(false, true); //PLAY card
+		game.oneAction(false, true);
+		// at this point we have just trashed a card, hopefully an ESTATE
+		assertEquals(p1.getHandSize(), 5);
+		assertEquals(p1.getDiscardSize(), 0);
+		assertEquals(p1.getDeckSize(), 5);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.ESTATE), estatesInHand-1);
+		assertEquals(p1.getOneOffBudget(), 2);
+		PositionSummary prePS = p1.getPositionSummaryCopy();
+		assertEquals(prePS.getOneOffBudget(), 2);
+		assertEquals(prePS.getNumberInHand(CardType.ESTATE), estatesInHand-1);
+		assertEquals(prePS.getPercentageInDiscard(), 0.0, 0.001);
+		assertEquals(prePS.getHandSize(), 5);
+
+		DominionGame clonedGame = game.clone(p1);
+		p1 = clonedGame.getCurrentPlayer();
+		assertEquals(p1.getHandSize(), 5);
+		assertEquals(p1.getDiscardSize(), 0);
+		assertEquals(p1.getDeckSize(), 5);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.ESTATE), estatesInHand-1);
+		assertEquals(p1.getOneOffBudget(), 2);
+		prePS = p1.getPositionSummaryCopy();
+		assertEquals(prePS.getOneOffBudget(), 2);
+		assertEquals(prePS.getNumberInHand(CardType.ESTATE), estatesInHand-1);
+		assertEquals(prePS.getPercentageInDiscard(), 0.0, 0.001);
+		assertEquals(prePS.getHandSize(), 5);
+
+		p1.takeActions();
+		// and we should now have used that to buy a SILVER
+		assertEquals(p1.getHandSize(), 5);
+		assertEquals(p1.getDiscardSize(), 1);
+		assertEquals(p1.getDeckSize(), 5);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.ESTATE), estatesInHand-1);
+		assertEquals(p1.getOneOffBudget(), 0);
+		assertEquals(p1.getNumberOfTypeTotal(CardType.SILVER), 1);
+
+		PositionSummary postPS = p1.getPositionSummaryCopy();
+		assertEquals(postPS.getOneOffBudget(), 0);
+		assertEquals(postPS.getNumberInHand(CardType.ESTATE), estatesInHand-1);
+		assertEquals(postPS.getPercentageInDiscard(), 1.0/12.0, 0.001);
+		assertEquals(postPS.getHandSize(), 5);
 	}
 
 }

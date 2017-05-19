@@ -8,7 +8,7 @@ import java.util.*;
 public class PositionSummary implements State<Player> {
 
     private double victoryPoints, treasureValue;
-    private int turnNumber, buys, actions, spent, baseBudget;
+    private int turnNumber, buys, actions, spent, baseBudget, currentFeature;
     private double victoryMargin, wealthDensity, victoryDensity, percentVictory, percentAction;
     private double totalCards, victoryCards, actionCards, cardsInDiscard;
     private HashMap<CardType, Integer> cardsRemovedFromTable = new HashMap<CardType, Integer>();
@@ -59,6 +59,7 @@ public class PositionSummary implements State<Player> {
         actions = base.actions;
         buys = base.buys;
         spent = base.spent;
+        currentFeature = base.currentFeature;
         baseBudget = base.baseBudget;
         cardsPlayed = new ArrayList<CardType>();
         cardsPlayed.addAll(base.cardsPlayed);
@@ -235,6 +236,7 @@ public class PositionSummary implements State<Player> {
         victoryPoints = 0.0;
         totalCards = 0;
         treasureValue = 0.0;
+        currentFeature = player.getOneOffBudget();
         actions = player.getActionsLeft();
         buys = player.getBuys();
         cardsInDeck = new HashMap<CardType, Integer>();
@@ -551,5 +553,13 @@ public class PositionSummary implements State<Player> {
         if (positionState == Player.State.PLAYING && cardsPlayed != null && cardsPlayed.size() > 0)
             return cardsPlayed.get(cardsPlayed.size() - 1);
         return CardType.NONE;
+    }
+
+    public int getOneOffBudget() {
+        return currentFeature;
+    }
+
+    public void oneOffBudget(int cost) {
+        currentFeature = cost;
     }
 }

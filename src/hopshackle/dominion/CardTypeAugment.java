@@ -14,7 +14,7 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	 * BUY is distinguished from MOVE in that it implies that money is spent, and a Buy slot is used
 	 */
 	public enum ChangeType {
-		MOVE, PLAY, ENTHRONE, BUY, NOCHANGE;
+		MOVE, PLAY, ENTHRONE, REMODEL, BUY, NOCHANGE;
 	}
 	
 	public CardType card;
@@ -71,6 +71,8 @@ public class CardTypeAugment implements ActionEnum<Player> {
 		} else {
 			if (from == CardSink.HAND && to == CardSink.DISCARD)
 				return "Discards " + card.toString();
+			if (from == CardSink.HAND && to == CardSink.TRASH)
+				return "Trashes " + card.toString();
 			if (from == CardSink.SUPPLY && to == CardSink.DISCARD)
 				return "Gains " + card.toString();
 			return "Moves " + card.toString() + " from " + from.toString() + " to " + to.toString();

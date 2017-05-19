@@ -10,6 +10,8 @@ import java.util.*;
 
 import org.junit.*;
 
+import javax.swing.text.Position;
+
 public class SpecialCardAbilitiesInBasicSet {
 
 	public DominionGame game;
@@ -204,10 +206,35 @@ public class SpecialCardAbilitiesInBasicSet {
 	@Test
 	public void remodelTrashesACardAndGainsANewCard() {
 		p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.REMODEL));
+		assertEquals(p1.getNumberOfTypeInHand(CardType.ESTATE), 3);
+		game.oneAction(false, true); //PLAY card
+		game.oneAction(false, true);
+		// at this point we have just trashed a card, hopefully an ESTATE
+		assertEquals(p1.getHandSize(), 9);
+		assertEquals(p1.getDiscardSize(), 0);
+		assertEquals(p1.getDeckSize(), 0);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.ESTATE), 2);
+		assertEquals(p1.getOneOffBudget(), 2);
+		PositionSummary prePS = p1.getPositionSummaryCopy();
+		assertEquals(prePS.getOneOffBudget(), 2);
+		assertEquals(prePS.getNumberInHand(CardType.ESTATE), 2);
+		assertEquals(prePS.getPercentageInDiscard(), 0.0, 0.001);
+		assertEquals(prePS.getHandSize(), 9);
+
 		p1.takeActions();
+		// and we should now have used that to buy a SILVER
 		assertEquals(p1.getHandSize(), 9);
 		assertEquals(p1.getDiscardSize(), 1);
 		assertEquals(p1.getDeckSize(), 0);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.ESTATE), 2);
+		assertEquals(p1.getOneOffBudget(), 0);
+		assertEquals(p1.getNumberOfTypeTotal(CardType.SILVER), 1);
+
+		PositionSummary postPS = p1.getPositionSummaryCopy();
+		assertEquals(postPS.getOneOffBudget(), 0);
+		assertEquals(postPS.getNumberInHand(CardType.ESTATE), 2);
+		assertEquals(postPS.getPercentageInDiscard(), 1.0/11.0, 0.001);
+		assertEquals(postPS.getHandSize(), 9);
 	}
 
 	@Test
@@ -262,6 +289,15 @@ public class SpecialCardAbilitiesInBasicSet {
 	public void workshopBuysUpToCostOfFour() {
 		game.nextPlayersTurn();
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.WORKSHOP));
+		int startCopper = p2.getNumberOfTypeInHand(CardType.COPPER);
+		if (startCopper == 5) {
+			p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
+			p2.removeCardFrom(CardType.COPPER, CardSink.HAND);
+		}
+		if (startCopper == 2) {
+			p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.COPPER));
+			p2.removeCardFrom(CardType.ESTATE, CardSink.HAND);
+		}
 		p2.takeActions();
 		assertEquals(p2.getHandSize(), 5);
 		assertTrue(p2.getAllCards().contains(CardType.WORKSHOP));
@@ -270,6 +306,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.buyCards();
 		assertEquals(p2.getHandSize(), 5);
 		assertEquals(p2.getDiscardSize(), 2);
+		assertEquals(p2.totalTreasureValue(), 11); // buys another silver given budget of 3 or 4
 	}
 
 	@Test

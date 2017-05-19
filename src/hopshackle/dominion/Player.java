@@ -19,7 +19,7 @@ public class Player extends Agent {
 	private DominionGame game;
 	private PositionSummary summary;
 	private int playerNumber;
-	private int actionsLeft, buysLeft, spentBudget;
+	private int actionsLeft, buysLeft, spentBudget, currentFeature;
 
 	public Player(DominionGame game, int number) {
 		super(game.getWorld());
@@ -44,9 +44,18 @@ public class Player extends Agent {
 		actionsLeft = player.actionsLeft;
 		buysLeft = player.buysLeft;
 		spentBudget = player.spentBudget;
+		currentFeature = player.currentFeature;
 		game = newGame;
 		// Responsibility for taking into account the information set resides in the caller
 		// as that has the information from whose perspective the clone is taking place
+		for (Action<?> a : player.actionPlan.getExecutedActions()) {
+			this.actionPlan.actionCompleted(a);
+			// Note that this does NOT clone the actions, they still have all the old details on
+			// this is currently implemente for a record of the type of historic action taken.
+			// If at some point we need more info, then we may need to clone these properly.
+			// However for performance/referencing reasons, I don't want to do that unless it is
+			// absolutely necessary.
+		}
 		deck = player.deck.copy(game);
 		discard = player.discard.copy(game);
 		hand = player.hand.copy(game);
@@ -58,7 +67,6 @@ public class Player extends Agent {
 			clonedAction = da.clone(this);
 			this.actionPlan.addAction(clonedAction);
 		}
-
 	}
 
 	private void dealFreshHand() {
@@ -379,6 +387,7 @@ public class Player extends Agent {
 		return revealedCards.getAllCards();
 	}
 	public Card getCardLastPlayed() {
+		if (revealedCards.isEmpty()) return CardFactory.instantiateCard(CardType.NONE);
 		return revealedCards.getTopCard();
 	}
 
@@ -403,6 +412,7 @@ public class Player extends Agent {
 		if (playerState != State.PLAYING && newState == State.PLAYING)
 			actionsLeft = 1;
 		spentBudget = 0;
+		oneOffBudget(0);
 		playerState = newState;
 		refreshPositionSummary();
 	}
@@ -493,6 +503,15 @@ public class Player extends Agent {
 			shuffleDiscardToFormNewDeck();
 		return deck.getTopCard().getType();
 	}
+
+	public void oneOffBudget(int cost) {
+		summary.oneOffBudget(cost);
+		currentFeature = cost;
+	}
+	public int getOneOffBudget() {
+		return currentFeature;
+	}
+
 
 	public void logCurrentState() {
 		log("Using Decider " + decider);
