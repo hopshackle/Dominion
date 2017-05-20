@@ -89,6 +89,22 @@ public class PositionSummary implements State<Player> {
                 case BUY:
                     retValue.spend(componentAction.card.getCost());
                     retValue.buys--;
+                    // then continue
+                case REMODEL: // we trash, but record the value of the trashed card
+                    if (componentAction.type == CardTypeAugment.ChangeType.REMODEL)
+                        retValue.oneOffBudget(componentAction.card.getCost());
+                    // then continue
+                case CELLAR:
+                    if (componentAction.type == CardTypeAugment.ChangeType.CELLAR) {
+                        if (componentAction.card == CardType.NONE) {
+                            retValue.oneOffBudget(0);
+                            for (int i = 0; i < this.getOneOffBudget(); i++){
+                                retValue.addCard(CardType.UNKNOWN, CardSink.HAND);
+                            }
+                        } else {
+                            retValue.oneOffBudget(this.getOneOffBudget() + 1);
+                        }
+                    }
                 case MOVE:
                     retValue.removeCardFrom(componentAction.card, componentAction.from);
                     retValue.addCard(componentAction.card, componentAction.to);
@@ -211,12 +227,6 @@ public class PositionSummary implements State<Player> {
             victoryPoints += number * ct.getVictory(this);
         }
         victoryMargin = oldVictoryMargin + victoryPoints - oldVictoryPoints;
-    }
-
-    public void discardCard(CardType card) {
-        cardsInDiscard++;
-        hand.remove(card);
-        hasChanged = true;
     }
 
     private void changeNumberOnTable(CardType drawnCard, int number) {

@@ -191,6 +191,7 @@ public class Deck {
 		}
 		if (min == 0) {
 			List<CardType> noAction = new ArrayList<CardType>();
+			noAction.add(CardType.NONE);
 			retValue.add(noAction);
 		}
 		return retValue;

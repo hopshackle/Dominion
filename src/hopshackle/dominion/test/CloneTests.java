@@ -2,7 +2,7 @@ package hopshackle.dominion.test;
 
 import static org.junit.Assert.*;
 import hopshackle.dominion.*;
-import hopshackle.dominion.basecards.Militia;
+import hopshackle.dominion.basecards.*;
 import hopshackle.simulation.*;
 
 import java.util.*;
@@ -12,7 +12,7 @@ import org.junit.*;
 public class CloneTests {
 
 	public DominionGame game;
-	TestDominionDecider woodcutterDecider, workshopDecider, remodelDecider, defaultPurchaseDecider;
+	TestDominionDecider woodcutterDecider, workshopDecider, remodelDecider, defaultPurchaseDecider, cellarDecider;
 	private HashMap<CardType, Double> purchasePreferences = new HashMap<CardType, Double>();
 	private HashMap<CardType, Double> handPreferences = new HashMap<CardType, Double>();
 	private ArrayList<CardValuationVariables> variablesToUse = new ArrayList<CardValuationVariables>(EnumSet.allOf(CardValuationVariables.class));
@@ -28,6 +28,7 @@ public class CloneTests {
 		woodcutterDecider = TestDominionDecider.getExample(CardType.WOODCUTTER);
 		workshopDecider = TestDominionDecider.getExample(CardType.WORKSHOP);
 		remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
+		cellarDecider = TestDominionDecider.getExample(CardType.CELLAR);
 
 		purchasePreferences.put(CardType.COPPER, 0.09);
 		purchasePreferences.put(CardType.ESTATE, 0.09);
@@ -298,6 +299,35 @@ public class CloneTests {
 		assertEquals(postPS.getNumberInHand(CardType.ESTATE), estatesInHand-1);
 		assertEquals(postPS.getPercentageInDiscard(), 1.0/12.0, 0.001);
 		assertEquals(postPS.getHandSize(), 5);
+	}
+
+	@Test
+	public void cloneInMiddleOfCellar() {
+		Player p1 = game.getCurrentPlayer();
+		p1.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, cellarDecider));
+		Player initialPlayer = p1;
+		DominionGame initialGame = game;
+		p1.insertCardDirectlyIntoHand(new Cellar());
+		p1.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
+		p1.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
+		int estatesInHand = p1.getNumberOfTypeInHand(CardType.ESTATE);
+		for (int i = 0; i <= estatesInHand; i++) {
+			// i = 0 is Play CELLAR
+			if (i == 2) { // so after discarding one estate
+				// clone game
+				game = game.clone(p1);
+				p1 = game.getPlayer(1);
+			}
+			game.oneAction(true, true);
+			assertEquals(p1.getHandSize(), 7 - i);
+			assertEquals(p1.getDiscardSize(), i);
+			assertEquals(p1.getDeckSize(), 5);
+			assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1), i / 13.0, 0.001);
+		}
+		game.oneAction(true, true);	// will draw up to full hand
+		assertEquals(p1.getHandSize(), 7);
+		assertEquals(p1.getDiscardSize(), estatesInHand);
+		assertEquals(p1.getDeckSize(), 5 - estatesInHand);
 	}
 
 }

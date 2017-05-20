@@ -9,7 +9,6 @@ import java.util.*;
 public class Cellar extends Card {
 
 	private Player player;
-	private int startingHandSize;
 
 	public Cellar() {
 		super(CardType.CELLAR);
@@ -18,49 +17,52 @@ public class Cellar extends Card {
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		/*
-		 * We can discard any of the cards in hand. So we could represent this as 2^4 = 16 possibilities
-		 * for a hand of 5 cards (1 being CELLAR). Or, we could treat this as 4 separate decisions, each with just 2 possibilities.
-		 * 
-		 * Then, we need to track the number that were discarded, and draw this number as the follow-up action.
+			We discard one card at a time
+			DominionAction will track how many have been discarded using CURRENT_FEATURE
 		 */
 		this.player = player;
-		this.startingHandSize = player.getHandSize();
-		List<List<CardType>> possibleDiscards = player.getPossibleDiscardsFromHand(1, startingHandSize);
-		List<ActionEnum<Player>> possibleActions = CardType.listOfDiscardsToActionEnumList(possibleDiscards);
-		
-		return possibleActions;
+		List<List<CardType>> possibleDiscards = player.getPossibleDiscardsFromHand(0, 1);
+		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>(possibleDiscards.size());
+
+		for (List<CardType> discard : possibleDiscards) {
+			retValue.add(new CardTypeAugment(discard.get(0), CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.CELLAR));
+		}
+		return retValue;
 	}
 	
 	@Override
 	public DominionAction followUpAction() {
-		DominionAction retValue = new CellarFollowOnAction(player, startingHandSize);
+		DominionAction retValue = new CellarFollowOnAction(player);
 		return retValue;
 	}
 	@Override
 	public void reset() {
 		player = null;
-		startingHandSize = 0;
+	}
+
+	@Override
+	public Cellar clone(DominionGame newGame) {
+		Cellar retValue = (Cellar) super.clone(newGame);
+		if (player != null) retValue.player = newGame.getPlayer(player.getNumber());
+		return retValue;
 	}
 }
 
 class CellarFollowOnAction extends DominionAction {
 
-	private int startingHandSize = 0;
-	
-	public CellarFollowOnAction(Player player, int startingHand) {
+	public CellarFollowOnAction(Player player) {
 		super(player, new CardTypeList(new ArrayList<CardType>()));
-		startingHandSize = startingHand;
 		hasNoAssociatedDecision = true;
 	}
 	
 	@Override 
 	public CellarFollowOnAction clone(Player newPlayer) {
-		return new CellarFollowOnAction(newPlayer, this.startingHandSize);
+		return new CellarFollowOnAction(newPlayer);
 	}
 	
 	@Override
 	public void doStuff() {
-		int cardsToDraw = startingHandSize - player.getHandSize();
+		int cardsToDraw = player.getOneOffBudget();
 		for (int i = 0; i < cardsToDraw; i++) {
 			player.drawTopCardFromDeckInto(CardSink.HAND);
 		}
@@ -74,7 +76,7 @@ class CellarFollowOnAction extends DominionAction {
 	@Override
 	public ActionEnum<Player> getType() {
 		List<CardTypeAugment> drawnCards = new ArrayList<CardTypeAugment>();
-		for (int i = 0; i < startingHandSize - player.getHandSize(); i++) {
+		for (int i = 0; i < player.getOneOffBudget(); i++) {
 			drawnCards.add(CardTypeAugment.drawCard());
 		}
 		return new CardTypeList(drawnCards, false);

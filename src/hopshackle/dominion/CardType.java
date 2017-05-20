@@ -99,15 +99,6 @@ public enum CardType {
 		return (!isTreasure() && !isVictory());
 	}
 
-	public static List<ActionEnum<Player>> generateListOfPossibleActionEnumsFromCardTypes(List<CardType> actionsToUse) {
-		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
-		for (CardType ct : actionsToUse) {
-			retValue.add(CardTypeAugment.buyCard(ct));
-			if (ct.isAction())
-				retValue.add(CardTypeAugment.playCard(ct));
-		}
-		return retValue;
-	}
 	public static List<ActionEnum<Player>> listOfDiscardsToActionEnumList(List<List<CardType>> possibleDiscards) {
 		List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>(possibleDiscards.size());
 		for (List<CardType> discard : possibleDiscards) {

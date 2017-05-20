@@ -14,7 +14,7 @@ public class CardTypeAugment implements ActionEnum<Player> {
 	 * BUY is distinguished from MOVE in that it implies that money is spent, and a Buy slot is used
 	 */
 	public enum ChangeType {
-		MOVE, PLAY, ENTHRONE, REMODEL, BUY, NOCHANGE;
+		MOVE, PLAY, ENTHRONE, REMODEL, CELLAR, BUY, NOCHANGE;
 	}
 	
 	public CardType card;

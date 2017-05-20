@@ -74,6 +74,26 @@ public class SpecialCardAbilitiesInBasicSet {
 	}
 
 	@Test
+	public void cellarDiscardsOneCardAfterTheOther() {
+		p2.insertCardDirectlyIntoHand(new Cellar());
+		p2.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
+		int estatesInHand = p2.getNumberOfTypeInHand(CardType.ESTATE);
+		game.nextPlayersTurn();
+		for (int i = 0; i <= estatesInHand; i++) {
+			// i = 0 is Play CELLAR
+			game.oneAction(true, true);
+			assertEquals(p2.getHandSize(), 6 - i);
+			assertEquals(p2.getDiscardSize(), i);
+			assertEquals(p2.getDeckSize(), 5);
+			assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p2), i / 12.0, 0.001);
+		}
+		game.oneAction(true, true);	// will draw up to full hand
+		assertEquals(p2.getHandSize(), 6);
+		assertEquals(p2.getDiscardSize(), estatesInHand);
+		assertEquals(p2.getDeckSize(), 5 - estatesInHand);
+	}
+
+	@Test
 	public void cellarDiscardsAllVictoryCards() {
 		for (int n=0; n<5; n++)
 			p1.takeCardFromSupply(CardType.COPPER, CardSink.DISCARD);

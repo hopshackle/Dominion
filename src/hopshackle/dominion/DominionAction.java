@@ -3,6 +3,8 @@ package hopshackle.dominion;
 import java.util.*;
 
 import hopshackle.dominion.CardTypeAugment.ChangeType;
+import hopshackle.dominion.basecards.Cellar;
+import hopshackle.dominion.basecards.Remodel;
 import hopshackle.dominion.basecards.ThroneRoom;
 import hopshackle.simulation.*;
 
@@ -90,14 +92,31 @@ public class DominionAction extends Action<Player> {
                     player.decrementBuysLeft();
                     // then continue to move the card
                 case REMODEL:
-                    if (component.type == ChangeType.REMODEL)
+                    if (component.type == ChangeType.REMODEL) {
                         player.oneOffBudget(component.card.getCost());
+                        cardToPlay = player.getCardLastPlayed();
+                        if (!(cardToPlay instanceof Remodel))
+                            throw new AssertionError("Last card played was not Remodel");
+                        possibleOptions = cardToPlay.takeAction(player);
+                    }
+                    // then continue to move the card
+                case CELLAR:
                     // then continue to move the card
                 case MOVE:
                     if (component.card == CardType.NONE)
                         continue;
                     player.log(component.toString());
                     player.moveCard(component.card, component.from, component.to);
+                    if (component.type == ChangeType.CELLAR) {
+                        // we can only determine what is left to move, having moved the card
+                        if (component.card != CardType.NONE) {
+                            cardToPlay = player.getCardLastPlayed();
+                            if (!(cardToPlay instanceof Cellar))
+                                throw new AssertionError("Last card played was not Cellar");
+                            player.oneOffBudget(player.getOneOffBudget() + 1);
+                            possibleOptions = cardToPlay.takeAction(player);
+                        }
+                    }
             }
         }
     }

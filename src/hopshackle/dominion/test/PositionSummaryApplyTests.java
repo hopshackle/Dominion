@@ -73,7 +73,7 @@ public class PositionSummaryApplyTests {
         assertEquals(post.getNumberPlayed(), 1);
         assertTrue(post.getCardInPlay().equals(CardType.MILITIA));
         assertEquals(post.getHandSize(), 5);
-        assertEquals(post.getBudget(), startBudget +2);
+        assertEquals(post.getBudget(), startBudget + 2);
 
         assertEquals(start.getNumberInHand(CardType.UNKNOWN), 0);
         assertEquals(start.getNumberInHand(CardType.MILITIA), 1);
@@ -133,7 +133,7 @@ public class PositionSummaryApplyTests {
         game.oneAction(true, true);
         p1.refreshPositionSummary();
         PositionSummary later = p1.getPositionSummaryCopy();
- //       assertTrue(p1.getPlayerState() == Player.State.PLAYING);
+        //       assertTrue(p1.getPlayerState() == Player.State.PLAYING);
         assertEquals(later.getNumberPlayed(), 1);
         assertEquals(later.getNumberPlayed(CardType.REMODEL), 1);
         assertTrue(later.getCardInPlay() == CardType.REMODEL);
@@ -177,8 +177,58 @@ public class PositionSummaryApplyTests {
         ActionEnum<Player> defence = CardType.discardToActionEnum(discards);
 
         PositionSummary post = start.apply(defence);
-        assertEquals(post.getNumberInHand(CardType.ESTATE), estates -1);
-        assertEquals(post.getNumberInHand(CardType.COPPER), money -1);
-        assertEquals(post.getBudget(), money -1);
+        assertEquals(post.getNumberInHand(CardType.ESTATE), estates - 1);
+        assertEquals(post.getNumberInHand(CardType.COPPER), money - 1);
+        assertEquals(post.getBudget(), money - 1);
+    }
+
+    @Test
+    public void remodelTrashesCard() {
+        p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
+        PositionSummary start = p1.getPositionSummaryCopy();
+        assertEquals(start.getNumberInHand(CardType.UNKNOWN), 0);
+        assertEquals(start.getNumberPlayed(), 0);
+        assertEquals(start.getHandSize(), 6);
+        assertEquals(start.getActions(), 1);
+        int startEstates = p1.getNumberOfTypeInHand(CardType.ESTATE);
+
+        CardTypeAugment remodelAction = new CardTypeAugment(CardType.ESTATE, CardSink.HAND, CardSink.TRASH, CardTypeAugment.ChangeType.REMODEL);
+        PositionSummary post = start.apply(remodelAction);
+        assertEquals(start.getNumberInHand(CardType.ESTATE), startEstates);
+        assertEquals(post.getNumberInHand(CardType.ESTATE), startEstates-1);
+        assertEquals(start.getHandSize(), 6);
+        assertEquals(post.getHandSize(), 5);
+        assertEquals(post.getOneOffBudget(), 2);
+        assertEquals(start.getOneOffBudget(), 0);
+    }
+
+    @Test public void cellarDiscardsCard() {
+        p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.ESTATE));
+        PositionSummary start = p1.getPositionSummaryCopy();
+        assertEquals(start.getNumberPlayed(), 0);
+        assertEquals(start.getHandSize(), 6);
+        assertEquals(start.getActions(), 1);
+        int startEstates = p1.getNumberOfTypeInHand(CardType.ESTATE);
+
+        CardTypeAugment cellarAction = new CardTypeAugment(CardType.ESTATE, CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.CELLAR);
+        PositionSummary post = start.apply(cellarAction);
+        assertEquals(start.getNumberInHand(CardType.ESTATE), startEstates);
+        assertEquals(post.getNumberInHand(CardType.ESTATE), startEstates-1);
+        assertEquals(start.getHandSize(), 6);
+        assertEquals(post.getHandSize(), 5);
+        assertEquals(post.getOneOffBudget(), 1);
+        assertEquals(start.getOneOffBudget(), 0);
+        assertEquals(post.getPercentageInDiscard(), 1.0 / 11.0, 0.001);
+        assertEquals(start.getPercentageInDiscard(), 0.0 / 11.0, 0.001);
+
+        CardTypeAugment drawCards = new CardTypeAugment(CardType.NONE, CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.CELLAR);
+        PositionSummary after = post.apply(drawCards);
+        assertEquals(after.getHandSize(), 6);
+        assertEquals(after.getOneOffBudget(), 0);
+        assertEquals(after.getPercentageInDiscard(), 1.0 / 11.0, 0.001);
+
+        assertEquals(start.getNumberInHand(CardType.UNKNOWN), 0);
+        assertEquals(post.getNumberInHand(CardType.UNKNOWN), 0);
+        assertEquals(after.getNumberInHand(CardType.UNKNOWN), 1);
     }
 }

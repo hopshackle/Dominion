@@ -66,21 +66,18 @@ public class RunGame {
         maximum = games;
         finalScoring = scoringGames;
         name = descriptor;
+        EventFilter followOnFilter = new EventFilter() {
+            @Override
+            public boolean ignore(AgentEvent event) {
+                return (event.getAction() == null) ? false : event.getAction().hasNoAssociatedDecision();
+            }
+        };
         EventFilter purchaseEventFilter = new EventFilter() {
             @Override
             public boolean ignore(AgentEvent event) {
                 DominionAction action = (DominionAction) event.getAction();
                 if (action == null || !action.isAction())
-                    return false;
-                return true;
-            }
-        };
-        EventFilter actionEventFilter = new EventFilter() {
-            @Override
-            public boolean ignore(AgentEvent event) {
-                DominionAction action = (DominionAction) event.getAction();
-                if (action == null || action.isAction())
-                    return false;
+                    return followOnFilter.ignore(event);
                 return true;
             }
         };
@@ -89,7 +86,7 @@ public class RunGame {
             DeciderProperties localProp = d.getProperties();
             int sets = localProp.getPropertyAsInteger("DominionPastSetsToIncludeInTraining", "0");
             factory = new StandardERFactory<Player>(localProp);
-            ercMainMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, null));
+            ercMainMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, followOnFilter));
             ercPurcOnlyMap.put(d.toString(), new ExperienceRecordCollector<Player>(factory, purchaseEventFilter));
             boolean excludeSingleChoiceRecordFromTeaching = localProp.getProperty("ExcludeSingleChoiceExperienceRecords", "false").equals("true");
             OnInstructionTeacher<Player> teacher = new OnInstructionTeacher<Player>(sets, excludeSingleChoiceRecordFromTeaching);
