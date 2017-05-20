@@ -7,7 +7,7 @@ import java.util.List;
 
 public abstract class AttackCard extends Card {
 
-	protected int[] notYetAttacked;
+    protected int[] notYetAttacked;
 	protected int defendingPlayer;
 	protected int attacker;
 	protected DominionGame game;
@@ -37,10 +37,10 @@ public abstract class AttackCard extends Card {
 
 	protected List<ActionEnum<Player>> executeAttack() {
 		List<ActionEnum<Player>> defenceOptions = emptyList;
-		for (int v = 0; v < notYetAttacked.length; v++) {
+		while (notYetAttacked != null){
 			boolean defended = false;
 			Player attacker = game.getPlayer(this.attacker);
-			int victimPlayerNumber = notYetAttacked[v];
+			int victimPlayerNumber = notYetAttacked[0];
 			Player victim = game.getPlayer(victimPlayerNumber);
 			victim.refreshPositionSummary();
 			for (CardType ct : victim.getCopyOfHand()) {
@@ -53,10 +53,10 @@ public abstract class AttackCard extends Card {
 				defenceOptions = executeAttackOnPlayer(victim);
 				if (!defenceOptions.isEmpty()) {
 					defendingPlayer = victimPlayerNumber;
-					createFollowOnAction(v);
 					return defenceOptions;
 				}
-			} 
+			}
+            removeVictimFromToBeAttackedList(victimPlayerNumber); // so we assume attack is completed, unless there are some options to be taken
 		}
 		defendingPlayer = 0;
 		notYetAttacked = null;
@@ -65,14 +65,19 @@ public abstract class AttackCard extends Card {
 		return defenceOptions;
 	}
 
-	private void createFollowOnAction(int playerIndex) {
-		if (playerIndex < notYetAttacked.length - 1){
-			int[] updatedVictimList = new int[notYetAttacked.length - playerIndex - 1];
-			for (int i = playerIndex+1; i < notYetAttacked.length; i++)
-				updatedVictimList[i-playerIndex-1] = notYetAttacked[i];
-
+	protected void removeVictimFromToBeAttackedList(int playerNumber) {
+	    if (notYetAttacked.length > 1) {
+			int[] updatedVictimList = new int[notYetAttacked.length - 1];
+			int count = 0;
+			for (int player : notYetAttacked) {
+			    if (player == playerNumber) continue;
+                updatedVictimList[count] = player;
+                count++;
+            }
 			notYetAttacked = updatedVictimList;
 		} else {
+	        if (notYetAttacked[0] != playerNumber)
+	            throw new AssertionError("Expecting to remove last player " + playerNumber + ", but found " + notYetAttacked[0]);
 			notYetAttacked = null;
 		}
 	}
@@ -84,7 +89,7 @@ public abstract class AttackCard extends Card {
 		} else {
 			return new AttackCardFollowOnAction(this);
 		}
-	} 
+	}
 	@Override
 	public Player nextActor() {
 		if (game != null && defendingPlayer != 0)
@@ -130,7 +135,7 @@ class AttackCardFollowOnAction extends DominionAction{
 		hasNoAssociatedDecision = true;
 	}
 
-	@Override 
+	@Override
 	public AttackCardFollowOnAction clone(Player newPlayer) {
 		AttackCard newAttackCard = (AttackCard) newPlayer.getCardLastPlayed();
 		return new AttackCardFollowOnAction(this, newPlayer, newAttackCard);

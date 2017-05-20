@@ -20,9 +20,13 @@ public class Militia extends AttackCard {
 			return emptyList;
 		}
 		victim.log("Victim of MILITIA:");
-	
-		List<List<CardType>> discardOptions = victim.getPossibleDiscardsFromHand(cardsInHand.length - 3, cardsInHand.length - 3);
-		return CardType.listOfDiscardsToActionEnumList(discardOptions);
+
+		List<ActionEnum<Player>> retValue = new ArrayList<>();
+		List<List<CardType>> discardOptions = victim.getPossibleDiscardsFromHand(1, 1);
+		for (List<CardType> discard : discardOptions) {
+			retValue.add(CardTypeAugment.discardCard(discard.get(0)));
+		}
+		return retValue;
 	}
 
 }

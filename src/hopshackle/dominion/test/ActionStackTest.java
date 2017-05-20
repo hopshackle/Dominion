@@ -51,10 +51,12 @@ public class ActionStackTest {
 		assertTrue(clonedAction.getNextActor() == newGame.getPlayer(2));
 		assertFalse(clonedAction.getNextOptions().isEmpty());
 		assertTrue(clonedAction.getFollowOnAction() != null);
-		
+
+		newGame.oneAction(false, true);
 		newGame.oneAction(false, true);		// first defence - looks at nextOptions from stack, decides and executes.
 											// Then pops FollowOnAction off the stack, and executes it, putting new Follow-On
 											// Action on the stack with options for P3
+											// we repeat twice, because each discard is done separately
 		assertEquals(newGame.getActionStack().size(), 1);
 		Action<Player> action = newGame.getActionStack().peek();
 		assertTrue(action.getNextActor() == newGame.getPlayer(3));
@@ -101,7 +103,7 @@ public class ActionStackTest {
 		Action<Player> nextAction = game.getActionStack().get(0);
 		assertEquals(nextAction.getNextOptions().size(), 2);
 		assertTrue(nextAction.getNextActor() == p3);
-		game.nextPlayersTurn();
+		game.nextPlayersTurn(); // should finish attack on all players
 		assertEquals(p3.getHandSize(), 6);
 	}
 	
