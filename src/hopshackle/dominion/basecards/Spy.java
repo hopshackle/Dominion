@@ -1,60 +1,52 @@
 package hopshackle.dominion.basecards;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import hopshackle.dominion.AttackCard;
-import hopshackle.dominion.Card;
-import hopshackle.dominion.CardType;
+import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
-import hopshackle.dominion.Player;
 import hopshackle.simulation.ActionEnum;
 
 public class Spy extends AttackCard {
 
-	public Spy() {
-		super(CardType.SPY);
-	}
+    public Spy() {
+        super(CardType.SPY);
+    }
 
+    @Override
+    public List<ActionEnum<Player>> takeAction(Player player) {
+        List<ActionEnum<Player>> retValue = super.takeAction(player);
+        if (retValue.isEmpty())
+            retValue = spyOnPlayer(player, false); // do ourselves last
+        return retValue;
+    }
 
-	@Override
-	public List<ActionEnum<Player>> takeAction(Player player) {
-		super.takeAction(player);
-		spyOnPlayer(player, false);
-		return emptyList;
-	}
+    @Override
+    public List<ActionEnum<Player>> executeAttackOnPlayer(Player target) {
+        removeVictimFromToBeAttackedList(target.getNumber());
+        return spyOnPlayer(target, true);
+    }
 
+    private List<ActionEnum<Player>> spyOnPlayer(Player player, boolean opponent) {
+        if (opponent) player.log("Is target of SPY");
+        Card topCard = player.drawTopCardFromDeckInto(CardSink.HAND);
 
-	@Override
-	public List<ActionEnum<Player>> executeAttackOnPlayer(Player target) {
-		spyOnPlayer(target, true);
-		return emptyList;
-	}
+        List<ActionEnum<Player>> retValue = new ArrayList<>();
+        if (opponent) {
+            retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY));
+            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY));
+        } else {
+            retValue.add(CardTypeAugment.discardCard(CardType.NONE));
+            retValue.add(CardTypeAugment.discardCard(topCard.getType()));
+        }
+        return retValue;
+    }
 
-	private void spyOnPlayer(Player player, boolean opponent) {
-		if (opponent) player.log("Is target of SPY");
-		Card topCard = player.drawTopCardFromDeckInto(CardSink.HAND);
-		boolean discard = opponent;
-		if (topCard.isVictory()) 
-			discard = !discard;
-		if (topCard.getType() == CardType.COPPER)
-			discard = !discard;
-
-		if (topCard.isAction() && !opponent) {
-			int actions = player.getActionsLeft();
-			int cardsToDraw = 0;
-			for (CardType cardInHand : player.getCopyOfHand()) {
-				actions += cardInHand.getAdditionalActions();
-				cardsToDraw += cardInHand.getDraw();
-			}
-			if (actions < 2 || cardsToDraw > 0)
-				discard = true;		// i.e. if its an action card but we're going to pull it into hand with no way of using it, then best to discard
-		}
-
-		if (discard) {
-			player.moveCard(topCard.getType(), CardSink.HAND, CardSink.DISCARD);
-		} else {
-			player.moveCard(topCard.getType(), CardSink.HAND, CardSink.DECK);
-		}
-	}
+    @Override
+    public Player nextActor() {
+        return game.getPlayer(attacker);
+        // as when the attack occurs, the decisions are made by the attacker, not the defender, as assumed
+        // in the default AttackCard implementation
+    }
 
 }

@@ -18,6 +18,19 @@ public class Library extends Card {
 		super(CardType.LIBRARY);
 	}
 
+	/*
+	We set a reference on the Library card when we take an action. This enables the Follow-On action
+	to reliably find the card (or rather, for a clone of the Follow-On action to do so).
+	With this card, the Follow-On action is responsible for coming back to the masterCard, and effectively calling
+	its takeActions() method again, until we reach the end condition.
+	Contrast this with the approach in CELLAR, where we introduce a new ChangeType.CELLAR, and then rely on
+	DominionAction as the parent class to keep calling takeActions() until the end condition is reached. The Follow-On
+	action is then used to draw up the number of cards discarded.
+	REMODEL then works in a similar way to CELLAR, with a reliance on DominionAction to be aware of the card logic,
+	via a new ChangeType.
+	One difference with LIBRARY, is that we do not make use of CURRENT_FEATURE at all to track the status. Although
+	I am not convinced this is important enough a distinction to warrant the very different design.
+	 */
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		setRef("LIB" + idFountain.getAndIncrement());

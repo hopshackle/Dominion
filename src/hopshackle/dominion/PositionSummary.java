@@ -113,6 +113,9 @@ public class PositionSummary implements State<Player> {
                     break;
                 case ENTHRONE:
                     break;
+                case CHANCELLOR:
+                    retValue.cardsInDiscard = 0.0;
+                    break;
                 default:
                     throw new AssertionError("Unsupported action " + componentAction);
             }

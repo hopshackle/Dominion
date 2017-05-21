@@ -54,6 +54,9 @@ public class DominionAction extends Action<Player> {
     protected void doStuff() {
         for (CardTypeAugment component : cardType) {
             switch (component.type) {
+                case CHANCELLOR:
+                    player.shuffleDiscardIntoDeck();
+                    break;
                 case ENTHRONE:
                     ThroneRoom parentCard = (ThroneRoom) player.getCardLastPlayed();
                     parentCard.enthrone(component.card);

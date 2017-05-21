@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Player extends Agent {
 
-	public enum State {
+    public enum State {
 		WAITING, PLAYING, PURCHASING;
 	}
 
@@ -216,7 +216,16 @@ public class Player extends Agent {
 
 	private void shuffleDiscardToFormNewDeck() {
 		log("Shuffles discard to form new deck");
+		if (!deck.isEmpty())
+			throw new AssertionError("Deck is not empty when shuffling discard");
 		deck = discard;
+		deck.shuffle();
+		discard = new Deck();
+		refreshPositionSummary();
+	}
+
+	public void shuffleDiscardIntoDeck() {
+		deck.addDeck(discard);
 		deck.shuffle();
 		discard = new Deck();
 		refreshPositionSummary();
