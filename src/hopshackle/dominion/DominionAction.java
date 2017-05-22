@@ -106,10 +106,15 @@ public class DominionAction extends Action<Player> {
                 case CELLAR:
                     // then continue to move the card
                 case MOVE:
+                case SPY:
                     if (component.card == CardType.NONE)
                         continue;
                     player.log(component.toString());
-                    player.moveCard(component.card, component.from, component.to);
+                    Player mover = player;
+                    if (component.target != 0){
+                        mover = player.getGame().getPlayer(component.target);
+                    }
+                    mover.moveCard(component.card, component.from, component.to);
                     if (component.type == ChangeType.CELLAR) {
                         // we can only determine what is left to move, having moved the card
                         if (component.card != CardType.NONE) {

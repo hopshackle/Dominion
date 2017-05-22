@@ -536,21 +536,30 @@ public class SpecialCardAbilitiesInBasicSet {
 	}
 
 	@Test
-	public void chancellorMovesDiscardIntoDeckIfMoreThanSixProvincesLeft() {
+	public void chancellorMovesDiscardIntoDeckBasedOnDecider() {
 		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn();
+		game.nextPlayersTurn(); // back to p2, with 5 cards in discard
+		HashMap<CardValuationVariables, Double> discardPref = new HashMap<>();
+		discardPref.put(CardValuationVariables.PERCENTAGE_DISCARD, 10.0);
+		discardPref.put(CardValuationVariables.CHANCELLORS_IN_HAND, -2.0);
+		Decider<Player> discardDecider = new TestDominionDecider(purchasePreferences, handPreferences, discardPref);
+		p2.setDecider(discardDecider);
+		p3.setDecider(discardDecider);
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CHANCELLOR));
+		assertEquals(p2.getDiscardSize(), 6); // 5 original, plus purchased card
 		p2.takeActions();
 		assertEquals(p2.getDeckSize(), 0);
-		assertEquals(p2.getDiscardSize(), 5);
-
-		for (int i=0; i<6; i++)
-			game.drawCard(CardType.PROVINCE);
+		assertEquals(p2.getDiscardSize(), 6);
 
 		game.nextPlayersTurn();
+		discardPref.put(CardValuationVariables.PERCENTAGE_DISCARD, -10.0);
 		p3.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CHANCELLOR));
 		p3.takeActions();
-		assertEquals(p3.getDeckSize(), 5);
-		assertEquals(p3.getDiscardSize(), 0);
+		assertEquals(p3.getDeckSize(), 6);
+		assertEquals(p3.getDiscardSize(), 0); //
 	}
 
 	@Test
@@ -577,6 +586,11 @@ public class SpecialCardAbilitiesInBasicSet {
 		p3.putCardOnTopOfDeck(CardType.BUREAUCRAT);
 		p4.putCardOnTopOfDeck(CardType.DUCHY);
 		p1.putCardOnTopOfDeck(CardType.COPPER);
+
+		HashMap<CardValuationVariables, Double> spyPref = new HashMap<>();
+		spyPref.put(CardValuationVariables.SPIES_IN_HAND, -2.0);
+		Decider<Player> spyDecider = new TestDominionDecider(purchasePreferences, handPreferences, spyPref);
+		p2.setDecider(spyDecider);
 
 		p2.takeActions();
 		assertEquals(p2.getDiscardSize(), 0);

@@ -33,10 +33,10 @@ public class Spy extends AttackCard {
 
         List<ActionEnum<Player>> retValue = new ArrayList<>();
         if (opponent) {
-            retValue.add(new CardTypeAugment(CardType.NONE, CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY));
-            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY));
+            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.HAND, CardSink.DECK, CardTypeAugment.ChangeType.SPY, player.getNumber()));
+            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY, player.getNumber()));
         } else {
-            retValue.add(CardTypeAugment.discardCard(CardType.NONE));
+            retValue.add(CardTypeAugment.moveCard(topCard.getType(), CardSink.HAND, CardSink.DECK));
             retValue.add(CardTypeAugment.discardCard(topCard.getType()));
         }
         return retValue;

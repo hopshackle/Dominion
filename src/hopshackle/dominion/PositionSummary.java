@@ -116,6 +116,9 @@ public class PositionSummary implements State<Player> {
                 case CHANCELLOR:
                     retValue.cardsInDiscard = 0.0;
                     break;
+                case SPY:
+                    // we have no features to track opponent hands
+                    break;
                 default:
                     throw new AssertionError("Unsupported action " + componentAction);
             }

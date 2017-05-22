@@ -20,6 +20,7 @@ public class CardTypeAugment implements ActionEnum<Player> {
     public CardType card;
     public CardSink from, to;
     public ChangeType type;
+    public int target;
 
     public static CardTypeAugment playCard(CardType card) {
         return new CardTypeAugment(card, CardSink.HAND, CardSink.REVEALED, ChangeType.PLAY);
@@ -50,10 +51,15 @@ public class CardTypeAugment implements ActionEnum<Player> {
     }
 
     public CardTypeAugment(CardType card, CardSink from, CardSink to, ChangeType type) {
+        this(card, from, to, type, 0);
+    }
+
+    public CardTypeAugment(CardType card, CardSink from, CardSink to, ChangeType type, int target) {
         this.card = card;
         this.from = from;
         this.to = to;
         this.type = type;
+        this.target = target;
     }
 
     @Override
@@ -77,7 +83,7 @@ public class CardTypeAugment implements ActionEnum<Player> {
         } else if (type == ChangeType.CHANCELLOR) {
             return "Reshuffles Discard into Deck";
         } else if (type == ChangeType.SPY) {
-            return "Puts " + card.toString() + " into player discard";
+            return "Moves " + card.toString() + " to oppponent " + to.toString();
         } else {
             if (from == CardSink.HAND && to == CardSink.DISCARD)
                 return "Discards " + card.toString();
