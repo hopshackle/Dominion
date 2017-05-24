@@ -14,7 +14,8 @@ public class PositionSummary implements State<Player> {
     private HashMap<CardType, Integer> cardsRemovedFromTable = new HashMap<CardType, Integer>();
     private HashMap<CardType, Integer> cardsInDeck;
     private HashMap<CardType, Integer> cardsOnTable = new HashMap<CardType, Integer>();
-    private List<CardType> hand, cardsPlayed;
+    private List<CardType> hand;
+    private LinkedList<CardType> cardsPlayed;
     private Player player;
     private List<CardValuationVariables> variables;
     private Player.State positionState;
@@ -61,7 +62,7 @@ public class PositionSummary implements State<Player> {
         spent = base.spent;
         currentFeature = base.currentFeature;
         baseBudget = base.baseBudget;
-        cardsPlayed = new ArrayList<CardType>();
+        cardsPlayed = new LinkedList<>();
         cardsPlayed.addAll(base.cardsPlayed);
         for (int i = 0; i < 4; i++)
             playerScores[i] = base.playerScores[i];
@@ -263,7 +264,6 @@ public class PositionSummary implements State<Player> {
             cardsOnTable.put(ct, game.getNumberOfCardsRemaining(ct));
         }
         cardsInDiscard = player.getDiscardSize();
-        cardsPlayed = player.getCopyOfPlayedCards();
         recalculateVictoryPoints();
         if (players[3] != null) {
             double highestScore = -100;
@@ -393,7 +393,10 @@ public class PositionSummary implements State<Player> {
 
     public void updateHandFromPlayer() {
         hand = player.getCopyOfHand();
-        cardsPlayed = player.getCopyOfPlayedCards();
+        cardsPlayed = new LinkedList<>();
+        for (CardType c : player.getCopyOfPlayedCards()) {
+            cardsPlayed.add(c);
+        }
         baseBudget = 0;
         for (CardType ct : hand) {
             baseBudget += ct.getTreasure();
@@ -406,7 +409,7 @@ public class PositionSummary implements State<Player> {
     }
 
     private void revealCard(CardType newCard) {
-        cardsPlayed.add(newCard);
+        cardsPlayed.addFirst(newCard);
         baseBudget += newCard.getAdditionalPurchasePower();
         buys += newCard.getAdditionalBuys();
         actions += newCard.getAdditionalActions();
@@ -567,7 +570,7 @@ public class PositionSummary implements State<Player> {
 
     public CardType getCardInPlay() {
         if (positionState == Player.State.PLAYING && cardsPlayed != null && cardsPlayed.size() > 0)
-            return cardsPlayed.get(cardsPlayed.size() - 1);
+            return cardsPlayed.getFirst();
         return CardType.NONE;
     }
 

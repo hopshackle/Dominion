@@ -16,6 +16,7 @@ public class PositionSummaryApplyTests {
     Player p1, p2, p3, p4;
     private TestDominionDecider remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);
     private TestDominionDecider moatDecider = TestDominionDecider.getExample(CardType.MOAT);
+    private DeciderGenerator dg;
 
     @Before
     public void setUp() {
@@ -23,7 +24,10 @@ public class PositionSummaryApplyTests {
         localProp.setProperty("DominionCardSetup", "FirstGame");
         localProp.setProperty("DeciderType", "NNL");
         localProp.setProperty("Temperature", "0.0");
-        game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test", false);
+        localProp.setProperty("DominionAddPacesetters", "true");
+        localProp.setProperty("DominionBigMoneyPacesetter", "1.0");
+        dg = new DeciderGenerator(new GameSetup(), localProp);
+        game = new DominionGame(dg, "Test", false);
         //	game.getCurrentPlayer().setState(Player.State.PLAYING);
         p1 = game.getCurrentPlayer();
     }
@@ -141,6 +145,25 @@ public class PositionSummaryApplyTests {
         assertTrue(p1.getPlayerState() == Player.State.PURCHASING);
         later = p1.getPositionSummaryCopy();
         assertTrue(later.getCardInPlay() == CardType.NONE);
+    }
+
+    @Test
+    public void sequenceOfCardsInPlay() {
+        p1.takeCardFromSupply(CardType.VILLAGE, CardSink.HAND);
+        p1.takeCardFromSupply(CardType.REMODEL, CardSink.HAND);
+        // default decider is BigMoney
+        PositionSummary start = p1.getPositionSummaryCopy();
+        assertTrue(start.getCardInPlay() == CardType.NONE);
+        game.oneAction(true, true);
+        p1.refreshPositionSummary();
+        PositionSummary later = p1.getPositionSummaryCopy();
+        assertEquals(later.getNumberPlayed(), 1);
+        assertEquals(later.getNumberPlayed(CardType.VILLAGE), 1);
+        assertTrue(later.getCardInPlay() == CardType.VILLAGE);
+        game.oneAction(true, true);
+        later = p1.getPositionSummaryCopy();
+        assertEquals(later.getNumberPlayed(), 2);
+        assertTrue(later.getCardInPlay() == CardType.REMODEL);
     }
 
     @Test

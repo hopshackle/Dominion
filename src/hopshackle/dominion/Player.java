@@ -183,7 +183,7 @@ public class Player extends Agent {
 	public void tidyUp() {
 		buysLeft = 1;
 		actionsLeft = 1;
-		revealedCards.reset();
+		revealedCards.reset(); // reset any state variables on the cards used during play
 		discard.addDeck(revealedCards);
 		discard.addDeck(hand);
 		revealedCards = new Deck();

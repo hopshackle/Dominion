@@ -233,6 +233,7 @@ public class PositionSummaryTest {
 		Player player = game.getCurrentPlayer();
 		int copper = player.getNumberOfTypeInHand(CardType.COPPER);
 		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.VILLAGE));
+		player.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.MOAT));
 		player.putCardOnTopOfDeck(CardType.COPPER);
 		CardTypeAugment marketEnum = CardTypeAugment.playCard(CardType.VILLAGE);
 		DominionAction action = new DominionAction(player, marketEnum );
@@ -248,6 +249,20 @@ public class PositionSummaryTest {
 		assertEquals(player.getPositionSummaryCopy().getBuys(), 1);
 		assertEquals(player.getPositionSummaryCopy().getActions(), 2);
 		assertEquals(player.getPositionSummaryCopy().getBudget(), 1 + copper);
+		assertTrue(player.getCardLastPlayed().getType() == CardType.VILLAGE);
+		assertTrue(player.getPositionSummaryCopy().getCardInPlay() == CardType.VILLAGE);
+
+		marketEnum = CardTypeAugment.playCard(CardType.MOAT);
+		action = new DominionAction(player, marketEnum );
+		action.addToAllPlans();
+		action.start();
+		action.run();
+		assertEquals(player.getActionsLeft(), 1);
+		assertEquals(player.getBuys(), 1);
+		assertEquals(player.getPositionSummaryCopy().getBuys(), 1);
+		assertEquals(player.getPositionSummaryCopy().getActions(), 1);
+		assertTrue(player.getCardLastPlayed().getType() == CardType.MOAT);
+		assertTrue(player.getPositionSummaryCopy().getCardInPlay() == CardType.MOAT);
 	}
 
 	@Test
