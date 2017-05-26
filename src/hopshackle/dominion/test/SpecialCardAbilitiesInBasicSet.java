@@ -608,9 +608,38 @@ public class SpecialCardAbilitiesInBasicSet {
 	}
 
 	@Test
+	public void spyNextActorIsAttacker() {
+		Card spyCard = CardFactory.instantiateCard(CardType.SPY);
+		p1.insertCardDirectlyIntoHand(spyCard);
+		DominionAction action = new DominionAction(p1, CardTypeAugment.playCard(CardType.SPY));
+		action.addToAllPlans();
+		action.start();
+		action.run();
+		assertTrue(action.getNextActor() == p1);
+		assertTrue(action.getFollowOnAction().getNextActor() == null);
+		assertTrue(action.getFollowOnAction().getActor() == p1);
+	}
+
+
+	@Test
+	public void attackCardNextActorIsDefender() {
+		Card spyCard = CardFactory.instantiateCard(CardType.MILITIA);
+		p1.insertCardDirectlyIntoHand(spyCard);
+		DominionAction action = new DominionAction(p1, CardTypeAugment.playCard(CardType.MILITIA));
+		action.addToAllPlans();
+		action.start();
+		action.run();				// play MILITIA
+		assertTrue(action.getActor() == p1);
+		assertTrue(action.getNextActor() == p2);
+		assertTrue(action.getFollowOnAction().getNextActor() == null); // only known on execution
+		assertTrue(action.getFollowOnAction().getActor() == p1);
+	}
+
+
+	@Test
 	public void thiefTakesHighestValueTreasureCardIfNotCopper() {
 		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.THIEF));
-		purchasePreferences.put(CardType.COPPER, -0.06);
+		purchasePreferences.put(CardType.COPPER, -0.06); // so that COPPER is not taken into hand, but SILVER is still
 		p2.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));
 		p3.putCardOnTopOfDeck(CardType.COPPER);
 		p3.putCardOnTopOfDeck(CardType.COPPER);

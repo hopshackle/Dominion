@@ -15,25 +15,23 @@ public class Thief extends AttackCard {
 	@Override
 	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player target) {
 		target.log("Is target of THIEF");
-		// always trash the highest value treasure card drawn
 		Card[] topTwoCards = discardTopTwoCards(target);
+
+		// we always trash the highest treasure card for the moment.
+		// The decision is then whether to take it into hand personally
 		Card cardToTrash = getHighestTreasureCard(topTwoCards);
 		if (cardToTrash.getType() == CardType.NONE)
 			return emptyList;
 		target.moveCard(cardToTrash.getType(), CardSink.DISCARD, CardSink.TRASH);
 
-		// then decide whether to keep the trashed card
 		CardTypeAugment doNothing = CardTypeAugment.takeCard(CardType.NONE);
 		CardTypeAugment gainCard = CardTypeAugment.moveCard(cardToTrash.getType(), CardSink.TRASH, CardSink.DISCARD);
 		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
 		allOptions.add(doNothing);
 		allOptions.add(gainCard);
-		
-		Player attacker = game.getPlayer(this.attacker);
-		Action<Player> decision = (Action<Player>) attacker.getDecider().decide(attacker, allOptions);
-		decision.start();
-		decision.run();
-		return emptyList;
+
+		removeVictimFromToBeAttackedList(target.getNumber()); // we just do this once
+		return allOptions;
 	}
 
 	private Card[] discardTopTwoCards(Player target) {
@@ -56,4 +54,10 @@ public class Thief extends AttackCard {
 		return retValue;
 	}
 
+	@Override
+	public Player nextActor() {
+		return game.getPlayer(attacker);
+		// as when the attack occurs, the decisions are made by the attacker, not the defender, as assumed
+		// in the default AttackCard implementation
+	}
 }

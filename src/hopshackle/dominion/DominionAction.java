@@ -34,8 +34,10 @@ public class DominionAction extends Action<Player> {
         super(master.actionType, newPlayer, 0l, false);
         player = newPlayer;
         DominionGame masterGame = master.actor.getGame();
-        int nextActorNumber = masterGame.getPlayerNumber(master.nextActor);
-        nextActor = newPlayer.getGame().getPlayer(nextActorNumber);
+        if (master.nextActor != null) {
+            int nextActorNumber = masterGame.getPlayerNumber(master.nextActor);
+            nextActor = newPlayer.getGame().getPlayer(nextActorNumber);
+        }
         cardType = master.cardType;
         isAction = master.isAction();
         followUpAction = (master.followUpAction == null) ? null : master.followUpAction.clone(newPlayer);
