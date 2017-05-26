@@ -4,6 +4,7 @@ import java.util.*;
 
 import hopshackle.dominion.CardTypeAugment.ChangeType;
 import hopshackle.dominion.basecards.Cellar;
+import hopshackle.dominion.basecards.Moneylender;
 import hopshackle.dominion.basecards.Remodel;
 import hopshackle.dominion.basecards.ThroneRoom;
 import hopshackle.simulation.*;
@@ -96,6 +97,17 @@ public class DominionAction extends Action<Player> {
                     player.spend(component.card.getCost());
                     player.decrementBuysLeft();
                     // then continue to move the card
+                case MONEYLENDER:
+                    if (component.type == ChangeType.MONEYLENDER) {
+                        if (component.card == CardType.COPPER && component.to == CardTypeAugment.CardSink.TRASH) {
+                            // trashed a COPPER, so increase budget by 3
+                            cardToPlay = player.getCardLastPlayed();
+                            if (cardToPlay.getType() != CardType.MONEYLENDER)
+                                throw new AssertionError("Last Card played must be a MONEYLENDER");
+                            Moneylender moneylender = (Moneylender) cardToPlay;
+                            moneylender.incrementTreasureValue(3);
+                        }
+                    }
                 case REMODEL:
                     if (component.type == ChangeType.REMODEL) {
                         player.oneOffBudget(component.card.getCost());

@@ -106,6 +106,12 @@ public class PositionSummary implements State<Player> {
                             retValue.oneOffBudget(this.getOneOffBudget() + 1);
                         }
                     }
+                case MONEYLENDER:
+                    if (componentAction.type == CardTypeAugment.ChangeType.MONEYLENDER) {
+                        if (componentAction.card == CardType.COPPER && componentAction.to == CardSink.TRASH) {
+                            baseBudget += 3;
+                        }
+                    }
                 case MOVE:
                     retValue.removeCardFrom(componentAction.card, componentAction.from);
                     retValue.addCard(componentAction.card, componentAction.to);

@@ -18,7 +18,7 @@ public class Moneylender extends Card {
 
 	@Override
 	public List<ActionEnum<Player>> takeAction(Player player) {
-
+		super.takeAction(player);
 		boolean hasCopper = false;
 		for (CardType ct : player.getCopyOfHand()) {
 			if (ct == CardType.COPPER)
@@ -32,21 +32,20 @@ public class Moneylender extends Card {
 		// - Do Nothing
 		// - Trash Copper
 
+		// We will introduce a new CardTypeAugment for MONEYLENDER, which will augment the
+		// treasure value of the MONEYLENDER card if a COPPER is trashed
+
 		CardTypeAugment doNothing = CardTypeAugment.trashCard(CardType.NONE, CardSink.HAND);
-		CardTypeAugment trashCopper = CardTypeAugment.trashCard(CardType.COPPER, CardSink.HAND);
+		CardTypeAugment trashCopper = new CardTypeAugment(CardType.COPPER, CardSink.HAND, CardSink.TRASH, ChangeType.MONEYLENDER);
 		List<ActionEnum<Player>> allOptions = new ArrayList<ActionEnum<Player>>();
 		allOptions.add(doNothing);
 		allOptions.add(trashCopper);
 
-		player.setState(Player.State.PURCHASING);
-		Action<Player> chosenAction = (Action<Player>) player.getDecider().decide(player, allOptions);
-		chosenAction.start();
-		chosenAction.run();
-		player.setState(Player.State.PLAYING);
-		if (chosenAction.getType().equals(trashCopper)) {
-			treasureValue += 3;		// to cope with Throne Rooms, which might trash a copper twice (or more)
-		}
-		return emptyList;
+		return allOptions;
+	}
+
+	public void incrementTreasureValue(int increase) {
+		treasureValue += increase;
 	}
 
 	@Override
@@ -57,6 +56,13 @@ public class Moneylender extends Card {
 	@Override
 	public void reset() {
 		treasureValue = 0;
+	}
+
+	@Override
+	public Moneylender clone(DominionGame newGame) {
+		Moneylender retValue = (Moneylender) super.clone(newGame);
+		retValue.treasureValue = treasureValue;
+		return retValue;
 	}
 
 }
