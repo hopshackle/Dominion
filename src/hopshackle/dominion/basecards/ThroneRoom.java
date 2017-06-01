@@ -11,7 +11,7 @@ public class ThroneRoom extends Card {
 
 	private static AtomicLong idFountain = new AtomicLong(1);
 	DominionGame game;
-	CardType enthronedCard;
+	CardType enthronedCard = CardType.NONE;
 	int player;
 
 	public ThroneRoom() {
@@ -51,10 +51,10 @@ public class ThroneRoom extends Card {
 	public void reset() {
 		Player player = game.getPlayer(this.player);
 		// the problem is that we don't know where the replica card might be...
-		if (enthronedCard != null) {
+		if (enthronedCard != null && enthronedCard != CardType.NONE) {
 			player.removeCardsWithRef(this.getRef()+ "-REP");
 		}
-		enthronedCard = null;
+		enthronedCard = CardType.NONE;
 		game = null;
 		this.setRef("");
 		this.player = 0;
@@ -77,18 +77,22 @@ class ThroneRoomFollowOnAction extends DominionAction {
 	public ThroneRoomFollowOnAction(ThroneRoom card) {
 		super(card.game.getPlayer(card.player), new CardTypeList(new ArrayList<CardType>()));
 		masterCard = card;
+		hasNoAssociatedDecision = true;
 	}
 	@Override
 	public void doStuff() {
 		// put masterCard back into hand from revealed
 		CardType enthronedCard = masterCard.enthronedCard;
 		// Add two actions, one for each of the two cards we will be playing
-		player.incrementActionsLeft();
-		player.incrementActionsLeft();
+
 		if (enthronedCard == null || enthronedCard == CardType.NONE){
-			// No card was actually played		
+			// No card was actually played
+			player.incrementActionsLeft();
 			return;
 		}
+
+		player.incrementActionsLeft();
+		player.incrementActionsLeft();
 		Card replicaCard = CardFactory.instantiateCard(enthronedCard);
 		replicaCard.setRef(masterCard.getRef() + "-REP");
 		player.insertCardDirectlyIntoHand(replicaCard);

@@ -36,7 +36,9 @@ public class Bureaucrat extends AttackCard {
 		case 0:
 			return emptyList;
 		case 1:
-			target.moveCard(victoryCardTypes.iterator().next(), CardSink.HAND, CardSink.DECK);
+			CardType onlyVictoryCard = victoryCardTypes.iterator().next();
+			target.moveCard(onlyVictoryCard, CardSink.HAND, CardSink.DECK);
+			target.log("Puts " + onlyVictoryCard + " on top of DECK");
 			return emptyList;
 		default:
 			List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();

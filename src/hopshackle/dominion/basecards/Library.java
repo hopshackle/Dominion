@@ -119,6 +119,7 @@ class LibraryFollowOnAction extends DominionAction {
 
 	@Override
 	public ActionEnum<Player> getType() {
-		return CardTypeAugment.playCard(CardType.LIBRARY);
+
+		return CardTypeAugment.drawCard();
 	}
 }

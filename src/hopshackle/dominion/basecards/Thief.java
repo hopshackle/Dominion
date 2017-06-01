@@ -15,11 +15,16 @@ public class Thief extends AttackCard {
 	@Override
 	public List<ActionEnum<Player>>  executeAttackOnPlayer(Player target) {
 		target.log("Is target of THIEF");
-		Card[] topTwoCards = discardTopTwoCards(target);
+		Card[] topTwoCards = revealTopTwoCards(target);
 
 		// we always trash the highest treasure card for the moment.
 		// The decision is then whether to take it into hand personally
 		Card cardToTrash = getHighestTreasureCard(topTwoCards);
+
+		for (Card c : topTwoCards)
+			target.moveCard(c.getType(), CardSink.REVEALED, CardSink.DISCARD);
+			// do this separately, otherwise if we have 1 card in deck, then this is shuffled back in if we
+			// discard it before drawing the second card
 		if (cardToTrash.getType() == CardType.NONE)
 			return emptyList;
 		target.moveCard(cardToTrash.getType(), CardSink.DISCARD, CardSink.TRASH);
@@ -34,10 +39,10 @@ public class Thief extends AttackCard {
 		return allOptions;
 	}
 
-	private Card[] discardTopTwoCards(Player target) {
+	private Card[] revealTopTwoCards(Player target) {
 		Card[] retValue = new Card[2];
-		retValue[0] = target.drawTopCardFromDeckInto(CardSink.DISCARD);
-		retValue[1] = target.drawTopCardFromDeckInto(CardSink.DISCARD);
+		retValue[0] = target.drawTopCardFromDeckInto(CardSink.REVEALED);
+		retValue[1] = target.drawTopCardFromDeckInto(CardSink.REVEALED);
 		return retValue;
 	}
 	
@@ -56,6 +61,8 @@ public class Thief extends AttackCard {
 
 	@Override
 	public Player nextActor() {
+		if (game == null)
+			return null;
 		return game.getPlayer(attacker);
 		// as when the attack occurs, the decisions are made by the attacker, not the defender, as assumed
 		// in the default AttackCard implementation

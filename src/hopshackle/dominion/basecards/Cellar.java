@@ -15,7 +15,7 @@ public class Cellar extends Card {
 	}
 
 	public List<ActionEnum<Player>> takeAction(Player player) {
-		super.takeAction(player);
+		if (this.player == null) super.takeAction(player);		// just once; else we add an action for each discarded card
 		/*
 			We discard one card at a time
 			DominionAction will track how many have been discarded using CURRENT_FEATURE

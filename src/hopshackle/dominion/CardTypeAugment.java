@@ -83,7 +83,7 @@ public class CardTypeAugment implements ActionEnum<Player> {
         } else if (type == ChangeType.CHANCELLOR) {
             return "Reshuffles Discard into Deck";
         } else if (type == ChangeType.SPY) {
-            return "Moves " + card.toString() + " to oppponent " + to.toString();
+            return "Moves " + card.toString() + " to opponent " + to.toString();
         } else {
             if (from == CardSink.HAND && to == CardSink.DISCARD)
                 return "Discards " + card.toString();

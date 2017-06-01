@@ -29,21 +29,23 @@ public class Spy extends AttackCard {
 
     private List<ActionEnum<Player>> spyOnPlayer(Player player, boolean opponent) {
         if (opponent) player.log("Is target of SPY");
-        Card topCard = player.drawTopCardFromDeckInto(CardSink.HAND);
+        Card topCard = player.drawTopCardFromDeckInto(CardSink.REVEALED);
 
         List<ActionEnum<Player>> retValue = new ArrayList<>();
         if (opponent) {
-            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.HAND, CardSink.DECK, CardTypeAugment.ChangeType.SPY, player.getNumber()));
-            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.HAND, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY, player.getNumber()));
+            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.REVEALED, CardSink.DECK, CardTypeAugment.ChangeType.SPY, player.getNumber()));
+            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.REVEALED, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY, player.getNumber()));
         } else {
-            retValue.add(CardTypeAugment.moveCard(topCard.getType(), CardSink.HAND, CardSink.DECK));
-            retValue.add(CardTypeAugment.discardCard(topCard.getType()));
+            retValue.add(CardTypeAugment.moveCard(topCard.getType(), CardSink.REVEALED, CardSink.DECK));
+            retValue.add(CardTypeAugment.moveCard(topCard.getType(), CardSink.REVEALED, CardSink.HAND));
         }
         return retValue;
     }
 
     @Override
     public Player nextActor() {
+        if (game == null)
+            return null;
         return game.getPlayer(attacker);
         // as when the attack occurs, the decisions are made by the attacker, not the defender, as assumed
         // in the default AttackCard implementation

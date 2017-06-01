@@ -88,6 +88,7 @@ public class SpecialCardAbilitiesInBasicSet {
 			assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p2), i / 12.0, 0.001);
 		}
 		game.oneAction(true, true);	// will draw up to full hand
+		assertEquals(p2.getActionsLeft(), 1);
 		assertEquals(p2.getHandSize(), 6);
 		assertEquals(p2.getDiscardSize(), estatesInHand);
 		assertEquals(p2.getDeckSize(), 5 - estatesInHand);
@@ -467,8 +468,11 @@ public class SpecialCardAbilitiesInBasicSet {
 		p2.moveCard(CardType.COPPER, CardSink.HAND, CardSink.DISCARD);
 		p2.insertCardDirectlyIntoHand(new ThroneRoom());
 		p2.insertCardDirectlyIntoHand(new Card(CardType.SMITHY));
+		p2.insertCardDirectlyIntoHand(new Card(CardType.SMITHY)); // second card should not be played
 		p2.takeActions();
-		assertEquals(p2.getHandSize(), 9);	// Throne Room and Smithy Discarded from original 5, and then 6 picked up
+		assertEquals(p2.getHandSize(), 10);	// Throne Room and Smithy Discarded from original 6, and then 6 picked up
+		assertEquals(p2.getNumberOfTypeInHand(CardType.SMITHY), 1);
+		assertEquals(p2.getNumberOfTypePlayedSoFar(CardType.SMITHY), 2);
 	}
 
 	@Test
@@ -490,6 +494,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.getHandSize(), 14); // Starts with 11. ThroneRoom and Festival removed for -2; four Moats then played, giving net +4
 		assertEquals(p2.getBuys(), 3);
 		assertEquals(p2.getBudget(), 14);	// so we have all treasure in original deck, plus one copper, +4 from doubled Festival
+		assertEquals(p2.getActionsLeft(), 0);
 
 		p2.tidyUp();
 		assertEquals(p2.getHandSize(), 5); 
@@ -642,7 +647,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		purchasePreferences.put(CardType.COPPER, -0.06); // so that COPPER is not taken into hand, but SILVER is still
 		p2.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));
 		p3.putCardOnTopOfDeck(CardType.COPPER);
-		p3.putCardOnTopOfDeck(CardType.COPPER);
+		p3.putCardOnTopOfDeck(CardType.FESTIVAL);
 		p4.putCardOnTopOfDeck(CardType.ESTATE);
 		p4.putCardOnTopOfDeck(CardType.ESTATE);
 		game.nextPlayersTurn();
@@ -663,9 +668,28 @@ public class SpecialCardAbilitiesInBasicSet {
 		assertEquals(p2.totalTreasureValue(), 9);
 		assertEquals(p2.totalVictoryValue(), 3);
 		assertEquals(p1.totalTreasureValue(), 11);	// buys silver on own turn
-		assertEquals(p3.totalTreasureValue(), 8);
+		assertEquals(p3.totalTreasureValue(), 7);
 		assertEquals(p4.totalTreasureValue(), 7);
 		assertEquals(p4.totalVictoryValue(), 5);
+	}
+
+	@Test
+	public void thiefDiscardsDoNotGetShuffledBackIntoDeck() {
+		p2.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.THIEF));
+		p2.setDecider(new DominionDeciderContainer(defaultPurchaseDecider, hardCodedActionDecider));;
+		game.nextPlayersTurn();
+		for (int i =0; i < 5; i++) p3.drawTopCardFromDeckInto(CardSink.HAND);
+		assertEquals(p3.getNumberOfTypeInHand(CardType.ESTATE), 3);
+		for (int i =0; i < 2; i++) p3.moveCard(CardType.ESTATE, CardSink.HAND, CardSink.DISCARD);
+		p3.putCardOnTopOfDeck(CardType.SILVER);		// now just has one card in Deck
+		assertEquals(p3.getDeckSize(), 1);
+		assertEquals(p3.getDiscardSize(), 2);
+		p2.takeActions();
+
+		assertEquals(p1.getDeckSize(), 4);
+		assertEquals(p2.getDeckSize(), 5);
+		assertEquals(p3.getDeckSize(), 1);
+		assertEquals(p4.getDeckSize(), 3);
 	}
 
 	@Test
