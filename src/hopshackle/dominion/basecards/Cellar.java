@@ -66,6 +66,7 @@ class CellarFollowOnAction extends DominionAction {
 		for (int i = 0; i < cardsToDraw; i++) {
 			player.drawTopCardFromDeckInto(CardSink.HAND);
 		}
+		player.oneOffBudget(0);		// and reset
 	}
 	
 	@Override

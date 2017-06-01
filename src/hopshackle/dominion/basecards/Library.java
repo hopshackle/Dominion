@@ -107,6 +107,7 @@ class LibraryFollowOnAction extends DominionAction {
 		possibleOptions = masterCard.drawToLimit();
 		if (possibleOptions.isEmpty()) {
 			followUpAction = null;
+			hasNoAssociatedDecision = true;
 		} else {
 			followUpAction = new LibraryFollowOnAction(masterCard);
 		}
@@ -119,7 +120,6 @@ class LibraryFollowOnAction extends DominionAction {
 
 	@Override
 	public ActionEnum<Player> getType() {
-
 		return CardTypeAugment.drawCard();
 	}
 }

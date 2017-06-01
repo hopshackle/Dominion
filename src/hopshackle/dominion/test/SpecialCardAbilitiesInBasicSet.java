@@ -87,8 +87,10 @@ public class SpecialCardAbilitiesInBasicSet {
 			assertEquals(p2.getDeckSize(), 5);
 			assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p2), i / 12.0, 0.001);
 		}
+		assertEquals(p2.getOneOffBudget(), estatesInHand);
 		game.oneAction(true, true);	// will draw up to full hand
 		assertEquals(p2.getActionsLeft(), 1);
+		assertEquals(p2.getOneOffBudget(), 0);
 		assertEquals(p2.getHandSize(), 6);
 		assertEquals(p2.getDiscardSize(), estatesInHand);
 		assertEquals(p2.getDeckSize(), 5 - estatesInHand);
