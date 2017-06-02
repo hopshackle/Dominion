@@ -7,6 +7,7 @@ import hopshackle.simulation.*;
 
 import java.util.*;
 
+import javafx.scene.control.Cell;
 import org.junit.*;
 
 public class CloneTests {
@@ -311,17 +312,21 @@ public class CloneTests {
 		p1.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
 		p1.insertCardDirectlyIntoHand(new Card(CardType.ESTATE));
 		int estatesInHand = p1.getNumberOfTypeInHand(CardType.ESTATE);
+		assertEquals(p1.getHandSize(), 8);
 		for (int i = 0; i <= estatesInHand; i++) {
 			// i = 0 is Play CELLAR
 			if (i == 2) { // so after discarding one estate
 				// clone game
 				game = game.clone(p1);
 				p1 = game.getPlayer(1);
+				Card inPlay = p1.getCardLastPlayed();
+				assertTrue(inPlay instanceof Cellar);
 			}
 			game.oneAction(true, true);
 			assertEquals(p1.getHandSize(), 7 - i);
 			assertEquals(p1.getDiscardSize(), i);
 			assertEquals(p1.getDeckSize(), 5);
+			assertEquals(p1.getOneOffBudget(), i);
 			assertEquals(CardValuationVariables.PERCENTAGE_DISCARD.getValue(p1), i / 13.0, 0.001);
 		}
 		game.oneAction(true, true);	// will draw up to full hand

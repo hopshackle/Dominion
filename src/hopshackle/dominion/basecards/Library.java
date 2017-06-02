@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Library extends Card {
 
 	private static AtomicLong idFountain = new AtomicLong(1);
-	CardType currentActionCard;
 	int playerNumber;
 	DominionGame game;
 
@@ -49,13 +48,11 @@ public class Library extends Card {
 				break;
 			}
 			if (nextCard.isAction()) {
-				currentActionCard = nextCard;
 				List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
 				retValue.add(new CardTypeAugment(nextCard, CardSink.DECK, CardSink.HAND, ChangeType.MOVE));
 				retValue.add(new CardTypeAugment(nextCard, CardSink.DECK, CardSink.DISCARD, ChangeType.MOVE));
 				return retValue;
 			} else {
-				currentActionCard = null;
 				player.drawTopCardFromDeckInto(CardSink.HAND);
 			}
 		} while (player.getHandSize() < 7);
@@ -72,12 +69,10 @@ public class Library extends Card {
 		Library retValue = (Library) super.clone(newGame);
 		retValue.game = newGame;
 		retValue.playerNumber = playerNumber;
-		retValue.currentActionCard = currentActionCard;
 		return retValue;
 	}
 	@Override
 	public void reset() {
-		currentActionCard = null;
 		playerNumber = 0;
 		game = null;
 		setRef("");

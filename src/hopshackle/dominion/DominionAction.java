@@ -110,11 +110,16 @@ public class DominionAction extends Action<Player> {
                     }
                 case REMODEL:
                     if (component.type == ChangeType.REMODEL) {
-                        player.oneOffBudget(component.card.getCost());
-                        cardToPlay = player.getCardLastPlayed();
-                        if (!(cardToPlay instanceof Remodel))
-                            throw new AssertionError("Last card played was not Remodel");
-                        possibleOptions = cardToPlay.takeAction(player);
+                        if (component.to == CardTypeAugment.CardSink.TRASH) {
+                            player.oneOffBudget(component.card.getCost());
+                            cardToPlay = player.getCardLastPlayed();
+                            if (!(cardToPlay instanceof Remodel))
+                                throw new AssertionError("Last card played was not Remodel");
+                            possibleOptions = cardToPlay.takeAction(player);
+                        }
+                        if (component.to == CardTypeAugment.CardSink.DISCARD) {
+                            player.oneOffBudget(0);
+                        }
                     }
                     // then continue to move the card
                 case CELLAR:

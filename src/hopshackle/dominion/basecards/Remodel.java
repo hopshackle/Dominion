@@ -23,7 +23,6 @@ public class Remodel extends Card {
 			for (CardType card : player.getCopyOfHand()) {
 				if (!hand.contains(card))
 					hand.add(card);
-
 			}
 			for (CardType cardToTrash : hand) {
 				allOptions.add(new CardTypeAugment(cardToTrash, CardSink.HAND, CardSink.TRASH, ChangeType.REMODEL));
@@ -37,10 +36,9 @@ public class Remodel extends Card {
 					targets.add(t);
 			}
 			for (CardType cardToAcquire : targets) {
-				CardTypeAugment gainAction = CardTypeAugment.takeCard(cardToAcquire);
+				CardTypeAugment gainAction = new CardTypeAugment(cardToAcquire, CardSink.SUPPLY, CardSink.DISCARD, ChangeType.REMODEL);
 				allOptions.add(gainAction);
 			}
-			player.oneOffBudget(0); // and reset
 		}
 		secondPhase = !secondPhase;
 		return allOptions;

@@ -8,6 +8,7 @@ import java.util.*;
 
 public class Cellar extends Card {
 
+	boolean inPlay;
 	private Player player;
 
 	public Cellar() {
@@ -15,9 +16,10 @@ public class Cellar extends Card {
 	}
 
 	public List<ActionEnum<Player>> takeAction(Player player) {
-		if (this.player == null) {
-		    player.oneOffBudget(0); // in case this stuill has a value from a previous REMODEL or something
+		if (!inPlay) {
+		    player.oneOffBudget(0); // in case this still has a value from a previous REMODEL or something
 		    super.takeAction(player);		// just once; else we add an action for each discarded card
+			inPlay = true;
         }
 		/*
 			We discard one card at a time
@@ -40,13 +42,14 @@ public class Cellar extends Card {
 	}
 	@Override
 	public void reset() {
+		inPlay = false;
 		player = null;
 	}
 
 	@Override
 	public Cellar clone(DominionGame newGame) {
 		Cellar retValue = (Cellar) super.clone(newGame);
-		if (player != null) retValue.player = newGame.getPlayer(player.getNumber());
+		retValue.inPlay = inPlay;
 		return retValue;
 	}
 }
