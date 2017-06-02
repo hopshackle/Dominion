@@ -32,7 +32,7 @@ public class DominionAction extends Action<Player> {
     }
 
     public DominionAction(DominionAction master, Player newPlayer) {
-        super(master.actionType, newPlayer, 0l, false);
+        super(master.getType(), newPlayer, 0l, false);
         player = newPlayer;
         DominionGame masterGame = master.actor.getGame();
         if (master.nextActor != null) {
