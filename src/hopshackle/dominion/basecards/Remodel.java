@@ -40,6 +40,7 @@ public class Remodel extends Card {
 				CardTypeAugment gainAction = CardTypeAugment.takeCard(cardToAcquire);
 				allOptions.add(gainAction);
 			}
+			player.oneOffBudget(0); // and reset
 		}
 		secondPhase = !secondPhase;
 		return allOptions;

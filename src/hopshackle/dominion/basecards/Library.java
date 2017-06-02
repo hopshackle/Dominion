@@ -107,7 +107,6 @@ class LibraryFollowOnAction extends DominionAction {
 		possibleOptions = masterCard.drawToLimit();
 		if (possibleOptions.isEmpty()) {
 			followUpAction = null;
-			hasNoAssociatedDecision = true;
 		} else {
 			followUpAction = new LibraryFollowOnAction(masterCard);
 		}
