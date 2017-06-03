@@ -11,9 +11,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Chapel extends Card {
 
 	private static AtomicLong idFountain = new AtomicLong(1);
-
+	private boolean firstDecision = true;
 	private int trashedSoFar;
-	private Player player;
+	private int player;
+	private DominionGame game;
 
 	public Chapel() {
 		super(CardType.CHAPEL);
@@ -22,14 +23,17 @@ public class Chapel extends Card {
 	@Override
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
-		this.player = player;
+		this.player = player.getNumber();
+		this.game = player.getGame();
 		this.setRef("CHAPEL" + idFountain.getAndIncrement());
 		// We can trash any one card from hand, or NONE
 		// We can do this a total of four times
 		// So the follow-on action can simply be a brand new action, referencing the same card
 		// with a counter to make sure we only do this 4 times
 
-		return trashOptions();
+		List<ActionEnum<Player>> retValue = trashOptions();
+		firstDecision = false;
+		return retValue;
 	}
 
 	protected List<ActionEnum<Player>> trashOptions() {
@@ -37,7 +41,7 @@ public class Chapel extends Card {
 			return emptyList;
 
 		List<CardType> hand = new ArrayList<CardType>();
-		for (CardType c : player.getCopyOfHand()) {
+		for (CardType c : game.getPlayer(player).getCopyOfHand()) {
 			if (!hand.contains(c))
 				hand.add(c);
 		}
@@ -54,31 +58,41 @@ public class Chapel extends Card {
 	}
 
 	private boolean lastTrashWasNONE() {
-		List<Action<?>> executedActions = player.getExecutedActions();
+		// slightly awkward - but this avoids us having to put any Chapel-specific logic
+		// in DominionAction, and keeps all the Chapel logic in the one class
+		if (firstDecision) return false; // for the very first decision, we know that no cards have been trashed
+										// This avoids us being misled if, say, the last card played was a Moneylender
+										// which trashed a COPPER as the most recent action
+		List<Action<?>> executedActions = game.getPlayer(player).getExecutedActions();
 		if (executedActions.isEmpty()) return false;
 		DominionAction lastAction = (DominionAction) executedActions.get(executedActions.size()-1);
+		if (lastAction.getType() instanceof CardTypeList) return false;
 		CardTypeAugment cta = (CardTypeAugment) lastAction.getType();
-		return cta.card == CardType.NONE;
+		return (cta.card == CardType.NONE && cta.to == CardSink.TRASH);
 	}
 
 
 	@Override
 	public DominionAction followUpAction() {
-		DominionAction retValue = new ChapelFollowOnAction(player,this);
+		DominionAction retValue = new ChapelFollowOnAction(game.getPlayer(player),this);
 		return retValue;
 	}
 	@Override
 	public void reset() {
 		trashedSoFar = 0;
-		player = null;
+		firstDecision = true;
+		player = 0;
+		game = null;
 		this.setRef("");
 	}
 
 	@Override
 	public Chapel clone(DominionGame newGame) {
 		Chapel retValue = (Chapel) super.clone(newGame);
-		if (player != null) retValue.player = newGame.getPlayer(player.getNumber());
+		retValue.player = player;
+		retValue.game = newGame;
 		retValue.trashedSoFar = trashedSoFar;
+		retValue.firstDecision = firstDecision;
 		return retValue;
 	}
 
@@ -93,12 +107,17 @@ class ChapelFollowOnAction extends DominionAction {
 		chapel = card;
 	}
 
-	@Override
-	public ChapelFollowOnAction clone(Player newPlayer) {
-		List<Card> newCards = newPlayer.getCardsWithRef(chapel.getRef());
+	public ChapelFollowOnAction (ChapelFollowOnAction master, Player newPlayer) {
+		super(master, newPlayer);
+		List<Card> newCards = newPlayer.getCardsWithRef(master.chapel.getRef());
 		if (newCards.size() != 1)
 			throw new AssertionError("Expect exactly one card with reference of " + chapel.getRef() + " and found " + newCards.size());
-		return new ChapelFollowOnAction(newPlayer, (Chapel) newCards.get(0));
+		chapel = (Chapel) newCards.get(0);
+	}
+
+	@Override
+	public ChapelFollowOnAction clone(Player newPlayer) {
+		return new ChapelFollowOnAction(this, newPlayer);
 	}
 
 	@Override

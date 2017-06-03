@@ -34,15 +34,12 @@ public class DominionAction extends Action<Player> {
     public DominionAction(DominionAction master, Player newPlayer) {
         super(master.getType(), newPlayer, 0l, false);
         player = newPlayer;
-        DominionGame masterGame = master.actor.getGame();
-        if (master.nextActor != null) {
-            int nextActorNumber = masterGame.getPlayerNumber(master.nextActor);
-            nextActor = newPlayer.getGame().getPlayer(nextActorNumber);
-        }
+        nextActor = (master.nextActor == null) ? null : player.getGame().getPlayer(master.nextActor.getNumber());
         cardType = master.cardType;
         isAction = master.isAction();
         followUpAction = (master.followUpAction == null) ? null : master.followUpAction.clone(newPlayer);
         possibleOptions = master.possibleOptions;
+        hasNoAssociatedDecision = master.hasNoAssociatedDecision;
     }
 
     public String toString() {
@@ -108,6 +105,7 @@ public class DominionAction extends Action<Player> {
                             moneylender.incrementTreasureValue(3);
                         }
                     }
+                    // then continue to move the card
                 case REMODEL:
                     if (component.type == ChangeType.REMODEL) {
                         if (component.to == CardTypeAugment.CardSink.TRASH) {

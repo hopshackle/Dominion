@@ -15,12 +15,10 @@ public class Feast extends Card {
 
 	@Override
 	public List<ActionEnum<Player>> takeAction(Player player) {
+		super.takeAction(player);
 		player.moveCard(CardType.FEAST, CardSink.REVEALED, CardSink.TRASH);
-		player.setState(Player.State.PURCHASING);
-		Action<Player> action = (new DominionBuyingDecision(player, 5, 1)).getBestMandatoryPurchase();
-		action.start();
-		action.run();
-		player.setState(Player.State.PLAYING);
-		return emptyList;
+
+		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, 5, 1);
+		return nextBuy.getPossiblePurchasesAsActionEnum();
 	}
 }

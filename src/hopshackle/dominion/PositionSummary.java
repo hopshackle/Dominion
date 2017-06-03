@@ -109,7 +109,7 @@ public class PositionSummary implements State<Player> {
                 case MONEYLENDER:
                     if (componentAction.type == CardTypeAugment.ChangeType.MONEYLENDER) {
                         if (componentAction.card == CardType.COPPER && componentAction.to == CardSink.TRASH) {
-                            baseBudget += 3;
+                            retValue.baseBudget = baseBudget + 3;
                         }
                     }
                 case MOVE:

@@ -60,10 +60,14 @@ class CellarFollowOnAction extends DominionAction {
 		super(player, new CardTypeList(new ArrayList<CardType>()));
 		hasNoAssociatedDecision = true;
 	}
-	
+
+	public CellarFollowOnAction(CellarFollowOnAction master, Player newPlayer) {
+		super(master, newPlayer);
+	}
+
 	@Override 
 	public CellarFollowOnAction clone(Player newPlayer) {
-		return new CellarFollowOnAction(newPlayer);
+		return new CellarFollowOnAction(this, newPlayer);
 	}
 	
 	@Override

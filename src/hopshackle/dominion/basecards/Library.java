@@ -87,14 +87,16 @@ class LibraryFollowOnAction extends DominionAction {
 		super(parent.game.getPlayer(parent.playerNumber), new CardTypeList(new ArrayList<CardType>()));
 		masterCard = parent;
 	}
+
+	public LibraryFollowOnAction(LibraryFollowOnAction master, Player newPlayer) {
+		super(master, newPlayer);
+		Library newMaster = (Library) newPlayer.getCardsWithRef(master.masterCard.getRef()).get(0);
+		masterCard = newMaster;
+	}
+
 	@Override 
 	public LibraryFollowOnAction clone(Player newPlayer) {
-		Library newMaster = (Library) newPlayer.getCardsWithRef(masterCard.getRef()).get(0);
-		LibraryFollowOnAction retValue = new LibraryFollowOnAction(newMaster);
-		retValue.possibleOptions = possibleOptions;
-		if (retValue.followUpAction != null) 
-			retValue.followUpAction = followUpAction.clone(newPlayer);
-		return retValue;
+		return new LibraryFollowOnAction(this, newPlayer);
 	}
 
 	@Override

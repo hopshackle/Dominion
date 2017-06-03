@@ -335,4 +335,70 @@ public class CloneTests {
 		assertEquals(p1.getDeckSize(), 5 - estatesInHand);
 	}
 
+	@Test
+	public void cloneInMiddleOfMoneyLender() {
+		Moneylender moneylender = new Moneylender();
+		Player p1 = game.getCurrentPlayer();
+		purchasePreferences.put(CardType.COPPER, -0.50);
+		p1.insertCardDirectlyIntoHand(moneylender);
+		PositionSummary preps = p1.getPositionSummaryCopy();
+		int copper = p1.getNumberOfTypeInHand(CardType.COPPER);
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+
+		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
+		game.oneAction(true, true); // Plays MONEYLENDER
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
+		assertEquals(p1.getBudget(), copper);
+		assertEquals(preps.getBudget(), copper);
+
+		game = game.clone(p1);
+		p1 = game.getPlayer(1);
+		PositionSummary postps = p1.getPositionSummaryCopy();
+		moneylender = (Moneylender) p1.getCardLastPlayed();
+
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 7);
+		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
+		assertEquals(p1.getBudget(), copper);
+		assertEquals(postps.getBudget(), copper);
+
+		game.oneAction(false, true); // Trashes COPPER, and moves to Buy Phase
+		assertEquals(p1.getNumberOfTypeTotal(CardType.COPPER), 6);
+		assertEquals(moneylender.getAdditionalPurchasePower(), 3);
+		assertEquals(p1.getBudget(), copper + 2);
+
+		p1.buyCards();
+		assertEquals(moneylender.getAdditionalPurchasePower(), 3);
+		p1.tidyUp();
+		assertEquals(moneylender.getAdditionalPurchasePower(), 0);
+	}
+
+	@Test
+	public void cloneInMiddleOfChapel() {
+		Player p1 = game.getCurrentPlayer();
+		p1.insertCardDirectlyIntoHand(new Chapel());
+		p1.insertCardDirectlyIntoHand(new Moat());
+		for (int i = 0; i < 5; i++)
+			p1.insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.CURSE));
+		assertEquals(p1.getNumberOfTypeTotal(CardType.CURSE), 5);
+		for (int i = 0; i < 2; i++) {
+			game.oneAction(true, true);
+			// this should play Chapel, and trash one CURSE
+		}
+		assertEquals(p1.getHandSize(), 10);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.CURSE), 4);
+		assertEquals(p1.getActionsLeft(), 0);
+		DominionGame newGame = game.clone(p1);
+		p1 = newGame.getCurrentPlayer();
+		assertEquals(p1.getActionsLeft(), 0);
+		assertEquals(p1.getHandSize(), 10);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.CURSE), 4);
+		newGame.oneAction();
+		assertEquals(p1.getNumberOfTypeInHand(CardType.MOAT), 1);
+		assertEquals(p1.getNumberOfTypeInHand(CardType.CURSE), 1);
+		assertEquals(p1.getNumberOfTypeTotal(CardType.CURSE), 1);
+		assertEquals(p1.getHandSize(), 7);
+		assertEquals(p1.getDiscardSize(), 0);
+	}
+
 }
