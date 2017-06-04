@@ -63,10 +63,10 @@ public class DominionBuyingDecisionTest {
 		cellarcellar.add(CardType.CELLAR);
 		cellarcellar.add(CardType.CELLAR);
 
-		ctl1 = new CardTypeList(coppercurse);
-		ctl2 = new CardTypeList(cursecopper);
-		ctl3 = new CardTypeList(coppercurse);
-		ctl4 = new CardTypeList(cellarcellar);
+		ctl1 = new CardTypeList(coppercurse, CardTypeAugment.ChangeType.BUY);
+		ctl2 = new CardTypeList(cursecopper, CardTypeAugment.ChangeType.BUY);
+		ctl3 = new CardTypeList(coppercurse, CardTypeAugment.ChangeType.BUY);
+		ctl4 = new CardTypeList(cellarcellar, CardTypeAugment.ChangeType.BUY);
 		assertTrue(ctl1.equals(ctl2));
 		assertTrue(ctl1.equals(ctl3));
 		assertTrue(ctl2.equals(ctl3));

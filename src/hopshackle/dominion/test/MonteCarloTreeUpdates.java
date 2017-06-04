@@ -31,7 +31,7 @@ public class MonteCarloTreeUpdates {
 		copperMarket = new ArrayList<CardType>();
 		copperMarket.add(CardType.COPPER);
 		copperMarket.add(CardType.MARKET);
-		actionList.add(new CardTypeList(copperMarket));
+		actionList.add(new CardTypeList(copperMarket, CardTypeAugment.ChangeType.BUY));
 		actionList.add(CardTypeAugment.takeCard(CardType.ADVENTURER));
 		actionList.add(CardTypeAugment.takeCard(CardType.COPPER));
 
@@ -40,15 +40,15 @@ public class MonteCarloTreeUpdates {
 	@Test
 	public void monteCarloTreeSetUpWithCardTypeListActions() {
 		tree.insertState(startState, actionList);
-		tree.updateState(startState, new CardTypeList(copperMarket), startState, 2.0);
+		tree.updateState(startState, new CardTypeList(copperMarket, CardTypeAugment.ChangeType.BUY), startState, 2.0);
 		assertTrue(tree.containsState(startState));
 		MCStatistics<Player> stats = tree.getStatisticsFor(startState);
-		assertEquals(stats.getMean(new CardTypeList(copperMarket))[0], 2.0, 0.001);
+		assertEquals(stats.getMean(new CardTypeList(copperMarket, CardTypeAugment.ChangeType.BUY))[0], 2.0, 0.001);
 	}
 	
 	@Test
 	public void cardTypeListActionsReturnCorrectActionEnum() {
-		ActionEnum<Player> cmActionEnum = new CardTypeList(copperMarket);
+		ActionEnum<Player> cmActionEnum = new CardTypeList(copperMarket, CardTypeAugment.ChangeType.BUY);
 		Action<Player> cmAction = cmActionEnum.getAction(game.getCurrentPlayer());
 		assertTrue(cmActionEnum.toString().equals("Buys COPPER Buys MARKET "));
 		assertTrue(cmAction.getType().equals(cmActionEnum));

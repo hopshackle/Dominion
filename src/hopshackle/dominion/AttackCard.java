@@ -127,7 +127,7 @@ class AttackCardFollowOnAction extends DominionAction {
     private AttackCard attackSource;    // this will know what it is
 
     public AttackCardFollowOnAction(AttackCard card) {
-        super(card.game.getPlayer(card.attacker), new CardTypeList(new ArrayList<CardType>()));
+        super(card.game.getPlayer(card.attacker), new CardTypeList(new ArrayList<CardType>(), CardTypeAugment.ChangeType.BUY));
         attackSource = card;
         nextActor = null;
         hasNoAssociatedDecision = true;

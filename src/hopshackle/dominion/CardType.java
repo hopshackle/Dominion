@@ -68,9 +68,9 @@ public enum CardType {
 		return treasureValue;
 	}
 	public int getVictory(PositionSummary ps) {
-		if (this.equals(GARDENS))
+		if (ps != null && this.equals(GARDENS)) {
 			return (int) (ps.totalNumberOfCards() / 10.0);
-
+		}
 		return victoryPoints;
 	}
 	public int getAdditionalBuys() {

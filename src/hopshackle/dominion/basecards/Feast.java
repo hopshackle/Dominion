@@ -19,6 +19,6 @@ public class Feast extends Card {
 		player.moveCard(CardType.FEAST, CardSink.REVEALED, CardSink.TRASH);
 
 		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, 5, 1);
-		return nextBuy.getPossiblePurchasesAsActionEnum();
+		return nextBuy.getPossibleGainsAsActionEnum();
 	}
 }

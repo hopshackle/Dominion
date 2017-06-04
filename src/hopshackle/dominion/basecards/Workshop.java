@@ -13,6 +13,6 @@ public class Workshop extends Card {
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		DominionBuyingDecision nextBuy = new DominionBuyingDecision(player, 4, 1);
-		return nextBuy.getPossiblePurchasesAsActionEnum();
+		return nextBuy.getPossibleGainsAsActionEnum();
 	}
 }

@@ -103,7 +103,7 @@ class ChapelFollowOnAction extends DominionAction {
 	private Chapel chapel;
 
 	public ChapelFollowOnAction(Player player, Chapel card) {
-		super(player, new CardTypeList(new ArrayList<CardType>()));
+		super(player, new CardTypeList(new ArrayList<CardType>(), ChangeType.BUY));
 		chapel = card;
 	}
 

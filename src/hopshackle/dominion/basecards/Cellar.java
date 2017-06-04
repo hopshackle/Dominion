@@ -57,7 +57,7 @@ public class Cellar extends Card {
 class CellarFollowOnAction extends DominionAction {
 
 	public CellarFollowOnAction(Player player) {
-		super(player, new CardTypeList(new ArrayList<CardType>()));
+		super(player, new CardTypeList(new ArrayList<CardType>(), CardTypeAugment.ChangeType.BUY));
 		hasNoAssociatedDecision = true;
 	}
 

@@ -12,10 +12,10 @@ public class CardTypeList implements ActionEnum<Player> {
 	 * This base constructor assumes that the list of cards are all to be purchased
 	 * and put into the player's discard pile
 	 */
-	public CardTypeList(List<CardType> purc) {
+	public CardTypeList(List<CardType> purc, CardTypeAugment.ChangeType type) {
 		cards = new ArrayList<CardTypeAugment>(purc.size());
 		for (CardType p : purc) {
-			cards.add(CardTypeAugment.buyCard(p));
+			cards.add(new CardTypeAugment(p, CardTypeAugment.CardSink.SUPPLY, CardTypeAugment.CardSink.DISCARD, type));
 		}
 	}
 

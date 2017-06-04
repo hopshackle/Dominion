@@ -84,7 +84,7 @@ class LibraryFollowOnAction extends DominionAction {
 	private Library masterCard;
 
 	public LibraryFollowOnAction(Library parent) {
-		super(parent.game.getPlayer(parent.playerNumber), new CardTypeList(new ArrayList<CardType>()));
+		super(parent.game.getPlayer(parent.playerNumber), new CardTypeList(new ArrayList<CardType>(), CardTypeAugment.ChangeType.BUY));
 		masterCard = parent;
 	}
 
