@@ -77,6 +77,7 @@ class ThroneRoomFollowOnAction extends DominionAction {
 	public ThroneRoomFollowOnAction(ThroneRoom card) {
 		super(card.game.getPlayer(card.player), new CardTypeList(new ArrayList<CardType>()));
 		masterCard = card;
+		hasNoAssociatedDecision = true;
 	}
 
 	public ThroneRoomFollowOnAction(ThroneRoomFollowOnAction master, Player newPlayer) {
@@ -116,7 +117,7 @@ class ThroneRoomFollowOnAction extends DominionAction {
 	
 	@Override
 	public ActionEnum<Player> getType() {
-		return CardTypeAugment.playCard(masterCard.enthronedCard);
+		return CardTypeAugment.playCard(CardType.NONE);
 	}
 
 	@Override
