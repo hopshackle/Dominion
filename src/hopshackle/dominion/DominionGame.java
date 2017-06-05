@@ -6,15 +6,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DominionGame extends Game<Player, CardTypeAugment> implements Persistent {
 
+	private static AtomicInteger idFountain = new AtomicInteger(1);
+	private static int[] turnsToRecord;
+	private static DatabaseWriter<DominionGame>[] gameWriters;
+
+	static {
+		String[] toRecord = SimProperties.getProperty("DominionTurnsToRecord", "4:16").split(":");
+		turnsToRecord = new int[toRecord.length +1];
+		gameWriters = new DatabaseWriter[toRecord.length +1];
+		for (int i = 0; i < toRecord.length; i++) {
+			turnsToRecord[i] = Integer.valueOf(toRecord[i]);
+			gameWriters[i] = new DatabaseWriter<DominionGame>(new GameDAO());
+		}
+		gameWriters[toRecord.length] = new DatabaseWriter<DominionGame>(new GameDAO());
+	}
+
 	protected Player[] players;
 	private HashMap<CardType, Integer> cardsOnTable;
 	private Set<CardType> allStartingCardTypes = new HashSet<CardType>();
 	private int currentPlayer;
-	private static AtomicInteger idFountain = new AtomicInteger(1);
 	private int id = idFountain.getAndIncrement();
 	private int turn;
 	private double score[] = new double[4];
-	private static DatabaseWriter<DominionGame> gameWriter = new DatabaseWriter<DominionGame>(new GameDAO());
 	protected DeciderGenerator deciderGenerator;
 	private final int MAX_TURNS = 200;
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
@@ -160,7 +173,13 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			if (p.getBuys() == 0) { // have finished
 				p.tidyUp();
 				p.setState(Player.State.WAITING);
-				if (currentPlayer == 3) turn++;
+				if (currentPlayer == 3) {
+					for (int i = 0; i < turnsToRecord.length; i++) {
+						if (!clonedGame && turnsToRecord[i] == turn)
+							gameWriters[i].write(this, tableSuffix + "_" + turnsToRecord[i]);
+					}
+					turn++;
+				}
 				currentPlayer++;
 				if (currentPlayer == 4)
 					currentPlayer = 0;
@@ -208,7 +227,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 
 		if (!clonedGame) {
 			endTime = System.currentTimeMillis();
-			gameWriter.write(this, tableSuffix);
+			gameWriters[turnsToRecord.length-1].write(this, tableSuffix);
 		}
 	}
 
