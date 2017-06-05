@@ -91,9 +91,9 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 			int playerNumber = master.getPlayerNumber(oldPlayer);
 			actionStack.push(master.actionStack.get(i).clone(players[playerNumber-1]));
 		}
-		for (int n = 0; n < players.length; n++) {
-			players[n].refreshPositionSummary();
-		}
+//		for (int n = 0; n < players.length; n++) {
+//			players[n].refreshPositionSummary();
+//		}
 	}
 
 	@Override

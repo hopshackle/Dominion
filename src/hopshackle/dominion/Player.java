@@ -67,7 +67,7 @@ public class Player extends Agent {
 			clonedAction = da.clone(this);
 			this.actionPlan.addAction(clonedAction);
 		}
-		summary = player.getPositionSummaryCopy();
+		summary = player.summary.clone(this);
 	}
 
 	private void dealFreshHand() {

@@ -27,7 +27,7 @@ public class PositionSummaryApplyTests {
         localProp.setProperty("DominionAddPacesetters", "true");
         localProp.setProperty("DominionBigMoneyPacesetter", "1.0");
         dg = new DeciderGenerator(new GameSetup(), localProp);
-        game = new DominionGame(dg, "Test", false);
+        game = new DominionGame(dg, "Test", true);
         //	game.getCurrentPlayer().setState(Player.State.PLAYING);
         p1 = game.getCurrentPlayer();
     }
@@ -253,5 +253,42 @@ public class PositionSummaryApplyTests {
         assertEquals(start.getNumberInHand(CardType.UNKNOWN), 0);
         assertEquals(post.getNumberInHand(CardType.UNKNOWN), 0);
         assertEquals(after.getNumberInHand(CardType.UNKNOWN), 1);
+    }
+
+    @Test
+    public void playCardImmediatelyAfterClone() {
+        p1.takeCardFromSupply(CardType.VILLAGE, CardSink.HAND);
+        p1.putCardOnTopOfDeck(CardType.WORKSHOP);
+        // default decider is BigMoney
+        PositionSummary start = p1.getPositionSummaryCopy();
+        assertTrue(start.getCardInPlay() == CardType.NONE);
+
+        DominionGame clonedGame = game.clone(p1);
+        Player p1Clone = clonedGame.getPlayer(1);
+
+        clonedGame.oneAction(true, true);
+        PositionSummary later = p1Clone.getPositionSummaryCopy();
+        assertEquals(later.getNumberPlayed(), 1);
+        assertEquals(later.getNumberPlayed(CardType.VILLAGE), 1);
+        assertEquals(later.getHandSize(), 6);
+        assertTrue(later.getCardInPlay() == CardType.VILLAGE);
+        // we cannot assert that WORKSHOP is still on top of the deck however
+
+        // then repeat for original game
+        game.oneAction(true, true);
+        later = p1.getPositionSummaryCopy();
+        assertEquals(later.getNumberPlayed(), 1);
+        assertEquals(later.getNumberPlayed(CardType.VILLAGE), 1);
+        assertEquals(later.getHandSize(), 6);
+        assertEquals(later.getNumberInHand(CardType.WORKSHOP), 1);
+        assertTrue(later.getCardInPlay() == CardType.VILLAGE);
+        game.oneAction(true, true);
+        later = p1.getPositionSummaryCopy();
+        assertEquals(later.getNumberPlayed(), 2);
+        assertEquals(later.getNumberPlayed(CardType.VILLAGE), 1);
+        assertEquals(later.getNumberPlayed(CardType.WORKSHOP), 1);
+        assertEquals(later.getHandSize(), 5);
+        assertEquals(later.getNumberInHand(CardType.WORKSHOP), 0);
+        assertTrue(later.getCardInPlay() == CardType.WORKSHOP);
     }
 }

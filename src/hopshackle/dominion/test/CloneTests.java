@@ -427,4 +427,14 @@ public class CloneTests {
         }
     }
 
+    @Test
+    public void doNotRefreshPSWhenCloningForPerspectivePlayer() {
+        game.getPlayer(2).insertCardDirectlyIntoHand(CardFactory.instantiateCard(CardType.GARDENS));
+        assertEquals(game.getPlayer(1).getPositionSummaryCopy().getVictoryMargin(), 0.0, 0.001);
+        assertEquals(game.getPlayer(2).getPositionSummaryCopy().getVictoryMargin(), 1.0, 0.001);
+        DominionGame clonedGame = game.clone(game.getCurrentPlayer());
+        assertEquals(clonedGame.getPlayer(1).getPositionSummaryCopy().getVictoryMargin(), 0.0, 0.001);
+        assertEquals(clonedGame.getPlayer(2).getPositionSummaryCopy().getVictoryMargin(), 1.0, 0.001);
+    }
+
 }

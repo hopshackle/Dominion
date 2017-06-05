@@ -352,6 +352,12 @@ public class PositionSummary implements State<Player> {
         return new PositionSummary(this);
     }
 
+    public PositionSummary clone(Player newPlayer) {
+        PositionSummary retValue = new PositionSummary(this);
+        retValue.player = newPlayer;
+        return retValue;
+    }
+
     public List<CardType> getHand() {
         return HopshackleUtilities.cloneList(hand);
     }
