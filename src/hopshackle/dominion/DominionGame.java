@@ -175,8 +175,10 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 				p.setState(Player.State.WAITING);
 				if (currentPlayer == 3) {
 					for (int i = 0; i < turnsToRecord.length; i++) {
-						if (!clonedGame && turnsToRecord[i] == turn)
+						if (!clonedGame && turnsToRecord[i] == turn) {
+							endTime = System.currentTimeMillis();
 							gameWriters[i].write(this, tableSuffix + "_" + turnsToRecord[i]);
+						}
 					}
 					turn++;
 				}
