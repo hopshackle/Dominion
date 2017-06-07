@@ -29,7 +29,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private int turn;
 	private double score[] = new double[4];
 	protected DeciderGenerator deciderGenerator;
-	private final int MAX_TURNS = 200;
+	private final int MAX_TURNS = SimProperties.getPropertyAsInteger("DominionMaxTurnsPerGame", "50");
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	private double debugRolloutGameProportion = SimProperties.getPropertyAsDouble("DominionRolloutGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
@@ -213,8 +213,10 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	protected void endOfGameHouseKeeping() {
 		if (!gameOver()) 
 			throw new AssertionError("Cannot do housekeeping unless game is over");
-		for (int i = 0; i < 4; i++)
-			score[i] = getPlayer(i+1).totalVictoryValue();
+		for (int i = 0; i < 4; i++) {
+			score[i] = getPlayer(i + 1).totalVictoryValue();
+			if (turnNumber() > MAX_TURNS) score[i] -= 50;			// penalty for running out of time
+		}
 
 		for (int i = 0; i < 4; i++)
 			ordinalPositions[i] = getOrdinalPosition(i+1);
