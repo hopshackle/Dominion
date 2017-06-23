@@ -62,6 +62,15 @@ public class CardTypeList implements ActionEnum<Player> {
 	}
 
 	@Override
+	public int hashCode() {
+		int retValue = 0;
+		for (CardTypeAugment ct : cards) {
+			retValue += ct.hashCode();
+		}
+		return retValue;
+	}
+
+	@Override
 	public Action<Player> getAction(Player a) {
 		return new DominionAction((Player)a, this);
 	}

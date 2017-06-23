@@ -73,6 +73,11 @@ public class CardTypeAugment implements ActionEnum<Player> {
     }
 
     @Override
+    public int hashCode() {
+        return type.hashCode() * 17 + from.hashCode() * 5 + to.hashCode() * 953 + target + card.hashCode() * 6619;
+    }
+
+    @Override
     public String toString() {
         if (type == ChangeType.BUY) {
             return "Buys " + card.toString();
