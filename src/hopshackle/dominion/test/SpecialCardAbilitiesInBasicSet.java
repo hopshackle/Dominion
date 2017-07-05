@@ -5,12 +5,8 @@ import hopshackle.dominion.*;
 import hopshackle.dominion.CardTypeAugment.CardSink;
 import hopshackle.dominion.basecards.*;
 import hopshackle.simulation.*;
-
 import java.util.*;
-
 import org.junit.*;
-
-import javax.swing.text.Position;
 
 public class SpecialCardAbilitiesInBasicSet {
 
