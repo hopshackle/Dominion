@@ -112,28 +112,7 @@ public class Player extends Agent {
 
 	public double getScore() {
 		double retValue = totalVictoryValue();
-		if (game.gameOver()) {
-			boolean onlyRewardVictory = false;
-			if (decider != null) {
-				onlyRewardVictory = decider.getProperties().getProperty("DominionOnlyRewardVictory", "false").equals("true");
-			}
-			if (onlyRewardVictory){
-				int winningPlayers = 0;
-				for (int i = 0; i < 4; i++)
-					if (game.getOrdinalPosition(i) == 1) winningPlayers++;
-				retValue = 0.0;
-				if (game.getOrdinalPosition(playerNumber) == 1)
-					retValue = 100.0 / (double)winningPlayers;
-			} else {
-				double[] rewardVector = new double[4];
-				String rewardString = decider.getProperties().getProperty("DominionGameOrdinalRewards", "50:0:0:0");
-				String[] rewards = rewardString.split(":");
-				for (int i = 0; i < 4; i++) {
-					rewardVector[i] = Double.valueOf(rewards[i]);
-				}
-				retValue += rewardVector[game.getOrdinalPosition(playerNumber) - 1];
-			}
-		}
+		if (game.turnNumber() > game.MAX_TURNS) retValue -= 50.0;
 		return retValue;
 	}
 

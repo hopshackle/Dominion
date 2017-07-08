@@ -27,9 +27,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private int currentPlayer;
 	private int id = idFountain.getAndIncrement();
 	private int turn;
-	private double score[] = new double[4];
 	protected DeciderGenerator deciderGenerator;
-	private final int MAX_TURNS = SimProperties.getPropertyAsInteger("DominionMaxTurnsPerGame", "50");
 	private double debugGameProportion = SimProperties.getPropertyAsDouble("DominionGameDebugProportion", "0.00");
 	private double debugRolloutGameProportion = SimProperties.getPropertyAsDouble("DominionRolloutGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
@@ -211,17 +209,13 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 
 	@Override
 	protected void endOfGameHouseKeeping() {
-		if (!gameOver()) 
-			throw new AssertionError("Cannot do housekeeping unless game is over");
-		for (int i = 0; i < 4; i++) {
-			score[i] = getPlayer(i + 1).totalVictoryValue();
-			if (turnNumber() > MAX_TURNS) score[i] -= 50;			// penalty for running out of time
-		}
+		boolean finishedEarly = gameOver() ? false : true;
 
 		for (int i = 0; i < 4; i++)
 			ordinalPositions[i] = getOrdinalPosition(i+1);
 
 		for (int n = 0; n < 4; n++) {
+			if (finishedEarly) players[n].log("Game finishes early");
 			players[n].log(String.format("Final Score is %d, with utility of %.0f.", players[n].totalVictoryValue(),  players[n].getScore()));
 			if (getOrdinalPosition(n+1) == 1) 
 				players[n].log("Wins Game!");
@@ -325,14 +319,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		return turn;
 	}
 
-	public int getOrdinalPosition(int p) {
-		// we count how many scores are less than or equal to the players score
-		int retValue = 5;
-		for (double s : score) {
-			if (s <= score[p-1]) retValue--;
-		}
-		return retValue;
-	}
 	public int getNumberOfPlayersInOrdinalPosition(int i) {
 		int retValue = 0;
 		for (int j = 0; j < 4; j++) {
