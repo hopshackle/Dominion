@@ -128,14 +128,14 @@ public class GameSetup {
 
 
 	public List<CardValuationVariables> getDeckVariables() {
-		return deckVariables;
+		return HopshackleUtilities.cloneList(deckVariables);
 	}
 
 	public List<CardValuationVariables> getHandVariables() {
-		return handVariables;
+		return HopshackleUtilities.cloneList(handVariables);
 	}
 
 	public List<CardType> getCardTypes() {
-		return cardTypes;
+		return HopshackleUtilities.cloneList(cardTypes);
 	}
 }
