@@ -7,12 +7,13 @@ import hopshackle.simulation.*;
 
 import javax.swing.text.Position;
 
-public class DominionDeciderContainer implements Decider<Player> {
+public class DominionDeciderContainer extends BaseStateDecider<Player> {
 
     protected Decider<Player> purchase, action;
     protected String name;
 
     public DominionDeciderContainer(Decider<Player> purchase, Decider<Player> action) {
+        super(null);
         this.purchase = purchase;
         this.action = action;
         if (action == null || purchase == null)
@@ -78,7 +79,7 @@ public class DominionDeciderContainer implements Decider<Player> {
                 action = purchase;
             }
         } else if (deciderType.equals("MCTS")) {
-            Decider<Player> defaultRollout = random;
+            BaseStateDecider<Player> defaultRollout = random;
             Decider<Player> opponentModel = random;
             switch (rollout) {
                 case "bigMoney":
