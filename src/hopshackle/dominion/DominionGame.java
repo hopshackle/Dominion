@@ -11,6 +11,10 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private static DatabaseWriter<DominionGame>[] gameWriters;
 
 	static {
+		resetDatabase();
+	}
+
+	public static void resetDatabase() {
 		String[] toRecord = SimProperties.getProperty("DominionTurnsToRecord", "4:16").split(":");
 		turnsToRecord = new int[toRecord.length +1];
 		gameWriters = new DatabaseWriter[toRecord.length +1];

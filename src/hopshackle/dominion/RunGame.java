@@ -34,31 +34,42 @@ public class RunGame {
         if (propertiesFile != "")
             SimProperties.setFileLocation(propertiesFile);
 
-        useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
-        gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
-        addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
-        trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
-        hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
+        ParameterSearch ps = new ParameterSearch(nameOfRun);
 
-        int sequencesToRun = secondSuffix - firstSuffix + 1;
-        int iteration = 0;
-        try {
-            do {
-                String name = nameOfRun;
-                if (sequencesToRun > 1) {
-                    name = name + (firstSuffix + iteration);
-                }
-                System.out.println("Starting Game " + (iteration + firstSuffix));
-                GameSetup gamesetup = new GameSetup();
-                DeciderGenerator newDG = new DeciderGenerator(gamesetup);
-                RunGame setOfGames = new RunGame(name, numberOfGames, numberOfScoringGames, newDG);
-                setOfGames.runAll();
-                iteration++;
-            } while (iteration < sequencesToRun);
-        } catch (Error e) {
-            System.out.println(e.toString());
-            e.printStackTrace(System.out);
-        }
+        do { // outer loop for parameter search
+            ps.setParameterSearchValues();
+
+            useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
+            gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
+            addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
+            trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
+            hardCodedActionDecider = SimProperties.getProperty("DominionHardCodedActionDecider", "false").equals("true");
+
+            int sequencesToRun = secondSuffix - firstSuffix + 1;
+            int iteration = 0;
+            List<String> tableNames = new ArrayList<>();
+            try {
+                do {
+                    String name = nameOfRun;
+                    if (sequencesToRun > 1) {
+                        name = name + (firstSuffix + iteration);
+                    }
+                    tableNames.add("DomAllGames_" + name);
+                    System.out.println("Starting Game " + (iteration + firstSuffix));
+                    GameSetup gamesetup = new GameSetup();
+                    DeciderGenerator newDG = new DeciderGenerator(gamesetup);
+                    RunGame setOfGames = new RunGame(name, numberOfGames, numberOfScoringGames, newDG);
+                    setOfGames.runAll();
+                    iteration++;
+                } while (iteration < sequencesToRun);
+            } catch (Error e) {
+                System.out.println(e.toString());
+                e.printStackTrace(System.out);
+            }
+
+            ps.calculateAndWriteScore(tableNames);
+            DominionGame.resetDatabase(); // this will ensure that the tables are dropped on the next run, rather than being added to
+        } while (!ps.complete());
     }
 
     public RunGame(String descriptor, int games, int scoringGames, DeciderGenerator providedDG) {
