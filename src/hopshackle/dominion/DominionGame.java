@@ -7,17 +7,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DominionGame extends Game<Player, CardTypeAugment> implements Persistent {
 
 	private static AtomicInteger idFountain = new AtomicInteger(1);
-	private static int[] turnsToRecord;
-	private static DatabaseWriter<DominionGame>[] gameWriters;
+	private static String[] toRecord = SimProperties.getProperty("DominionTurnsToRecord", "4:16").split(":");
+	private static int[] turnsToRecord = new int[toRecord.length+1];
+	private static DatabaseWriter<DominionGame>[] gameWriters = new DatabaseWriter[toRecord.length+1];
 
 	static {
 		resetDatabase();
 	}
 
 	public static void resetDatabase() {
-		String[] toRecord = SimProperties.getProperty("DominionTurnsToRecord", "4:16").split(":");
-		turnsToRecord = new int[toRecord.length +1];
-		gameWriters = new DatabaseWriter[toRecord.length +1];
 		for (int i = 0; i < toRecord.length; i++) {
 			turnsToRecord[i] = Integer.valueOf(toRecord[i]);
 			gameWriters[i] = new DatabaseWriter<DominionGame>(new GameDAO());

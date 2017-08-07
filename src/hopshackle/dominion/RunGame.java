@@ -55,7 +55,7 @@ public class RunGame {
                         name = name + (firstSuffix + iteration);
                     }
                     tableNames.add("DomAllGames_" + name);
-                    System.out.println("Starting Game " + (iteration + firstSuffix));
+                    System.out.println("Starting Game " + (iteration + firstSuffix) + ", PS: " + ps.getIteration());
                     GameSetup gamesetup = new GameSetup();
                     DeciderGenerator newDG = new DeciderGenerator(gamesetup);
                     RunGame setOfGames = new RunGame(name, numberOfGames, numberOfScoringGames, newDG);
@@ -136,9 +136,21 @@ public class RunGame {
         }
         Decider<Player> winner = dg.getSingleBestPurchaseBrain();
         if (winner instanceof NeuralDecider) {
-            ((NeuralDecider<Player>)winner).saveBrain(name, "C://Simulation//brains");
+            ((NeuralDecider<Player>) winner).saveBrain(name, "C://Simulation//brains");
         }
+        databaseUtility.flushWriters();
         databaseUtility.addUpdate("EXIT");
+
+        synchronized (this) {
+            while (databaseUtility.isAlive()) {
+                System.out.println("Waiting for previous DBU to complete writing data");
+                try {
+                    this.wait(5000);
+                } catch (Exception e) {
+
+                }
+            }
+        }
     }
 
     private void runNextSet(int numberOfGames) {
@@ -164,8 +176,7 @@ public class RunGame {
                         if (!hardCodedActionDecider) {
                             ExperienceRecordCollector<Player> erc = ercMainMap.get(p.getDecider().toString());
                             if (erc != null) erc.registerAgent(p);
-                        }
-                        else {
+                        } else {
                             ExperienceRecordCollector<Player> erc = ercPurcOnlyMap.get(p.getDecider().toString());
                             if (erc != null) erc.registerAgent(p);
                         }
