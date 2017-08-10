@@ -561,14 +561,14 @@ public class PositionSummary implements State<Player> {
 
     @Override
     public int getActorRef() {
-        return player.getNumber() - 1;
+        return player.getActorRef();
     }
 
     @Override
     public double[] getScore() {
         double[] retValue = new double[4];
         for (int i = 0; i < 4; i++) {
-            if (i == player.getNumber() - 1) {
+            if (i == player.getActorRef() - 1) {
                 retValue[i] = victoryPoints;
             } else {
                 retValue[i] = playerScores[i];

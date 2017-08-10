@@ -46,7 +46,7 @@ public class Bureaucrat extends AttackCard {
 				ActionEnum<Player> option = new CardTypeAugment(eligibleCard, CardSink.HAND, CardSink.DECK, ChangeType.MOVE);
 				retValue.add(option);
 			}
-			removeVictimFromToBeAttackedList(target.getNumber());
+			removeVictimFromToBeAttackedList(target.getActorRef());
 			return retValue;
 		}
 	}

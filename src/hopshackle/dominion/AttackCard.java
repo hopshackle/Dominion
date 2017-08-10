@@ -138,7 +138,7 @@ class AttackCardFollowOnAction extends DominionAction {
         attackSource = newCard;
         nextActor = null;
         if (master.nextActor != null)
-            nextActor = newPlayer.getGame().getPlayer(master.getNextActor().getNumber());
+            nextActor = newPlayer.getGame().getPlayer(master.getNextActor().getActorRef());
         hasNoAssociatedDecision = true;
     }
 

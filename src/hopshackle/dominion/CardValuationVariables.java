@@ -344,7 +344,7 @@ public enum CardValuationVariables implements GeneticVariable<Player> {
             case ACTION_CARDS_PLAYED:
                 return ps.getNumberPlayed() / 5.0;
             case PLAYER_NUMBER:
-                return ps.getPlayer().getNumber();
+                return ps.getPlayer().getActorRef();
             case CURRENT_FEATURE:
                 return ps.getOneOffBudget() / 8.0;
         }

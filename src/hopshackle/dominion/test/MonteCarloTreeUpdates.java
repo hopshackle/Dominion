@@ -39,11 +39,11 @@ public class MonteCarloTreeUpdates {
 	
 	@Test
 	public void monteCarloTreeSetUpWithCardTypeListActions() {
-		tree.insertState(startState, actionList);
+		tree.insertState(startState);
 		tree.updateState(startState, new CardTypeList(copperMarket, CardTypeAugment.ChangeType.BUY), startState, 2.0);
 		assertTrue(tree.containsState(startState));
 		MCStatistics<Player> stats = tree.getStatisticsFor(startState);
-		assertEquals(stats.getMean(new CardTypeList(copperMarket, CardTypeAugment.ChangeType.BUY))[0], 2.0, 0.001);
+		assertEquals(stats.getMean(new CardTypeList(copperMarket, CardTypeAugment.ChangeType.BUY), 1)[0], 2.0, 0.001);
 	}
 	
 	@Test

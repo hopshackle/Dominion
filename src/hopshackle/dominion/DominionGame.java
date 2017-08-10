@@ -350,7 +350,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 
 	@Override
 	public DominionGame clone(Player perspectivePlayer) {
-		int perspective = perspectivePlayer.getGame().getPlayerNumber(perspectivePlayer);
+		int perspective = perspectivePlayer.getActorRef();
 		DominionGame newGame = new DominionGame(this);
 		for (int i = 1; i <= 4; i++) {
 			Player p = newGame.getPlayer(i);

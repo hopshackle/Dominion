@@ -33,7 +33,7 @@ public class Library extends Card {
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
 		setRef("LIB" + idFountain.getAndIncrement());
-		playerNumber = player.getNumber();
+		playerNumber = player.getActorRef();
 		game = player.getGame();
 		if (player.getHandSize() > 6) return emptyList;
 

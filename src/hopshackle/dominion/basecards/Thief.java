@@ -35,7 +35,7 @@ public class Thief extends AttackCard {
 		allOptions.add(doNothing);
 		allOptions.add(gainCard);
 
-		removeVictimFromToBeAttackedList(target.getNumber()); // we just do this once
+		removeVictimFromToBeAttackedList(target.getActorRef()); // we just do this once
 		return allOptions;
 	}
 

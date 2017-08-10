@@ -23,7 +23,7 @@ public class Chapel extends Card {
 	@Override
 	public List<ActionEnum<Player>> takeAction(Player player) {
 		super.takeAction(player);
-		this.player = player.getNumber();
+		this.player = player.getActorRef();
 		this.game = player.getGame();
 		this.setRef("CHAPEL" + idFountain.getAndIncrement());
 		// We can trash any one card from hand, or NONE

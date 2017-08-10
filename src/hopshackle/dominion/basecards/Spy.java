@@ -23,7 +23,7 @@ public class Spy extends AttackCard {
 
     @Override
     public List<ActionEnum<Player>> executeAttackOnPlayer(Player target) {
-        removeVictimFromToBeAttackedList(target.getNumber());
+        removeVictimFromToBeAttackedList(target.getActorRef());
         return spyOnPlayer(target, true);
     }
 
@@ -33,8 +33,8 @@ public class Spy extends AttackCard {
 
         List<ActionEnum<Player>> retValue = new ArrayList<>();
         if (opponent) {
-            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.REVEALED, CardSink.DECK, CardTypeAugment.ChangeType.SPY, player.getNumber()));
-            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.REVEALED, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY, player.getNumber()));
+            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.REVEALED, CardSink.DECK, CardTypeAugment.ChangeType.SPY, player.getActorRef()));
+            retValue.add(new CardTypeAugment(topCard.getType(), CardSink.REVEALED, CardSink.DISCARD, CardTypeAugment.ChangeType.SPY, player.getActorRef()));
         } else {
             retValue.add(CardTypeAugment.moveCard(topCard.getType(), CardSink.REVEALED, CardSink.DECK));
             retValue.add(CardTypeAugment.moveCard(topCard.getType(), CardSink.REVEALED, CardSink.HAND));

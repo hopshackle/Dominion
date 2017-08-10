@@ -468,7 +468,8 @@ public class Player extends Agent {
 		game = dominionGame;
 	}
 
-	public int getNumber() {
+	@Override
+	public int getActorRef() {
 		return playerNumber;
 	}
 

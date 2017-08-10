@@ -23,7 +23,7 @@ public class ThroneRoom extends Card {
     public List<ActionEnum<Player>> takeAction(Player player) {
         super.takeAction(player);
         this.setRef("TR" + idFountain.getAndIncrement());
-        this.player = player.getNumber();
+        this.player = player.getActorRef();
         this.game = player.getGame();
         List<ActionEnum<Player>> retValue = new ArrayList<ActionEnum<Player>>();
         Set<CardType> cardsSeen = new HashSet<CardType>();
