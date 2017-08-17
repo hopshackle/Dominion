@@ -6,7 +6,7 @@ import hopshackle.simulation.*;
 
 public class RunGame {
 
-    private static boolean useBigMoneyInLastK;
+    private static boolean useBigMoneyInLastK, bigMoneyCombinations;
     private static int gamesPerSet;
     private static boolean addPaceSetters;
     private static boolean trainAllDeciders;
@@ -40,6 +40,7 @@ public class RunGame {
             ps.setParameterSearchValues();
 
             useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
+            bigMoneyCombinations = SimProperties.getProperty("DominionBigMoneyBenchmarkCombination", "true").equals("true");
             gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
             addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
             trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
@@ -198,7 +199,11 @@ public class RunGame {
     private void runNextGameWithoutLearning() {
         DominionGame game = null;
         if (useBigMoneyInLastK) {
-            game = DominionGame.againstDecider(getDeciderDenerator(), name, dg.bigMoney);
+            if (bigMoneyCombinations) {
+                game = DominionGame.againstDecider(getDeciderDenerator(), name, dg.bigMoney, (int) (count % 3) + 1);
+            } else {
+                game = DominionGame.againstDecider(getDeciderDenerator(), name, dg.bigMoney, 1);
+            }
         } else {
             game = new DominionGame(getDeciderDenerator(), name, false);
         }

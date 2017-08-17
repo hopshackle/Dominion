@@ -33,15 +33,16 @@ public class BigMoneyDecider extends LookaheadDecider<Player> {
 		double wealthDensity = ps.getWealthDensity();
 		double victoryDensity = ps.getVictoryDensity();
 		double endGame = 1.0 - ps.getPercentageDepleted()[2];
+		double penEndGame = 1.0 - ps.getPercentageDepleted()[1];
 		double provinces = ps.getNumberOfCardsTotal(CardType.PROVINCE);
 		double cards = ps.totalNumberOfCards();
 		
 		retValue = wealthDensity + provinces * 6.0;
 		
-		if (provincesLeft <= 6.0 || endGame < 0.35)
+		if (provincesLeft <= 6.0 || penEndGame < 0.50)
 			retValue += victoryDensity * 2.0;
 		
-		if (provincesLeft <= 3.0 || endGame < 0.20)
+		if (provincesLeft <= 3.0 || endGame < 0.50)
 			retValue += cards * victoryDensity * 5.0;
 
 		double handValue = 0.0;

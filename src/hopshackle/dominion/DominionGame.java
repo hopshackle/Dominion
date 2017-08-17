@@ -39,10 +39,16 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private int[] ordinalPositions = new int[4];
 	private long startTime, endTime;
 
-	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, Decider<Player> deciderToUse) {
+	public static DominionGame againstDecider(DeciderGenerator deciderGen, String name, Decider<Player> deciderToUse, int number) {
 		DominionGame retValue = new DominionGame(deciderGen, name, false);
-		int randomPlayer = Dice.roll(1, 4) - 1;
-		retValue.players[randomPlayer].setDecider(deciderToUse);
+		Set<Integer> benchmarkPositions = new HashSet<>();
+			while (benchmarkPositions.size() < number) {
+				int randomPlayer = Dice.roll(1, 4) - 1;
+				if (!benchmarkPositions.contains(randomPlayer)) {
+					benchmarkPositions.add(randomPlayer);
+					retValue.players[randomPlayer].setDecider(deciderToUse);
+				}
+			}
 		return retValue;
 	}
 
