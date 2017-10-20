@@ -26,7 +26,7 @@ public class PositionSummaryApplyTests {
         localProp.setProperty("Temperature", "0.0");
         localProp.setProperty("DominionAddPacesetters", "true");
         localProp.setProperty("DominionBigMoneyPacesetter", "1.0");
-        dg = new DeciderGenerator(new GameSetup(), localProp);
+        dg = new DeciderGenerator("", new GameSetup(), localProp);
         game = new DominionGame(dg, "Test", true);
         //	game.getCurrentPlayer().setState(Player.State.PLAYING);
         p1 = game.getCurrentPlayer();

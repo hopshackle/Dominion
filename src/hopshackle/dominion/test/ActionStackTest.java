@@ -21,7 +21,7 @@ public class ActionStackTest {
 		localProp.setProperty("DeciderType", "NN");
 		localProp.setProperty("DominionCardSetup", "FirstGame");
 		localProp.setProperty("DominionHardCodedActionDecider", "true");
-		game = new TestGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
+		game = new TestGame(new DeciderGenerator("", new GameSetup(), localProp), "Test",  false);
 		player = game.getCurrentPlayer();
 	}
 

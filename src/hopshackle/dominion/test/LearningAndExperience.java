@@ -19,7 +19,7 @@ public class LearningAndExperience {
 		localProp = SimProperties.getDeciderProperties("GLOBAL");
 		localProp.setProperty("DominionCardSetup", "FirstGame");
 		localProp.setProperty("DominionHardCodedActionDecider", "false");
-		dg = new DeciderGenerator(new GameSetup(), localProp);
+		dg = new DeciderGenerator("", new GameSetup(), localProp);
 		game = new DominionGame(dg, "Test", false);
 		stateFactory = new DominionStateFactory(dg.getDecider(false).getVariables());
 	}

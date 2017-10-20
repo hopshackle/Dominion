@@ -6,7 +6,7 @@ import hopshackle.simulation.*;
 
 public class RunGame {
 
-    private static boolean useBigMoneyInLastK, bigMoneyCombinations;
+    private boolean useBigMoneyInLastK, bigMoneyCombinations;
     private static int gamesPerSet;
     private static boolean addPaceSetters;
     private static boolean trainAllDeciders;
@@ -39,8 +39,6 @@ public class RunGame {
         do { // outer loop for parameter search
             ps.setParameterSearchValues();
 
-            useBigMoneyInLastK = SimProperties.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
-            bigMoneyCombinations = SimProperties.getProperty("DominionBigMoneyBenchmarkCombination", "true").equals("true");
             gamesPerSet = SimProperties.getPropertyAsInteger("DominionGamesPerSet", "1");
             addPaceSetters = SimProperties.getProperty("DominionAddPacesetters", "false").equals("true");
             trainAllDeciders = SimProperties.getProperty("DominionTrainAll", "false").equals("true");
@@ -56,9 +54,9 @@ public class RunGame {
                         name = name + (firstSuffix + iteration);
                     }
                     tableNames.add("DomAllGames_" + name);
-                    System.out.println("Starting Game " + (iteration + firstSuffix) + ", PS: " + ps.getIteration());
+                    System.out.println("Starting Set " + (iteration + firstSuffix) + ", PS: " + ps.getIteration());
                     GameSetup gamesetup = new GameSetup();
-                    DeciderGenerator newDG = new DeciderGenerator(gamesetup);
+                    DeciderGenerator newDG = new DeciderGenerator(name, gamesetup);
                     RunGame setOfGames = new RunGame(name, numberOfGames, numberOfScoringGames, newDG);
                     setOfGames.runAll();
                     iteration++;
@@ -71,6 +69,8 @@ public class RunGame {
             ps.calculateAndWriteScore(tableNames);
             DominionGame.resetDatabase(); // this will ensure that the tables are dropped on the next run, rather than being added to
         } while (!ps.complete());
+        System.out.println("Exiting....");
+        System.exit(0);
     }
 
     public RunGame(String descriptor, int games, int scoringGames, DeciderGenerator providedDG) {
@@ -121,17 +121,31 @@ public class RunGame {
     }
 
     public void runAll() {
-        double startTemp = SimProperties.getPropertyAsDouble("StartTemperature", "1.0");
-        double endTemp = SimProperties.getPropertyAsDouble("EndTemperature", "0.0");
+        runAll(null);
+    }
+
+    public void runAll(DeciderProperties override) {
+        if (override == null)
+            override = SimProperties.getDeciderProperties("GLOBAL");
+        double startTemp = override.getPropertyAsDouble("StartTemperature", "1.0");
+        double endTemp = override.getPropertyAsDouble("EndTemperature", "0.0");
+        useBigMoneyInLastK = override.getProperty("DominionBigMoneyBenchmarkWithNoLearning", "false").equals("true");
+        bigMoneyCombinations = override.getProperty("DominionBigMoneyBenchmarkCombination", "true").equals("true");
         Temperature temperature = new Temperature(startTemp, endTemp);
 
         while (!finishedLearningRun()) {
             runNextSet(gamesPerSet);
+            for (OnInstructionTeacher<Player> teacher : teacherMap.values()) {
+                teacher.teach();
+            }
+            dg.breed();
             temperature.setTime(count / (double) (maximum - finalScoring));
             SimProperties.setProperty("Temperature", String.format("%.3f", temperature.getTemperature()));
         }
-        System.out.println("Finished Learning Run - starting scoring games");
+ //       System.out.println("Finished Learning Run - starting scoring games");
         SimProperties.setProperty("Temperature", "0.0");
+        count = maximum;    // to cater for gamesPerSet that are not exact divisors
+        if (finalScoring > 0) dg.prepareForScoringGames();
         while (!finishedRun()) {
             runNextGameWithoutLearning();
         }
@@ -143,10 +157,12 @@ public class RunGame {
         databaseUtility.addUpdate("EXIT");
 
         synchronized (this) {
+            boolean first = true;
             while (databaseUtility.isAlive()) {
-                System.out.println("Waiting for previous DBU to complete writing data");
+                if (!first) System.out.println("Waiting for previous DBU to complete writing data");
                 try {
                     this.wait(5000);
+                    first = false;
                 } catch (Exception e) {
 
                 }
@@ -183,6 +199,7 @@ public class RunGame {
                         }
                         break;
                     case "None":
+                    case "EA":
                         // No learning
                         break;
                     default:
@@ -190,9 +207,6 @@ public class RunGame {
                 }
             }
             runGame(game);
-        }
-        for (OnInstructionTeacher<Player> teacher : teacherMap.values()) {
-            teacher.teach();
         }
     }
 
@@ -218,13 +232,17 @@ public class RunGame {
         Player[] players = game.getAllPlayers().toArray(new Player[1]);
         for (int p = 0; p < 4; p++) {
             if (game.getOrdinalPosition(p + 1) == 1) {
-                if (dg != null)
+                if (dg != null) {
                     dg.reportVictory(players[p]);
+                    for (int o = 0; o < 4; o++) {
+                        // iterate through opponents over which victory is to be reported
+                        if (game.getOrdinalPosition(o+1) != 1) {
+                            dg.reportVictory(players[p], players[o]);
+                        }
+                    }
+                }
             }
         }
-
-        if (maximum + finalScoring > count)
-            return;
     }
 
     public boolean finishedRun() {

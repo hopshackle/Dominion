@@ -23,7 +23,7 @@ public class BuysActionsAndPurchasePowerFromCards {
 		localProp.setProperty("DominionCardSetup", "FirstGame");
 		localProp.setProperty("DominionMaxCardsPerBuy", "1");
 		SimProperties.setProperty("Temperature", "0.0");
-		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
+		game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test",  false);
 		p1 = game.getCurrentPlayer();
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckInto(CardSink.HAND);	// so p1 always has 7 copper and 3 estates

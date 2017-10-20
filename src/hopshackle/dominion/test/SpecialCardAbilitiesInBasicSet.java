@@ -24,7 +24,7 @@ public class SpecialCardAbilitiesInBasicSet {
 		localProp.setProperty("DominionCardChanges", "THRONE_ROOM,BUREAUCRAT,LIBRARY,ADVENTURER,THIEF,SPY,FESTIVAL");
 		SimProperties.setProperty("Temperature", "0.0");
 		localProp.setProperty("DominionCardSetup", "FirstGame");
-		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
+		game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test",  false);
 		p1 = game.getPlayer(1);
 		p2 = game.getPlayer(2);
 		p3 = game.getPlayer(3);

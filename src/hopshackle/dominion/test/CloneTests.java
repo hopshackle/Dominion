@@ -26,7 +26,7 @@ public class CloneTests {
         localProp.setProperty("DominionCardSetup", "FirstGame");
         localProp.setProperty("DeciderType", "NN");
         localProp.setProperty("Temperature", "0.0");
-        game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test", false);
+        game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test", false);
         woodcutterDecider = TestDominionDecider.getExample(CardType.WOODCUTTER);
         workshopDecider = TestDominionDecider.getExample(CardType.WORKSHOP);
         remodelDecider = TestDominionDecider.getExample(CardType.REMODEL);

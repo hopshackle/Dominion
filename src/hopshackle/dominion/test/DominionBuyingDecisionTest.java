@@ -19,7 +19,7 @@ public class DominionBuyingDecisionTest {
 	public void setUp() throws Exception {
 		SimProperties.setProperty("DominionCardSetup", "FirstGame");
 		SimProperties.setProperty("Temperature", "0.0");
-		game = new DominionGame(new DeciderGenerator(new GameSetup()), "Test",  false);
+		game = new DominionGame(new DeciderGenerator("", new GameSetup()), "Test",  false);
 		p1 = game.getCurrentPlayer();
 		for (int n=0; n<5; n++)
 			p1.drawTopCardFromDeckInto(CardSink.HAND);	// so p1 always has 7 copper and 3 estates

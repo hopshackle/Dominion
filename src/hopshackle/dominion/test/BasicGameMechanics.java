@@ -24,7 +24,7 @@ public class BasicGameMechanics {
 		localProp.setProperty("DeciderType", "NN");
 		localProp.setProperty("RandomDeciderMaxChance", "0.0");
 		localProp.setProperty("RandomDeciderMinChance", "0.0");
-		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
+		game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test",  false);
 		copperDecider = TestDominionDecider.getExample(CardType.COPPER);
 		woodcutterDecider = TestDominionDecider.getExample(CardType.WOODCUTTER);
 		workshopDecider = TestDominionDecider.getExample(CardType.WORKSHOP);

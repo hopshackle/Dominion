@@ -21,7 +21,7 @@ public class MonteCarloTreeUpdates {
 		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
 		localProp.setProperty("DominionCardSetup", "FirstGame");
 		localProp.setProperty("DominionHardCodedActionDecider", "true");
-		dg = new DeciderGenerator(new GameSetup(), localProp);
+		dg = new DeciderGenerator("", new GameSetup(), localProp);
 		game = new DominionGame(dg, "Test", false);
 		tree = new MonteCarloTree<Player>(localProp);
 		startState = game.getCurrentPlayer().getPositionSummaryCopy();

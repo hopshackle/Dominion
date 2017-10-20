@@ -21,7 +21,7 @@ public class ScoringTest {
     public void setup() {
         DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
         localProp.setProperty("GameOrdinalRewards", "50:20:0:0");
-        game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test", false);
+        game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test", false);
         p1 = game.getPlayer(1);
         p2 = game.getPlayer(2);
         p3 = game.getPlayer(3);

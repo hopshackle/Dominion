@@ -16,7 +16,7 @@ public class ChoosingCardTypesInAGame {
 	public void setup() {
 		DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
 		localProp.setProperty("DominionCardSetup", "NONE");
-		game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test",  false);
+		game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test",  false);
 		firstPlayer = game.getCurrentPlayer();
 		firstPlayer.setState(Player.State.PURCHASING);
 	}

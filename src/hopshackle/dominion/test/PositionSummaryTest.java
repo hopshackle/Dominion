@@ -18,7 +18,7 @@ public class PositionSummaryTest {
         DeciderProperties localProp = SimProperties.getDeciderProperties("GLOBAL");
         localProp.setProperty("DominionCardSetup", "FirstGame");
         localProp.setProperty("DeciderType", "NN");
-        game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test", false);
+        game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test", false);
         game.getCurrentPlayer().takeCardFromSupply(CardType.VILLAGE, CardSink.DISCARD);
         game.getCurrentPlayer().takeCardFromSupply(CardType.GOLD, CardSink.DISCARD);
         //	game.getCurrentPlayer().setState(Player.State.PLAYING);

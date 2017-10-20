@@ -20,7 +20,7 @@ public class CardValuationVariablesTest {
         localProp.setProperty("DeciderType", "NN");
         localProp.setProperty("DominionCardSetup", "FirstGame");
         localProp.setProperty("Temperature", "0.0");
-        game = new DominionGame(new DeciderGenerator(new GameSetup(), localProp), "Test", false);
+        game = new DominionGame(new DeciderGenerator("", new GameSetup(), localProp), "Test", false);
         recalculate();
     }
 

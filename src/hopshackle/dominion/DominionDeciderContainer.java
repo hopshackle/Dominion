@@ -261,6 +261,7 @@ public class DominionDeciderContainer extends BaseStateDecider<Player> {
 
     @Override
     public void injectProperties(DeciderProperties decProp) {
+        this.decProp = decProp;
         if (purchase != null) purchase.injectProperties(decProp);
         if (action != null) action.injectProperties(decProp);
     }
@@ -286,5 +287,18 @@ public class DominionDeciderContainer extends BaseStateDecider<Player> {
 
     @Override
     public void flushLog() {
+    }
+
+    @Override
+    public DominionDeciderContainer mutate(double intensity) {
+        DominionDeciderContainer retValue = (DominionDeciderContainer) factory(this.name, new GameSetup(), decProp);
+
+        retValue.purchase = this.purchase.mutate(intensity);
+        if (purchase == retValue.purchase)
+            throw new AssertionError("Mutate operator has returned an unchanged Decider");
+        if (action != purchase)
+            retValue.action = this.action.mutate(intensity);
+
+        return retValue;
     }
 }
