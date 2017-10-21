@@ -1,5 +1,7 @@
 package hopshackle.dominion;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import hopshackle.simulation.*;
@@ -54,7 +56,9 @@ public class RunGame {
                         name = name + (firstSuffix + iteration);
                     }
                     tableNames.add("DomAllGames_" + name);
-                    System.out.println("Starting Set " + (iteration + firstSuffix) + ", PS: " + ps.getIteration());
+                    Date current = new Date();
+                    DateFormat df = new SimpleDateFormat();
+                    System.out.println("Starting Set " + (iteration + firstSuffix) + ", PS: " + ps.getIteration() + " at " + df.format(current));
                     GameSetup gamesetup = new GameSetup();
                     DeciderGenerator newDG = new DeciderGenerator(name, gamesetup);
                     RunGame setOfGames = new RunGame(name, numberOfGames, numberOfScoringGames, newDG);

@@ -20,7 +20,7 @@ public class DeciderGenerator {
 	private boolean evenUseOfDeciders = SimProperties.getProperty("DominionEvenUseOfDeciders", "true").equals("true");
 	private String EA;
 	private int ESParentSize, ESProgenySize;
-	private boolean nicheScoring;
+	private boolean nicheScoring, useHallOfFame;
 	private int progenyCounter = 0, cycle = 0;
 	private double mutationIntensity = 1.0;
 	private Map<String, String> breedingRecord = new HashMap<>();
@@ -37,6 +37,7 @@ public class DeciderGenerator {
 		EA = localProp.getProperty("EvolutionaryAlgorithm", "None");
 		ESParentSize = localProp.getPropertyAsInteger("ESParentSize", "1");
 		ESProgenySize = localProp.getPropertyAsInteger("ESProgenySize", "1");
+		useHallOfFame = localProp.getProperty("ESHallOfFame", "false").equals("true");
 		nicheScoring = localProp.getProperty("ESNicheScoring", "false").equals("true");
 		gamesetup = gameDetails;
 		purchaseDeciders = HopshackleUtilities.cloneList(decidersToUse);
@@ -196,7 +197,7 @@ public class DeciderGenerator {
 				double totalScoreOfLastGenParents = 0.0;
 				double totalScore = 0.0;
 				int numberOfParentsFromPreviousGeneration = 0;
-				updateHallOfFame(sortedInOrder.get(0));
+				if (useHallOfFame) updateHallOfFame(sortedInOrder.get(0));
 				for (int i = 0; i < sortedInOrder.size(); i++) {
 					int index = purchaseDeciders.indexOf(sortedInOrder.get(i));
 					double score = scores[index];
@@ -250,6 +251,12 @@ public class DeciderGenerator {
 				purchaseDeciders = new ArrayList<>(ESParentSize + ESProgenySize);
 				purchaseDeciders.addAll(sortedInOrder.subList(0, ESParentSize));
 				purchaseDeciders.addAll(children);
+				if (useHallOfFame){
+					for (Decider<Player> exemplar : hallOfFame) {
+						if (!purchaseDeciders.contains(exemplar)) purchaseDeciders.add(exemplar);
+						// we don't want to add anyone twice
+					}
+				}
 				unusedPurchaseDeciders = HopshackleUtilities.cloneList(purchaseDeciders);
 				log(String.format("Next Gen size is %d. Mutation Intensity %.2f", purchaseDeciders.size(), mutationIntensity));
 				purchaseVictories = new ArrayList<>(purchaseDeciders.size());
@@ -371,6 +378,12 @@ public class DeciderGenerator {
 			log(String.format("%s\tVictories: %.0f\tNiche Score: %.2f", forContest.get(i).toString(), v, n));
 			if (v > maxVict) maxVict = v;
 			if (n > maxNiche) maxNiche = n;
+		}
+		for (int i = hallOfFame.size() -1; i >=0; i--) {
+			if (simpleVictories[i] < 25 && nicheScores[i] < 0.001) {
+				log(hallOfFame.get(i).toString() + " removed from Hall of Fame");
+				hallOfFame.remove(i);
+			}
 		}
 		if (simpleVictories[forContest.size()-1] < maxVict && nicheScores[forContest.size()-1] < maxNiche) {
 			log("Candidate not included in Hall of Fame");
