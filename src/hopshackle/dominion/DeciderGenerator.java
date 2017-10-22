@@ -195,6 +195,7 @@ public class DeciderGenerator {
 				List<Decider<Player>> sortedInOrder = sortDecidersInDescendingVictoryOrder(scores);
 				double totalScoreOfThisGenParents = 0.0;
 				double totalScoreOfLastGenParents = 0.0;
+				double totalScoreOfLastGenChildren = 0.0;
 				double totalScore = 0.0;
 				int numberOfParentsFromPreviousGeneration = 0;
 				if (useHallOfFame) updateHallOfFame(sortedInOrder.get(0));
@@ -202,10 +203,14 @@ public class DeciderGenerator {
 					int index = purchaseDeciders.indexOf(sortedInOrder.get(i));
 					double score = scores[index];
 					totalScore += score;
-					if (index < ESParentSize) {
+					if (index < (ESProgenySize + ESParentSize) && index >= ESParentSize) {
+						// was a child last time (the last entries will be HallOfFame members, which we exclude)
+						totalScoreOfLastGenChildren += score;
+					}
+					if (index < ESParentSize) { // index order in purchaseDeciders indicates if it was parent last cycle
 						totalScoreOfLastGenParents += score;
 					}
-					if (i < ESParentSize) {
+					if (i < ESParentSize) { // will be parent in this cycle
 						double meanW = 0.0;
 						double sigmaW = 0.0;
 						if (sortedInOrder.get(i) instanceof DominionDeciderContainer) {
@@ -228,8 +233,8 @@ public class DeciderGenerator {
 				}
 				double meanThisParentScore = totalScoreOfThisGenParents / ESParentSize;
 				double meanLastParentScore = totalScoreOfLastGenParents / ESParentSize;
-				double meanScore = totalScore / (ESParentSize + ESProgenySize);
-				double meanLastChildScore = (totalScore - totalScoreOfLastGenParents) / ESProgenySize;
+				double meanScore = totalScore / purchaseDeciders.size();
+				double meanLastChildScore = totalScoreOfLastGenChildren / ESProgenySize;
 				double percentSurvivingParents = 100.0 * numberOfParentsFromPreviousGeneration / (double) ESParentSize;
 				log(String.format("%.0f%% of previous parents survived with score of %.1f versus score of %.1f for their children, average score of %.1f and %.1f for new parents.",
 					percentSurvivingParents, meanLastParentScore, meanLastChildScore, meanScore, meanThisParentScore));
