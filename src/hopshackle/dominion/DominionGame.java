@@ -4,7 +4,7 @@ import hopshackle.simulation.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DominionGame extends Game<Player, CardTypeAugment> implements Persistent {
+public class DominionGame extends Game<Player, CardTypeAugment> {
 
 	private static AtomicInteger idFountain = new AtomicInteger(1);
 	private static String[] toRecord = SimProperties.getProperty("DominionTurnsToRecord", "4:16").split(":");
@@ -34,8 +34,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	private double debugRolloutGameProportion = SimProperties.getPropertyAsDouble("DominionRolloutGameDebugProportion", "0.00");
 	private boolean clonedGame = false;
 	private String tableSuffix;
-	private FastCalendar calendar;
-	private World world = new World();
 	private int[] ordinalPositions = new int[4];
 	private long startTime, endTime;
 
@@ -60,9 +58,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 		startTime = System.currentTimeMillis();
 		players = new Player[4];
 		boolean debugGame = false;
-		calendar = new FastCalendar(1l);
-		world.setCalendar(calendar);
-		world.registerWorldLogic(this, "AGENT");
 		setUpCardsOnTable(deciderGenerator.getGameSetup());
 		if (Math.random() < debugGameProportion) debugGame = true;
 		for (int n = 0; n < players.length; n++) {
@@ -87,9 +82,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	protected DominionGame(DominionGame master) {
 		deciderGenerator = master.deciderGenerator;
 		players = new Player[4];
-		long currentTime = master.calendar.getTime();
-		calendar = new FastCalendar(currentTime);
-		world.setCalendar(calendar);
+		setTime(master.getTime());
 		cardsOnTable = new HashMap<CardType, Integer>();
 		for (CardType ct : master.cardsOnTable.keySet()) {
 			cardsOnTable.put(ct, master.getNumberOfCardsRemaining(ct));
@@ -191,7 +184,7 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 				currentPlayer++;
 				if (currentPlayer == 4)
 					currentPlayer = 0;
-				calendar.setTime((long) ((turn-1) * 4 + currentPlayer + 1));
+				setTime((long) ((turn-1) * 4 + currentPlayer + 1));
 				players[currentPlayer].setState(Player.State.PLAYING);
 			} else {
 				// do nothing...we continue in the current state until all buys used
@@ -381,15 +374,6 @@ public class DominionGame extends Game<Player, CardTypeAugment> implements Persi
 	@Override
 	public int getCurrentPlayerNumber() {
 		return currentPlayer + 1;
-	}
-
-	@Override
-	public World getWorld() {
-		return world;
-	}
-
-	public void setDatabaseAccessUtility(DatabaseAccessUtility databaseUtility) {
-		world.setDatabaseAccessUtility(databaseUtility);
 	}
 
 	public void nextPlayersTurn() {
